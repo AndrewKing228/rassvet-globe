@@ -1,0 +1,47 @@
+name: 🐞 Сообщить об ошибке / Bug report
+description: Что-то работает не так, как ожидалось / Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо, что сообщаете об ошибке! Здесь принимаются только сообщения об ошибках трекера.
+        Thanks for reporting! Only bug reports for the tracker are accepted here.
+  - type: textarea
+    id: what
+    attributes:
+      label: Что случилось / What happened
+      description: Коротко опишите ошибку / Describe the bug briefly
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Как повторить / Steps to reproduce
+      placeholder: |
+        1. Открыть 3D-глобус / Open the 3D globe
+        2. Выбрать спутник … / Select satellite …
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Что ожидалось / Expected behaviour
+  - type: input
+    id: view
+    attributes:
+      label: Ссылка на вид / Link to the view
+      description: Кнопка со скрепкой в верхней панели копирует ссылку на текущий вид / The link button in the top bar copies a link to the current view
+  - type: input
+    id: browser
+    attributes:
+      label: Браузер и устройство / Browser and device
+      placeholder: Chrome 140, Windows 11 / Safari, iPhone 15
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Скриншоты и ошибки из консоли / Screenshots and console errors
+      description: Перетащите сюда картинки; ошибки — из консоли браузера (F12) / Drag images here; errors from the browser console (F12)
