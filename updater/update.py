@@ -33,6 +33,9 @@ log = logging.getLogger("updater")
 UTC = dt.timezone.utc
 MAX_DOWNLOAD = 128 * 1024 * 1024
 BAD_FORMAT_SHARE = 0.05      # больше 5 % битых записей — считаем выгрузку повреждённой и не используем
+# CelesTrak обновляет выгрузки примерно раз в 2 часа и на повторный запрос раньше отвечает 403, а за частые повторы
+# может заблокировать адрес. Выгрузку моложе этого срока берём из кэша и источник не запрашиваем (повторный deploy).
+REUSE_SECONDS = 2 * 3600
 OMM_KEYS = ["EPOCH", "MEAN_MOTION", "ECCENTRICITY", "INCLINATION", "RA_OF_ASC_NODE",
             "ARG_OF_PERICENTER", "MEAN_ANOMALY", "BSTAR", "MEAN_MOTION_DOT", "MEAN_MOTION_DDOT"]
 SEO_DESCRIPTION = ("Карта и 3D-глобус спутников в реальном времени: российская группировка «Рассвет», "
@@ -240,8 +243,21 @@ def atomic_write(path, data, mode=0o644):
         raise
 
 
+def recent_cache(path):
+    """Кэш выгрузки моложе REUSE_SECONDS — (содержимое, возраст в минутах), иначе None."""
+    try:
+        age = time.time() - os.path.getmtime(path)
+        if age < REUSE_SECONDS:
+            with open(path, encoding="utf-8") as f:
+                return json.load(f), int(age // 60)
+    except (OSError, ValueError):
+        pass
+    return None
+
+
 def collect(cfg, state_dir, now, max_age_days, domain):
-    """Скачать и проверить все источники. При неудаче — последняя удачная копия из кэша (если ещё годна)."""
+    """Скачать и проверить все источники. Выгрузка моложе REUSE_SECONDS берётся из кэша без запроса.
+    При неудаче — последняя удачная копия из кэша (если ещё годна)."""
     ua = cfg["http"]["user_agent"].format(domain=domain or "localhost")
     cache_dir = os.path.join(state_dir, "sources")
     os.makedirs(cache_dir, exist_ok=True)
@@ -250,6 +266,20 @@ def collect(cfg, state_dir, now, max_age_days, domain):
         log.info("Источник %s (%s)", src["id"], src.get("title", ""))
         cache = os.path.join(cache_dir, src["id"] + ".json")
         fresh, recs, url, retrieved = False, None, None, None
+        rc = recent_cache(cache)
+        if rc:
+            try:
+                recs = validate(src, rc[0]["text"], now, max_age_days)
+                fresh, url, retrieved = True, rc[0]["url"], rc[0]["retrievedAt"]
+                log.info("  выгрузке %d мин — беру сохранённую, источник не запрашиваю", rc[1])
+            except Exception as e:
+                log.warning("  сохранённая выгрузка не годится (%s) — запрашиваю заново", e)
+                recs = None
+        if recs:
+            for r in recs:
+                r["source"] = src["id"]
+            results.append(dict(src=src, recs=recs, fresh=fresh, url=url, retrievedAt=retrieved))
+            continue
         try:
             got = fetch_source(src, cfg["http"], ua)
             if got is None:
@@ -352,16 +382,27 @@ def satcat_systems(page):
 
 
 def collect_satcat(groups, http_cfg, state_dir, ua, now):
-    """SATCAT по группам. При сбое — последняя удачная копия из кэша; группа без данных пропускается
-    (состав системы на странице тогда остаётся прежним)."""
+    """SATCAT по группам. Состав групп меняется редко, поэтому без повторов: выгрузка моложе REUSE_SECONDS
+    берётся из кэша, а после первого отказа CelesTrak остальные группы сразу берутся из кэша, без запросов.
+    Группа без данных пропускается (состав системы на странице тогда остаётся прежним)."""
     out = {}
     cache_dir = os.path.join(state_dir, "sources")
     os.makedirs(cache_dir, exist_ok=True)
+    once = {**http_cfg, "retries": 0}
+    down = None   # причина первого отказа: дальше не запрашиваем
     for g in sorted(groups):
         url = SATCAT_URL.format(group=urllib.parse.quote(g))
         cache = os.path.join(cache_dir, f"satcat-{g}.json")
+        rc = recent_cache(cache)
+        if rc and rc[0].get("recs"):
+            c = rc[0]
+            out[g] = {"recs": c["recs"], "url": c["url"], "retrievedAt": c["retrievedAt"]}
+            log.info("  SATCAT %s: выгрузке %d мин — беру сохранённую", g, rc[1])
+            continue
         try:
-            recs = json.loads(http_get(url, http_cfg, ua))
+            if down:
+                raise RuntimeError(f"не запрашиваю, CelesTrak недоступен ({down})")
+            recs = json.loads(http_get(url, once, ua))
             if not isinstance(recs, list) or not recs:
                 raise ValueError("пустой ответ")
             retrieved = now.date().isoformat()
@@ -369,6 +410,7 @@ def collect_satcat(groups, http_cfg, state_dir, ua, now):
             log.info("  SATCAT %s: %d записей", g, len(recs))
         except Exception as e:
             log.warning("  SATCAT %s НЕ ПОЛУЧЕН: %s", g, e)
+            down = down or str(e)
             try:
                 with open(cache, encoding="utf-8") as f:
                     c = json.load(f)

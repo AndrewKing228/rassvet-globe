@@ -24,6 +24,8 @@ What changes on the page and in the repository. Dates are UTC.
 - **«Как это работает»:** элементы орбиты, SGP4, наклонение, типы орбит, трасса, зона покрытия и когда
   спутник видно глазом — простыми словами.
 - **Проверка каталога** `scripts/catalog/check_catalog.py`.
+- **Скрипт обновления бережёт CelesTrak:** выгрузку моложе 2 часов берёт из сохранённой копии, каталог SATCAT
+  запрашивает без повторов, а если CelesTrak не отвечает — сразу берёт сохранённые копии остальных групп.
 - **Ссылка на исходный код** на странице и подпись: проект сделан для популяризации космоса.
 
 ### English
@@ -45,4 +47,6 @@ Added the same day:
 - **"How it works":** orbital elements, SGP4, inclination, orbit types, the ground track, the coverage zone and
   when a satellite is visible to the eye — in plain words.
 - **Catalogue check** `scripts/catalog/check_catalog.py`.
+- **The update script spares CelesTrak:** a download younger than 2 hours is taken from the saved copy, the SATCAT
+  catalogue is requested without retries, and if CelesTrak does not answer the remaining groups come from saved copies.
 - **A link to the source code** on the page and a note: the project is made to popularise space.
