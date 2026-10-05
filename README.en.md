@@ -1,0 +1,504 @@
+<p align="center">
+  <img src="docs/hero.svg" alt="Rassvet — satellite globe" width="100%">
+</p>
+
+<p align="center">
+  <a href="README.md">Русский</a> · <b>English</b>
+</p>
+
+<p align="center">
+  <a href="#-run-in-a-minute">Run in a minute</a> ·
+  <a href="#-how-it-works">How it works</a> ·
+  <a href="#-your-own-server-from-scratch">Own server</a> ·
+  <a href="#-whats-in-the-repository">Files</a> ·
+  <a href="#-data-sources">Sources</a> ·
+  <a href="#-faq">FAQ</a>
+</p>
+
+---
+
+**Rassvet Satellite Globe** is a popular-science tracker in the browser. A photorealistic Earth with
+its night side and city lights, surrounded by satellites in real time: the Russian low-Earth-orbit
+constellation Rassvet (Bureau 1440), GLONASS, Gonets, Express and Yamal, Luch, Meridian, weather and
+science satellites, Earth-observation satellites and Starlink.
+
+Positions are computed right in the browser with the SGP4 model — no computing server, no analytics,
+no CDN. An orbit snapshot is embedded in the page, so the site works right after `git clone`.
+
+> [!NOTE]
+> Unofficial project, not affiliated with Bureau 1440. Rassvet details are collected from public
+> sources; every fact links to its source in the satellite card.
+
+<p align="center">
+  <img src="docs/screenshots/desktop-en.png" alt="2D map with the Overhead panel" width="100%">
+</p>
+
+<table>
+  <tr>
+    <td width="38%"><img src="docs/screenshots/mobile.png" alt="Mobile layout"></td>
+    <td width="62%"><img src="docs/screenshots/desktop-ru.png" alt="3D globe with a satellite card"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Phone: panels fold into bottom sheets</sub></td>
+    <td align="center"><sub>3D globe: Rassvet over Eurasia and a satellite card</sub></td>
+  </tr>
+</table>
+
+## 🔢 By the numbers
+
+| | |
+|---|---|
+| 🛰 Systems on the map | **13** in two groups — Russian and worldwide |
+| 📡 Satellites in the snapshot | **≈ 11,450**, of which Starlink ≈ 11,070 and Rassvet 38 |
+| 🌍 Map | 242 countries, 4,583 regions, 7,342 cities in Russian and English |
+| 🖼 Earth textures | 3 levels of detail, up to 4096 × 2048, ≈ 8 MB |
+| ⚙️ Build step | none: one HTML file, three libraries and fonts in `vendor/` |
+| 🔒 External requests by the page | **0** — everything is served by your own site |
+
+## ✨ Features
+
+**Globe and map**
+- 3D globe with NASA Blue Marble imagery, GEBCO relief, atmosphere, clouds and the night side for the
+  current moment; city lights switch on as the Sun sets below the horizon.
+- 2D equirectangular map, one-click switch; the current view is kept in a shareable link.
+
+**Satellites**
+- Layers: ±½-orbit ground tracks, non-overlapping labels, motion trails, coverage zones with an
+  adjustable minimum elevation above the horizon.
+- Colouring by system, launch or satellite; Starlink is shaded by generation.
+- Satellite card: status (marked "unconfirmed" when sources disagree), generation, launch, NORAD and
+  COSPAR IDs, altitude, speed, sub-satellite point, sunlit or in shadow, perigee and apogee.
+
+**Time and observing**
+- ±24-hour time scale with speed-up: scroll ahead to see where a satellite will be tonight.
+- "Overhead": what is above your horizon right now and the next Rassvet passes, flagged when visible
+  to the naked eye. Geolocation stays in the browser and is never sent anywhere.
+
+**Convenience**
+- Sortable table of all satellites, search by name, NORAD or COSPAR.
+- Load your own TLE manually with the "Update TLE" button.
+- Russian and English UI, an "i" hint next to every setting, a short tour on first visit.
+- Installs on a phone as an app (PWA) and opens offline with the latest data.
+
+## 🚀 Run in a minute
+
+Any static web server will do. The simplest is Python 3:
+
+```bash
+git clone https://github.com/AndrewKing228/rassvet-globe.git
+cd rassvet-globe
+python -m http.server 8000
+```
+
+Open <http://localhost:8000/>. Switch the language with the RU/EN button or a URL parameter:
+<http://localhost:8000/?lang=ru>.
+
+> [!TIP]
+> Serve the page over HTTP instead of double-clicking the file: at a `file://` address the browser
+> refuses to load textures and libraries.
+
+**Browser:** WebGL 2 is required — Chrome, Edge, Firefox and Safari 15+ on desktop and mobile all work.
+On a weak GPU the page switches to a lighter globe mode by itself.
+
+## 🔭 How it works
+
+```mermaid
+flowchart LR
+    CT["🛰️ CelesTrak<br/>orbital elements"] -->|once a day| UP["⚙️ updater/update.py<br/>validate and build"]
+    UP -->|embeds data| IDX["📄 index.html"]
+    IDX --> BR["🌐 browser"]
+    VG["📦 vendor/ and globe/<br/>libraries, fonts, textures"] --> BR
+    BR -->|"satellite.js, SGP4"| POS["📍 positions<br/>every frame"]
+    POS -->|"deck.gl, WebGL 2"| VIEW["🌍 globe and map"]
+```
+
+1. **Data.** Once a day `updater/update.py` fetches fresh orbital elements from CelesTrak, drops
+   broken and stale ones and writes them into data blocks inside `index.html`.
+2. **Page.** `index.html` is a single file: markup, styles, tracker code and the data itself in
+   `<script type="application/json">` blocks. The server computes nothing; it only serves files.
+3. **Propagation.** In the browser, [satellite.js](https://github.com/shashwatak/satellite-js) turns
+   orbital elements into coordinates for any moment with SGP4 — for every frame and every point on the
+   time scale.
+4. **Rendering.** [deck.gl](https://deck.gl/) draws the globe and the map with WebGL 2; Earth lighting,
+   the night side, clouds and the atmosphere are the tracker's own shaders.
+
+## 🖥 Your own server from scratch
+
+The site is static, so it can live anywhere — even on GitHub Pages. To have the orbits refresh daily by
+themselves you need a small server: a web server serves the files and a timer runs the update script
+once a day.
+
+### Requirements
+
+| | Minimum | Notes |
+|---|---|---|
+| 💻 Server | 1 vCPU, **512 MB** RAM | serving static files is nearly free; the daily update takes up to ≈ 150 MB for 10–60 seconds |
+| 💾 Disk | ≈ **200 MB** | clone ≈ 20 MB, Python venv ≈ 30 MB, built page and clouds ≈ 15 MB, logs |
+| 🐧 OS | Ubuntu 24.04 LTS or Debian 13 | any Linux with systemd and Python ≥ 3.10 works |
+| 🌐 Network | ports **80** and **443** open | outbound HTTPS to `celestrak.org` (and to news feeds and the cloud map if enabled) |
+| 🏷 Domain | A/AAAA record pointing to the server | `example.org` in the examples below |
+| 🧰 Software | `git`, `python3-venv`, [Caddy](https://caddyserver.com/) 2.6+ | Caddy obtains and renews the HTTPS certificate by itself |
+
+All commands below run as root (or with `sudo`). Directory layout:
+
+```
+/var/lib/rassvet-globe/
+├── repo/    repository clone: page template, libraries, textures, scripts
+├── www/     built page and daily data — written by the update script
+├── state/   source cache, updater.log
+└── venv/    Python virtual environment for the script
+```
+
+### 1. Packages
+
+```bash
+apt update && apt install -y git python3-venv caddy
+```
+
+<details>
+<summary>Your distribution has no <code>caddy</code> package</summary>
+
+Install Caddy following the [official instructions](https://caddyserver.com/docs/install) — there is an
+apt repository for Debian and Ubuntu.
+</details>
+
+### 2. User and code
+
+The script runs as a dedicated user that cannot log in:
+
+```bash
+useradd --system --no-create-home --home-dir /var/lib/rassvet-globe --shell /usr/sbin/nologin globe
+install -d -m 0755 -o globe -g globe /var/lib/rassvet-globe
+cd /var/lib/rassvet-globe
+sudo -u globe git clone https://github.com/AndrewKing228/rassvet-globe.git repo
+sudo -u globe python3 -m venv venv
+sudo -u globe venv/bin/pip install --require-hashes -r repo/updater/requirements.lock
+```
+
+`requirements.lock` pins exact package versions and hashes: pip refuses to install anything else.
+
+### 3. First page build
+
+```bash
+sudo -u globe venv/bin/python repo/updater/update.py --once \
+    --template repo/index.html --static repo --out www --data state
+```
+
+`www/` now holds `index.html`, its compressed copy, a `data-starlink.<hash>.json` file and, if enabled,
+clouds in `clouds/`. The script never modifies the template `repo/index.html`, so `git pull` later runs
+without conflicts.
+
+### 4. Caddy
+
+Replace `/etc/caddy/Caddyfile` with the following, using your domain:
+
+```caddyfile
+example.org {
+	encode zstd gzip
+
+	# never expose the clone's internals
+	@private path /.* /updater/* /scripts/* /docs/*
+	handle @private {
+		respond 404
+	}
+
+	# the page and daily data come from the directory the update script writes
+	@daily path / /index.html /data-starlink.* /clouds/*
+	handle @daily {
+		root * /var/lib/rassvet-globe/www
+		file_server {
+			precompressed gzip
+		}
+	}
+
+	# libraries, textures and icons come straight from the clone
+	handle {
+		root * /var/lib/rassvet-globe/repo
+		file_server
+	}
+
+	# files with a version or hash in the name never change — let browsers keep them
+	@immutable path /vendor/* /globe/*.webp /globe/*.jpg /data-starlink.*
+	header @immutable Cache-Control "public, max-age=31536000, immutable"
+	@revalidate path / /index.html /sw.js /manifest.webmanifest /globe/globe.json /clouds/*
+	header @revalidate Cache-Control "no-cache"
+}
+```
+
+```bash
+systemctl reload caddy
+```
+
+A few seconds later the site opens at `https://example.org/` — Caddy gets the certificate itself.
+
+### 5. Daily update
+
+A service that runs the script once — `/etc/systemd/system/rassvet-globe-update.service`:
+
+```ini
+[Unit]
+Description=Rassvet globe: orbit update
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=globe
+WorkingDirectory=/var/lib/rassvet-globe
+ExecStart=/var/lib/rassvet-globe/venv/bin/python repo/updater/update.py --once --template repo/index.html --static repo --out www --data state
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/rassvet-globe/www /var/lib/rassvet-globe/state
+```
+
+And its timer — `/etc/systemd/system/rassvet-globe-update.timer`:
+
+```ini
+[Unit]
+Description=Rassvet globe: daily orbit update
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 UTC
+RandomizedDelaySec=20m
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+```bash
+systemctl daemon-reload
+systemctl enable --now rassvet-globe-update.timer
+```
+
+> [!IMPORTANT]
+> CelesTrak serves the same dataset at most once every two hours and answers frequent requests with
+> HTTP 403. Once a day leaves plenty of margin. If a download fails, the script falls back to the last
+> good copy in `state/` and keeps the site on its previous version.
+
+### 6. Check
+
+```bash
+systemctl list-timers rassvet-globe-update.timer
+journalctl -u rassvet-globe-update.service -n 30
+```
+
+The log should end with a "published" line (`Опубликовано: блоков обновлено …` — the script logs in
+Russian). The snapshot date is also shown in the page footer.
+
+### Updating the code
+
+```bash
+cd /var/lib/rassvet-globe
+sudo -u globe git -C repo pull --ff-only
+sudo -u globe venv/bin/pip install --require-hashes -r repo/updater/requirements.lock
+systemctl start rassvet-globe-update.service
+```
+
+### Update script settings
+
+Set them as environment variables — in the service, with `Environment=` lines:
+
+| Variable | Default | What it does |
+|---|---|---|
+| `MAX_EPOCH_AGE_DAYS` | `30` | orbital elements older than this many days are rejected |
+| `SPACETRACK_USER`, `SPACETRACK_PASS` | — | a [Space-Track](https://www.space-track.org/) account as a second source for Rassvet; skipped without it |
+| `UPDATE_HOUR_UTC` | `3` | update hour in `--loop` mode (not needed with the systemd timer) |
+
+Sources are listed in `updater/sources.yml`. The `news` section (a space-news feed from RSS) and the
+`clouds` section (a daily cloud map) are optional: remove them and the script contacts CelesTrak only.
+
+### No server: GitHub Pages
+
+Fork the repository and enable **Pages → Deploy from a branch → main / (root)** in its settings — a
+minute later the site opens at an address like `https://<user>.github.io/rassvet-globe/`. Two limits:
+
+- the orbits stay at the snapshot date in the repository — refresh them locally with the command from
+  the next section and commit `index.html` together with the `data-starlink.*.json` file;
+- the site lives in a subfolder while the service worker and manifest expect the site root, so offline
+  mode and installing as an app are limited. A custom domain in the Pages settings removes this.
+
+## 🔄 Refresh orbits locally
+
+```bash
+python -m venv .venv
+.venv/bin/pip install --require-hashes -r updater/requirements.lock      # Windows: .venv\Scripts\pip
+.venv/bin/python updater/update.py --once --template index.html --static . --out . --data .cache
+```
+
+This updates the page in place: `index.html` is rewritten, the Starlink block moves into a
+`data-starlink.<hash>.json` file next to it, cache and logs go to `.cache/`. To preview first, use
+`--dry-run` instead of `--once`: the built page lands in `.cache/state/dry-run/` and your files stay
+untouched.
+
+> [!NOTE]
+> For repeated in-place updates start from a clean file: `git checkout -- index.html`, then the command
+> above. Otherwise the script uses the already updated page as its template.
+
+## 🎨 Rebuild globe textures
+
+Ready-made textures are already in `globe/`; rebuild them only when changing sources or encoding. You
+need ≈ 5 GB of disk (sources download with resume) and the `cwebp` tool (the `webp` package):
+
+```bash
+.venv/bin/pip install --require-hashes -r scripts/globe/requirements.lock
+.venv/bin/python scripts/globe/build_globe.py --src .cache/globe-src --out globe
+```
+
+## 📂 What's in the repository
+
+```
+rassvet-globe/
+├── index.html                ← the whole page: code, styles and embedded data
+├── sw.js                     ← offline mode
+├── manifest.webmanifest      ← install as an app
+├── earth-day.jpg             ← daytime Earth for the 2D map
+├── earth-night.jpg           ← city lights for the 2D map
+├── favicon.ico, apple-touch-icon.png, icon-*.png
+├── globe/                    ← 3D globe textures and their manifest
+├── vendor/                   ← deck.gl, satellite.js, topojson-client, fonts
+├── updater/                  ← daily orbit update script
+├── scripts/globe/            ← builds globe textures from the sources
+└── docs/                     ← banner and screenshots for this README
+```
+
+### 📄 The page
+
+**`index.html`** (≈ 4.8 MB) is the application itself. Code takes ≈ 250 KB and ≈ 3,300 lines: the UI,
+position propagation, deck.gl layers, Earth and atmosphere shaders, translations into two languages.
+The remaining ≈ 4.5 MB is data in 18 `<script type="application/json">` blocks:
+
+| Block | Contents |
+|---|---|
+| `registry` | registry of 13 systems: names, colours, group, and the rules that assign a satellite from the general catalogue to a system |
+| `data-rassvet` | everything about Rassvet: 38 satellites with orbital elements, 3 generations, 4 launches, plans up to 2030 and 34 sources — every fact marked "confirmed" or "unconfirmed" |
+| `data-glonass` … `data-ru-other` | 11 Russian systems, one row per satellite: NORAD, name, COSPAR, launch date, GCAT program and category, subtype, SATCAT perigee, apogee and inclination, orbital elements and their epoch |
+| `data-starlink` | ≈ 11,070 Starlink satellites (≈ 2.7 MB) — loaded after the first frame so the page opens fast |
+| `geo-data` | Natural Earth (≈ 1.7 MB): 242 countries, region borders, 4,583 regions and 7,342 cities labelled in Russian and English |
+| `data-meta` | snapshot date and the list of sources it was built from |
+| `data-history`, `data-news` | orbit altitude history and the news feed — filled by the update script |
+
+**`sw.js`** is the service worker. It fetches the page from the network first and falls back to the
+saved copy offline. Libraries, textures and data files with a hash in the name are cached forever (they
+never change); close-up tiles are capped at 600. When the caching strategy changes, the version number
+in the file is bumped and old caches are removed automatically.
+
+**`manifest.webmanifest`** and the icons describe the app for the home screen: name, colours, 192 and
+512 px icons, including a "maskable" one for Android.
+
+**`earth-day.jpg`, `earth-night.jpg`** are flat NASA textures for the 2D map: daytime Earth as the base
+and city lights that show through on the night side.
+
+### 🌍 Globe textures — `globe/`
+
+Every texture comes in three sizes: 1024, 2048 and 4096 pixels wide. The page starts small and loads
+the large one when the GPU allows. File names contain a content hash, so browsers can cache them forever.
+
+| Files | What they are |
+|---|---|
+| `color-*.webp` | Earth colour — NASA Blue Marble: Next Generation, July 2004 |
+| `relief-*.webp` | lossless: R and G hold terrain slopes from GEBCO_2026 (the shader turns them into mountain and shelf shading), B holds the water fraction from Natural Earth (sun glint on the ocean) |
+| `night-*.webp` | night-light brightness — NASA Black Marble 2016 |
+| `clouds-*.jpg` | NASA clouds — a fallback when there is no daily cloud map |
+| `globe.json` | manifest: files per level, cloud thresholds, colour calibration, source URLs and SHA-256, attribution |
+
+### 📦 Libraries — `vendor/`
+
+Unmodified copies from npm with their license texts alongside. The version is in the folder name, so
+upgrading a library means a new folder rather than editing the old one.
+
+| Folder | Size | Purpose |
+|---|---|---|
+| `deck.gl@9.4.0/` | 2.0 MB | WebGL 2 rendering: tilted-camera globe, map, point, line, label and terrain layers |
+| `satellite.js@6.0.2/` | 24 KB | SGP4/SDP4: satellite coordinates for any moment from its orbital elements |
+| `topojson-client@3.1.0/` | 8 KB | unpacks country borders from compact TopoJSON |
+| `fonts-5.3.0/` | 284 KB | Golos Text for the UI and JetBrains Mono for numbers; 30 woff2 files — only the weights and scripts in use |
+
+### ⚙️ Scripts
+
+**`updater/update.py`** (≈ 900 lines) is the daily data update:
+- downloads the datasets listed in `sources.yml`, retrying after 5, 15 and 45 seconds on failure;
+- validates every record: TLE checksums, SGP4 parsing, epoch age; if more than 5 % of records are
+  broken, the whole dataset is discarded;
+- picks the freshest epoch for each satellite across all sources;
+- updates data blocks only, never the page markup or code, and checks the result against the template;
+- publishes atomically: visitors see either the old page or the new one in full;
+- modes `--once`, `--dry-run` and `--loop` (keeps running and updates once a day).
+
+**`updater/sources.yml`** says where data comes from: CelesTrak (`NAME=RASSVET` as TLE and
+`GROUP=active` as OMM JSON), optionally Space-Track, four RSS news feeds and the cloud map. Comments in
+the file explain every field.
+
+**`scripts/globe/build_globe.py`** builds `globe/` from NASA, GEBCO and Natural Earth sources:
+resumable downloads with size checks, downscaling, terrain slopes, the water mask, WebP encoding and the
+manifest.
+
+**`requirements.txt` and `requirements.lock`** next to each script: the first lists what is needed,
+the second pins exact versions with hashes for `pip install --require-hashes`.
+
+### 📑 Documents
+
+| File | About |
+|---|---|
+| `README.md`, `README.en.md` | this description in Russian and English |
+| `THIRD_PARTY_NOTICES.md` | versions, licenses and attribution of everything third-party: libraries, fonts, imagery, data |
+| `LICENSE` | MIT license for the project's code and documentation |
+
+## 📚 Data sources
+
+| What | From | License |
+|---|---|---|
+| Orbital elements, SATCAT catalogue | [CelesTrak](https://celestrak.org/) | open data |
+| Satellite classification | [GCAT](https://planet4589.org/space/gcat/), Jonathan McDowell | CC BY 4.0 |
+| Rassvet details | public sources, linked in each satellite card | — |
+| Borders, regions, cities | [Natural Earth](https://www.naturalearthdata.com/) | public domain |
+| Earth colour, lights, clouds | NASA Blue Marble, Black Marble | public domain |
+| Relief | [GEBCO_2026](https://doi.org/10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa) | public domain, attribution requested |
+
+Details and full license texts are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## ❓ FAQ
+
+<details>
+<summary><b>How accurate are the positions?</b></summary>
+
+SGP4 with fresh elements is off by about a kilometre. The error grows every day after the element
+epoch, and after a manoeuvre old elements are simply wrong. That is why the data is refreshed daily and
+the page flags satellites with stale elements in a banner.
+</details>
+
+<details>
+<summary><b>Why is the picture blurry when I zoom in very close?</b></summary>
+
+For close-up relief and imagery the page requests tiles at `tiles/dem/…`, `tiles/img/…` and
+`tiles/night/…` on the same site. They are not in the repository, so up close the globe keeps the
+4096 × 2048 textures. The tile-source credits in the page footer apply to that mode only.
+</details>
+
+<details>
+<summary><b>Does it work offline?</b></summary>
+
+Yes, after the first visit over HTTPS or on `localhost`: the service worker keeps the page, libraries
+and textures. Positions are still computed from the last saved data.
+</details>
+
+<details>
+<summary><b>What does the site send about visitors?</b></summary>
+
+Nothing. No analytics, no ads, no third-party fonts or libraries. Geolocation for "Overhead" is
+requested only when you press the button, stays in the browser and can be cleared with "change".
+</details>
+
+<details>
+<summary><b>Can I host it in a subfolder such as <code>/globe/</code>?</b></summary>
+
+The page and libraries use relative paths, so it opens. But the service worker and the manifest expect
+the site root, so offline mode and installing as an app will be limited there.
+</details>
+
+## 📄 License
+
+Code and documentation — [MIT](LICENSE). Third-party libraries, fonts, imagery and data keep their own
+licenses, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
