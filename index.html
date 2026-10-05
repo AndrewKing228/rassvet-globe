@@ -271,6 +271,12 @@ dialog .in{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
 dialog h2{margin:0;font-size:16px}
 
 dialog p{margin:0;color:var(--muted);font-size:12.5px}
+#howDlg .in{max-height:min(78vh,720px);overflow:auto}
+#howDlg h3{margin:10px 0 2px;font-size:13.5px;color:var(--text)}
+#howDlg p{font-size:13px;line-height:1.5}
+#howDlg .howhd{display:flex;align-items:center;gap:10px}
+#howDlg .howhd h2{flex:1}
+.howlink{border:0;background:none;color:var(--accent);cursor:pointer;padding:0 0 0 6px;font-size:11.5px;text-decoration:underline}
 
 dialog textarea{width:100%;min-height:180px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg-raise);padding:10px;resize:vertical;white-space:pre;overflow:auto}
 
@@ -893,6 +899,16 @@ ru:{
   'st.operational-orbit':'На рабочей орбите', 'st.raising':'Подъём орбиты', 'st.decaying':'Снижается', 'st.in-orbit':'На орбите', 'st.failed':'Отказ', 'st.decayed':'Сошёл с орбиты', 'st.unknown':'Нет данных', 'st.active':'действующий',
   'tier.1':'официальный', 'tier.2':'каталог', 'tier.3':'СМИ / энциклопедия', 'tier.4':'энтузиасты / агрегатор',
   'ops':{'+':'действующий','-':'не действующий','P':'частично действующий','B':'резервный','S':'запасной','X':'эпизодически действующий','D':'сошёл с орбиты','?':'неизвестно'},
+  'how.open':'Как это работает', 'how.what':'что это значит?', 'how.title':'Как это работает',
+  'how.s':[
+    ['Элементы орбиты', 'Орбита спутника описывается набором чисел — элементами: наклонением, эксцентриситетом, положением плоскости орбиты, моментом прохождения перигея и средним движением (сколько витков в сутки). Их публикуют каталоги наблюдений (данные USSPACECOM распространяют Space-Track и CelesTrak) в форматах TLE и OMM. Эпоха — момент времени, к которому относятся элементы.'],
+    ['Как считается положение', 'По элементам браузер считает, где спутник сейчас, моделью SGP4: она учитывает сплюснутость Земли и торможение в верхней атмосфере. По свежим элементам ошибка — порядка километра, но она растёт с каждым днём после эпохи, а после манёвра старые элементы просто неверны. Поэтому данные обновляются ежедневно, а в карточке видно, свежие ли они.'],
+    ['Наклонение', 'Угол между плоскостью орбиты и экватором. Севернее и южнее этой широты трасса спутника не уходит: у МКС наклонение 51,6°, у «Рассвета» около 82°, поэтому он пролетает почти над полюсами и покрывает Арктику; у GPS около 55°, у геостационарных спутников — около 0°.'],
+    ['Типы орбит', 'Низкая — до 2000 км, виток за полтора-два часа: МКС, «Рассвет», Starlink. Средняя — около 20 тысяч км, виток примерно за 12 часов: навигационные ГЛОНАСС, GPS, Galileo. Геосинхронная — около 35 800 км, виток за сутки: геостационарный спутник висит над одной точкой экватора. Высокоэллиптическая — сильно вытянутая орбита, на которой спутник подолгу находится над северными широтами, как «Меридиан».'],
+    ['Наземная трасса', 'Это проекция пути спутника на поверхность Земли. Пока спутник делает виток, Земля поворачивается под ним, поэтому каждый следующий проход низкого спутника смещается к западу — примерно на 24° долготы при витке около 95 минут.'],
+    ['Зона покрытия', 'Круг на Земле, из которого спутник виден выше заданной высоты над горизонтом. Чем выше орбита, тем шире круг; чем выше минимальная высота над горизонтом (её можно менять в слоях), тем он уже: ниже 25–30° сигнал часто закрывают дома, деревья и рельеф.'],
+    ['Когда спутник видно глазом', 'Спутник светится отражённым солнечным светом. Увидеть его можно, когда он ещё освещён Солнцем, а у наблюдателя уже сумерки или ночь — Солнце опустилось ниже 6° под горизонт. Такие пролёты в «Надо мной» и в карточке помечены «можно увидеть глазом».']
+  ],
   'm3d.open':'3D-модель аппарата', 'm3d.close':'Закрыть', 'm3d.schematic':'схема',
   'm3d.note':b=>`По типу платформы: ${b}. Размеры и детали условные — это не чертёж аппарата.`, 'm3d.hint':'Перетаскивайте, чтобы повернуть; колесо или щипок — масштаб.',
   'bus.leo-flat':'плоский спутник широкополосной низкоорбитальной группировки', 'bus.gnss':'навигационный спутник', 'bus.geo-comm':'геостационарный спутник связи',
@@ -1006,6 +1022,16 @@ en:{
   'st.operational-orbit':'In operational orbit', 'st.raising':'Raising orbit', 'st.decaying':'Decaying', 'st.in-orbit':'In orbit', 'st.failed':'Failed', 'st.decayed':'Decayed', 'st.unknown':'No data', 'st.active':'active',
   'tier.1':'official', 'tier.2':'catalogue', 'tier.3':'media / encyclopedia', 'tier.4':'enthusiasts / aggregator',
   'ops':{'+':'operational','-':'non-operational','P':'partially operational','B':'backup','S':'spare','X':'extended mission','D':'decayed','?':'unknown'},
+  'how.open':'How it works', 'how.what':'what does it mean?', 'how.title':'How it works',
+  'how.s':[
+    ['Orbital elements', 'A satellite orbit is described by a set of numbers — elements: inclination, eccentricity, the orientation of the orbital plane, the time of perigee and the mean motion (revolutions per day). Tracking catalogues publish them (USSPACECOM data are distributed by Space-Track and CelesTrak) as TLE and OMM. The epoch is the moment the elements refer to.'],
+    ['How the position is computed', 'From the elements the browser computes where the satellite is with the SGP4 model, which accounts for the Earth\'s oblateness and upper-atmosphere drag. With fresh elements the error is about a kilometre, but it grows every day after the epoch, and after a manoeuvre old elements are simply wrong. That is why the data are refreshed daily and the card shows whether they are fresh.'],
+    ['Inclination', 'The angle between the orbital plane and the equator. The ground track never goes further north or south than this latitude: the ISS is inclined at 51.6°, Rassvet at about 82°, so it passes almost over the poles and covers the Arctic; GPS at about 55°, geostationary satellites at about 0°.'],
+    ['Orbit types', 'Low — up to 2,000 km, one revolution in one and a half to two hours: the ISS, Rassvet, Starlink. Medium — about 20,000 km, one revolution in roughly 12 hours: the GLONASS, GPS and Galileo navigation systems. Geosynchronous — about 35,800 km, one revolution per day: a geostationary satellite stays above one point of the equator. Highly elliptical — a strongly elongated orbit on which the satellite spends a long time over northern latitudes, like Meridian.'],
+    ['Ground track', 'The projection of the satellite path onto the Earth\'s surface. While the satellite completes a revolution, the Earth turns beneath it, so each next pass of a low satellite shifts west — by about 24° of longitude for a revolution of about 95 minutes.'],
+    ['Coverage zone', 'A circle on the Earth from which the satellite is seen above a given elevation. The higher the orbit, the wider the circle; the higher the minimum elevation (adjustable in the layers), the narrower it is: below 25–30° buildings, trees and terrain often block the signal.'],
+    ['When a satellite is visible to the eye', 'A satellite shines with reflected sunlight. You can see it when it is still sunlit while the observer is already in twilight or darkness — the Sun is more than 6° below the horizon. Such passes are marked "naked-eye visible" in Overhead and in the card.']
+  ],
   'm3d.open':'3D model of the satellite', 'm3d.close':'Close', 'm3d.schematic':'schematic',
   'm3d.note':b=>`By platform type: ${b}. Sizes and details are approximate — this is not a drawing of the satellite.`, 'm3d.hint':'Drag to rotate; wheel or pinch to zoom.',
   'bus.leo-flat':'flat satellite of a low-orbit broadband constellation', 'bus.gnss':'navigation satellite', 'bus.geo-comm':'geostationary communications satellite',
@@ -1995,6 +2021,17 @@ function openModel(s){
 }
 const MESH_CACHE={};
 function closeModel(){ if(!M3D) return; cancelAnimationFrame(M3D.raf); try{ M3D.d.finalize(); }catch(e){} M3D.wrap.remove(); M3D=null; }
+/* ================= «Как это работает»: орбиты простыми словами ================= */
+function openHow(){
+  let d=$('#howDlg');
+  if(!d){ d=document.createElement('dialog'); d.id='howDlg'; document.body.appendChild(d);
+    d.addEventListener('click',e=>{ if(e.target===d) d.close(); }); }
+  d.setAttribute('aria-labelledby','howTitle');
+  d.innerHTML=`<div class="in"><div class="howhd"><h2 id="howTitle">${esc(t('how.title'))}</h2><button type="button" class="close" id="howClose" aria-label="${esc(t('card.close'))}">×</button></div>
+    ${t('how.s').map(([h,p])=>`<h3>${esc(h)}</h3><p>${esc(p)}</p>`).join('')}</div>`;
+  $('#howClose').onclick=()=>d.close();
+  if(!d.open) d.showModal();
+}
 /* «Откуда эти данные»: элементы орбиты, каталог, проверка описания системы, классификация */
 function provenanceHTML(s, satcatId, gcatUnconf){
   const cfg=s.sys.cfg, sc=satcatId && s.sys.srcById[satcatId], rows=[];
@@ -2026,7 +2063,7 @@ function renderCatalogCard(s){
     <dt>NORAD</dt><dd><span class="num">${s.norad}</span></dd>
     <dt>COSPAR</dt><dd>${s.cospar?`<span class="num">${esc(s.cospar)}</span>`:nd}</dd>
   </dl></section>`;
-  h+=`<section><h4>${esc(t('h.orbitNow'))}</h4><dl class="kv" id="liveKv"></dl></section>`;
+  h+=`<section><h4>${esc(t('h.orbitNow'))}<button type="button" class="howlink" data-how="1">${esc(t('how.what'))}</button></h4><dl class="kv" id="liveKv"></dl></section>`;
   if(sc && sc[0]!=null) h+=`<section><h4>${esc(t('h.satcat'))}${satcatId?ref([satcatId]):''}</h4><dl class="kv">
       <dt>${esc(t('k.perApo'))}</dt><dd>${fmtNum(sc[0],0)} / ${fmtNum(sc[1],0)} ${esc(t('u.km'))}</dd>
       <dt>${esc(t('k.inc'))}</dt><dd>${fmtNum(sc[2],2)}°</dd>
@@ -2057,7 +2094,7 @@ function renderCard(){
     <dt>NORAD</dt><dd><span class="num">${s.norad}</span>${m&&m.alpha5?` <small style="color:var(--muted)">Alpha-5 <span class="num">${esc(m.alpha5)}</span></small>`:''}${idn?ref(idn.sources)+(idn.status!=='confirmed'?TAG[idn.status]||'':''):''}</dd>
     <dt>COSPAR</dt><dd>${s.cospar?`<span class="num${idn&&idn.cosparStatus==='derived'?' f-derived':''}">${esc(s.cospar)}</span>`:nd}${idn&&idn.cosparStatus==='derived'?TAG.derived:''}${idn&&idn.note?`<span class="note">${esc(idn.note)}</span>`:''}</dd>
   </dl></section>`;
-  h+=`<section><h4>${esc(t('h.orbitNow'))}</h4><dl class="kv" id="liveKv"></dl></section>`;
+  h+=`<section><h4>${esc(t('h.orbitNow'))}<button type="button" class="howlink" data-how="1">${esc(t('how.what'))}</button></h4><dl class="kv" id="liveKv"></dl></section>`;
   const ct=m && m.catalog;
   if(ct){
     h+=`<section><h4>${esc(t('h.satcatOn', new Date(ct.asOf).toLocaleDateString(LOC())))}${ref([ct.source])}</h4><dl class="kv">
@@ -2107,6 +2144,7 @@ function finishCard(card){
   card.classList.toggle('peek', cardPeek && mqMobile.matches);
   $('#cardClose').onclick=()=>select(-1);
   $('#cardShare').onclick=shareSat;
+  card.querySelectorAll('[data-how]').forEach(b=>b.onclick=()=>openHow());
   $('#card3d').onclick=()=>{ if(S.selected>=0) openModel(sats[S.selected]); };
   $('#cardHandle').onclick=()=>setCardPeek(!cardPeek);
   renderCardLive();
@@ -2446,7 +2484,8 @@ function renderFoot(){
   const gen = META.generatedAt || (systems[0]&&systems[0].meta&&systems[0].meta.dataset&&systems[0].meta.dataset.generatedAt);
   const PUB_EN={'Джонатан Макдауэлл':'Jonathan McDowell'};
   const pubs=[...new Set((META.sources||[]).map(s=>s.publisher.replace(/ \(.*\)$/,'')).map(p=>LANG==='en'?p.replace(/Джонатан Макдауэлл/g,PUB_EN['Джонатан Макдауэлл']):p))];
-  $('#foot').innerHTML=`<span>${esc(t('foot.unofficial'))}</span><span>${esc(t('foot.elements'))}${esc(pubs.length?pubs.join(', '):'CelesTrak')}</span><span>${esc(t('foot.snapshot'))}${gen?esc(new Date(gen).toLocaleString(LOC(),{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})):esc(t('nodata'))}</span><span>${footMap()}</span>`;
+  $('#foot').innerHTML=`<span>${esc(t('foot.unofficial'))}</span><span>${esc(t('foot.elements'))}${esc(pubs.length?pubs.join(', '):'CelesTrak')}</span><span>${esc(t('foot.snapshot'))}${gen?esc(new Date(gen).toLocaleString(LOC(),{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})):esc(t('nodata'))}</span><span>${footMap()}</span><span><button type="button" class="link" id="howFoot">${esc(t('how.open'))}</button></span>`;
+  $('#howFoot').onclick=()=>openHow();
 }
 
 /* ================= Загрузка TLE пользователем ================= */

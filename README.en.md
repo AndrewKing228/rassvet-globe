@@ -75,6 +75,8 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 
 **Time and observing**
 - ±24-hour time scale with speed-up: scroll ahead to see where a satellite will be tonight.
+- "How it works": orbital elements, the SGP4 model, inclination, orbit types, the ground track, the coverage
+  zone and when a satellite is visible to the eye — in plain words, in Russian and English.
 - A 3D model of the selected satellite behind the cube button: until a satellite has an official model under
   an open licence, a schematic by platform type is shown and labelled "schematic" — sizes are approximate,
   it is not a drawing.
