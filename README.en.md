@@ -36,17 +36,17 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 > sources; every fact links to its source in the satellite card.
 
 <p align="center">
-  <img src="docs/screenshots/desktop-en.png" alt="2D map with the Overhead panel" width="100%">
+  <img src="docs/screenshots/desktop-en.png" alt="2D map with the systems panel" width="100%">
 </p>
 
 <table>
   <tr>
     <td width="38%"><img src="docs/screenshots/mobile.png" alt="Mobile layout"></td>
-    <td width="62%"><img src="docs/screenshots/desktop-ru.png" alt="3D globe with a satellite card"></td>
+    <td width="62%"><img src="docs/screenshots/parts-ru.png" alt="The ISS taken apart, with the Zvezda module described"></td>
   </tr>
   <tr>
-    <td align="center"><sub>Phone: panels fold into bottom sheets</sub></td>
-    <td align="center"><sub>3D globe: Rassvet over Eurasia and a satellite card</sub></td>
+    <td align="center"><sub>Phone: systems by country and type, the ISS part by part</sub></td>
+    <td align="center"><sub>NASA 3D model: the ISS in 24 parts, each with a description and sources</sub></td>
   </tr>
 </table>
 
@@ -54,7 +54,7 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 
 | | |
 |---|---|
-| 🛰 Systems on the map | **22** in three groups — Russian, world navigation and worldwide |
+| 🛰 Systems on the map | **22** from 7 countries and regions, 9 types: internet, navigation, communications, Earth observation and more |
 | 📡 Satellites in the snapshot | **≈ 12,360**, of which Starlink ≈ 11,070, OneWeb 651 and Rassvet 38 |
 | 🌍 Map | 242 countries, 4,583 regions, 7,342 cities in Russian and English |
 | 🖼 Earth textures | 3 levels of detail, up to 4096 × 2048, ≈ 8 MB |
@@ -72,6 +72,11 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 - Layers: ±½-orbit ground tracks, non-overlapping labels, motion trails, coverage zones with an
   adjustable minimum elevation above the horizon.
 - Colouring by system, launch or satellite; Starlink is shaded by generation.
+- A panel with three tabs — Systems, Filters, View — instead of one long list; on a phone it opens with
+  the Layers button.
+- Browse systems by country (Russia, USA, Europe, China, Japan, India, multinational) and type (internet,
+  navigation, communications, Earth observation, weather, science, stations, military). Systems are
+  grouped by country and each shows whose it is: GPS — USA, Galileo — European Union, BeiDou — China.
 - Filters on top of systems: orbit type (low, medium, geosynchronous, highly elliptical), owner per the
   SATCAT catalogue and launch year; each option shows how many satellites remain.
 - Satellite card: status (marked "unconfirmed" when sources disagree), generation, launch, NORAD and
@@ -81,10 +86,14 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 - ±24-hour time scale with speed-up: scroll ahead to see where a satellite will be tonight.
 - "How it works": orbital elements, the SGP4 model, inclination, orbit types, the ground track, the coverage
   zone and when a satellite is visible to the eye — in plain words, in Russian and English.
-- A 3D model of the selected satellite behind the cube button. The ISS and the Hubble Space Telescope get
-  official NASA models (NASA 3D Resources), labelled "official model", with a link to the source and a note
-  on what was changed for the web. Other satellites get a schematic by platform type labelled "schematic":
-  sizes are approximate, it is not a drawing.
+- A 3D model of the selected satellite behind the cube button: rotate it, take it apart, tap a part for a
+  short description with links to the primary source (NASA, ESA) and to Wikipedia.
+  - The ISS — NASA's official model (IGOAL lab) split into 24 parts: modules, truss, solar arrays,
+    radiators, Canadarm2; each with dates and purpose per NASA.
+  - Hubble — NASA's official model with markers: the front of the tube, the primary mirror, the solar
+    arrays and the instrument section (the NASA file is one piece, so parts are marked, not split).
+  - Other satellites — a schematic by platform type labelled "schematic": sizes are approximate, part
+    descriptions are generic.
 - "Where this data comes from": source and epoch of the orbital elements with a freshness rating, the
   catalogue download date, when the system description was checked against primary sources; military
   satellites are flagged as classified by GCAT and not officially confirmed.
@@ -553,7 +562,7 @@ rassvet-globe/
 ├── earth-night.jpg           ← city lights for the 2D map
 ├── favicon.ico, apple-touch-icon.png, icon-*.png
 ├── globe/                    ← 3D globe textures and their manifest
-├── models/                   ← official NASA 3D models: ISS and Hubble
+├── models/                   ← official NASA 3D models: the ISS in parts and Hubble
 ├── vendor/                   ← deck.gl, satellite.js, topojson-client, fonts
 ├── updater/                  ← daily orbit update script
 ├── scripts/globe/            ← builds globe textures from the sources
@@ -611,13 +620,16 @@ browser. They open from the cube button in the satellite card and are loaded onl
 
 | File | Satellite | Size | Triangles | What was changed |
 |---|---|---|---|---|
-| `iss.glb` | ISS, NORAD 25544 | 795 KB | 47,723 | Draco removed, mesh simplified from 174,440 triangles, animations removed, quantised |
+| `iss.glb` | ISS, NORAD 25544 | 576 KB | 45,510 | NASA IGOAL lab model split into 24 parts (`part:<id>`), small details and textures removed, flat colours, mesh simplified from 2.7 million triangles, quantised |
 | `hubble.glb` | Hubble, NORAD 20580 | 333 KB | 7,672 | textures reduced to 1024 px and re-encoded as WebP, quantised |
 
 The models are compressed without Draco or meshopt: their decoders need WebAssembly, and the page works
-without it. For every model the registry (`registry` → `models`) records the source, the SHA-256 of the
-original, the licence, what was changed, and the centre and radius the camera uses to frame it. If the file
-is missing or fails to load, the schematic is shown instead.
+without it. The ISS has no normals — the page shades it per face, which keeps the file several times smaller.
+For every model the registry (`registry` → `models`) records the source, the SHA-256 of the original, the
+licence, what was changed, and the centre and radius the camera uses to frame it; the ISS also has its 24
+part descriptions (`parts`), Hubble its markers (`markers`), schematics their generic parts
+(`schematicParts`). Every part has sources and a Wikipedia article. If the file is missing or fails to load,
+the schematic is shown instead.
 
 ### 📦 Libraries — `vendor/`
 
@@ -652,23 +664,23 @@ the file explain every field.
 **`scripts/catalog/check_catalog.py`** checks the catalogue inside the page: systems marked `verifiedAt`
 have a primary source (or two independent secondary ones), military systems are flagged as classified by
 GCAT, NORAD IDs are not repeated across systems, and every satellite has valid COSPAR, dates and orbital
-elements. Models in `models/` must stay within 1.5 MB and 50,000 triangles each and 25 MB in total, use only
-glTF extensions that need no WebAssembly, and official ones must carry a licence and a source.
+elements, and every system has a country, region and type. Models in `models/` must stay within 1.5 MB and
+50,000 triangles each and 25 MB in total, use only glTF extensions that need no WebAssembly, official ones
+must carry a licence and a source, the parts in the file must match the registry, and every part needs a
+source and a Wikipedia article.
 Run: `python scripts/catalog/check_catalog.py index.html`.
 
 **`scripts/models/`** prepares 3D models: `package.json` pins
 [gltf-transform](https://gltf-transform.dev/) 4.5.1 (MIT, development only — not shipped to the site),
-`strip-animations.mjs` removes the original animations (the model is shown static). The commands that
-produced the files in `models/`:
+`build-iss-parts.mjs` builds the ISS part by part from the NASA IGOAL model, `strip-animations.mjs` removes
+animations if a source has them (the viewer shows models static). The commands that produced the files in
+`models/`:
 
 ```bash
 cd scripts/models && npm install     # gltf-transform 4.5.1, version pinned in package.json
-# ISS: decode Draco, simplify, quantise, remove animations
-npx gltf-transform copy ISS_B.glb iss.raw.glb
-npx gltf-transform optimize iss.raw.glb iss.opt.glb --compress quantize --texture-compress false \
-    --simplify true --simplify-ratio 0.26 --simplify-error 0.004 --join true --flatten true
-node strip-animations.mjs iss.opt.glb ../../models/iss.glb
-# Hubble: textures to 1024 px WebP, quantise
+# ISS: NASA IGOAL model → 24 parts, no small details or textures, ≤ 48,000 triangles, quantised
+node build-iss-parts.mjs "International Space Station (ISS).glb" ../../models/iss.glb
+# Hubble: textures to 1024 px WebP, quantised
 npx gltf-transform copy Hubble_A.glb hubble.raw.glb
 npx gltf-transform optimize hubble.raw.glb ../../models/hubble.glb --compress quantize \
     --texture-compress webp --texture-size 1024 --simplify false --join true

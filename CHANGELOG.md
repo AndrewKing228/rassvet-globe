@@ -27,6 +27,13 @@ What changes on the page and in the repository. Dates are UTC.
 - **Скрипт обновления бережёт CelesTrak:** выгрузку моложе 2 часов берёт из сохранённой копии, каталог SATCAT
   запрашивает без повторов, а если CelesTrak не отвечает — сразу берёт сохранённые копии остальных групп.
 - **Ссылка на исходный код** на странице и подпись: проект сделан для популяризации космоса.
+- **Панель в три вкладки** — «Системы», «Фильтры», «Вид»; **навигация по стране и типу системы**, системы
+  сгруппированы по странам, страна видна у системы и в карточке аппарата.
+- **3D-модели по частям:** МКС из 24 частей (модель NASA IGOAL), Hubble с метками, схемы с типовыми частями;
+  «Разобрать», выбор части, короткое описание со ссылками на NASA, ESA и Википедию.
+- **iPhone:** глобус больше не «замирает» при вращении сразу после загрузки; щипок не масштабирует страницу.
+- **Быстрее:** атлас шрифта подписей строится один раз и вдвое легче — со всеми системами на телефоне
+  примерно 26 кадров/с вместо 18.
 
 ### English
 
@@ -50,3 +57,10 @@ Added the same day:
 - **The update script spares CelesTrak:** a download younger than 2 hours is taken from the saved copy, the SATCAT
   catalogue is requested without retries, and if CelesTrak does not answer the remaining groups come from saved copies.
 - **A link to the source code** on the page and a note: the project is made to popularise space.
+- **A panel with three tabs** — Systems, Filters, View; **browse by country and system type**, systems grouped
+  by country, the country shown for each system and in the satellite card.
+- **3D models in parts:** the ISS in 24 parts (NASA IGOAL model), Hubble with markers, schematics with generic
+  parts; take apart, pick a part, read a short description with links to NASA, ESA and Wikipedia.
+- **iPhone:** the globe no longer freezes when rotated right after loading; pinching no longer zooms the page.
+- **Faster:** the label font atlas is built once and is half as heavy — about 26 fps with all systems on a phone
+  instead of 18.

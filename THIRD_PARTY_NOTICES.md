@@ -71,19 +71,24 @@ this project.
 
 | Файл / File | Источник / Source | SHA-256 исходника / of the original | SHA-256 файла / of the file | Лицензия / License | Атрибуция / Attribution |
 |---|---|---|---|---|---|
-| `models/iss.glb` | [NASA 3D Resources — International Space Station (ISS) (B)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/International%20Space%20Station%20(ISS)%20(B)), `International_Space_Station__ISS___B_.glb` | `2ba4427413b0dd89a33d2acaf962dea8a96a3b1d8dceda05cc7aad547ffd3d16` | `d4889051bc1d4a70cada9df3ad50b2871fe669a365f233524d6f09034ff3b0ce` | [NASA Images and Media Usage Guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/): работа правительства США, в США не охраняется авторским правом / US Government work, not subject to copyright in the US | NASA |
+| `models/iss.glb` | [NASA 3D Resources — International Space Station (ISS) (D) (IGOAL)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/International%20Space%20Station%20(ISS)%20(D)%20(IGOAL)), `International Space Station (ISS).glb` | `57cecfaf332efb2127d07796c4b65ca570d95a11516c8e046feb5a12efee491d` | `9d497fbee84d357425c2c14367a728c77ba673ae239f93f51243411f859c1a43` | [NASA Images and Media Usage Guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/): работа правительства США, в США не охраняется авторским правом / US Government work, not subject to copyright in the US | NASA |
 | `models/hubble.glb` | [NASA 3D Resources — Hubble Space Telescope (A)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Hubble%20Space%20Telescope%20(A)), `Hubble_Space_Telescope__A_.glb` | `e5ba4de15c7d359ac8fa1ab7e286aff42dec09c0fadae3db99252587f39fa384` | `0b0ef5a20ac6a852edee2223121884da1bceb0a0ecd7b22cabc3c3e29766e491` | то же / same | NASA |
 
-Изменения: у МКС снято сжатие Draco, сетка упрощена со 174 440 до 47 723 треугольников, убраны
-анимации, применено квантование; у Hubble текстуры уменьшены до 1024 px и пересжаты в WebP, применено
-квантование. Инструмент — [gltf-transform](https://gltf-transform.dev/) 4.5.1 (MIT), команды —
-в README, раздел про `scripts/models/`. Исходники скачаны 2026-10-05.
+Изменения: модель МКС разделена на 24 части по узлам исходника, мелкие детали (поручни, разъёмы, наклейки)
+и текстуры убраны, части окрашены однотонно, нормали убраны, сетка упрощена с 2,7 млн до 45 510
+треугольников, применено квантование (скрипт `scripts/models/build-iss-parts.mjs`); у Hubble текстуры
+уменьшены до 1024 px и пересжаты в WebP, применено квантование. Инструмент —
+[gltf-transform](https://gltf-transform.dev/) 4.5.1 (MIT), команды — в README, раздел про
+`scripts/models/`. Исходники скачаны 2026-10-05. Описания частей написаны по страницам NASA и ESA,
+ссылки — в реестре и в окне модели.
 NASA не одобряет и не поддерживает этот проект; модели не означают участия или поддержки NASA.
 
-Changes: the ISS model had its Draco compression removed, its mesh simplified from 174,440 to 47,723
-triangles, its animations removed and was quantised; the Hubble model had its textures reduced to 1024 px
-and re-encoded as WebP and was quantised. Tool: gltf-transform 4.5.1 (MIT); the commands are in the README
-section on `scripts/models/`. Originals downloaded on 2026-10-05.
+Changes: the ISS model was split into 24 parts along the original's nodes, small details (handrails,
+connectors, decals) and textures removed, flat colours applied, normals removed, the mesh simplified
+from 2.7 million to 45,510 triangles and quantised (`scripts/models/build-iss-parts.mjs`); the Hubble
+model had its textures reduced to 1024 px and re-encoded as WebP and was quantised. Tool: gltf-transform
+4.5.1 (MIT); the commands are in the README section on `scripts/models/`. Originals downloaded on
+2026-10-05. Part descriptions are based on NASA and ESA pages, linked in the registry and the viewer.
 NASA does not endorse this project; the models do not imply NASA participation or endorsement.
 
 ## Данные / Data

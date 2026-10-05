@@ -11,7 +11,10 @@
 - военная система (категория «Военные» или classification) помечена classification: "gcat" — назначение по GCAT,
   официально не подтверждено;
 - система с select.satcatGroup: блок в формате каталога с источником SATCAT;
+- система: region, type, country/country_en для навигации по стране и типу;
 - аппарат: NORAD 1..999999 без повторов между системами, COSPAR ГГГГ-NNNA, даты ISO, элементы орбиты TLE или OMM;
+- части моделей (models[].parts — узлы part:<id> в GLB, models[].markers) и типовые части схем (schematicParts):
+  имена и тексты RU/EN, источники https, статья Википедии;
 - 3D-модель (registry.models): аппарат есть в каталоге, у official/open — лицензия, автор и https-источник,
   файл models/<имя>.glb ≤ 1,5 МБ и ≤ 50 000 треугольников, все вместе ≤ 25 МБ, без расширений, требующих WebAssembly.
 """
@@ -27,6 +30,8 @@ ACCURACY = ("official", "open", "schematic")
 MODEL_EXT_OK = {"KHR_mesh_quantization", "EXT_texture_webp", "KHR_texture_transform", "KHR_materials_unlit"}
 MODEL_MAX_BYTES, MODEL_MAX_TRI, MODELS_MAX_TOTAL = 1_500_000, 50_000, 25_000_000
 BUS_TYPES = ["leo-flat", "gnss", "geo-comm", "leo-small", "station"]   # схемы 3D-моделей в странице (BUS_MESH)
+REGIONS = ["ru", "us", "eu", "cn", "jp", "in", "int"]   # навигация по стране в панели (REGIONS в странице)
+STYPES = ["internet", "navigation", "comms", "eo", "meteo", "science", "stations", "military", "other"]   # тип системы (STYPES)
 
 
 def blocks(page):
@@ -52,11 +57,34 @@ def glb_stats(path):
     for i, m in enumerate(js.get("meshes", [])):
         t = sum(js["accessors"][p.get("indices", p["attributes"]["POSITION"])]["count"] // 3 for p in m["primitives"] if p.get("mode", 4) == 4)
         tri += t * use.get(i, 0)
-    return {"bytes": len(data), "triangles": tri, "required": js.get("extensionsRequired", [])}
+    parts = [n["name"][5:] for n in js.get("nodes", []) if str(n.get("name", "")).startswith("part:")]
+    return {"bytes": len(data), "triangles": tri, "required": js.get("extensionsRequired", []), "parts": parts}
+
+
+def check_part(tag, x, err):
+    """Описание части модели или метки: имена и тексты на двух языках, источники https, статья Википедии."""
+    E = lambda m: err.append(f"{tag} {x.get('id')}: {m}")
+    for k in ("name", "name_en", "text", "text_en"):
+        if not x.get(k):
+            E(f"нет {k}")
+    src = x.get("sources") or []
+    if not src or not all(str(q.get("url", "")).startswith("https://") and q.get("title") for q in src):
+        E("нужны источники sources: [{title, url https}]")
+    w = x.get("wiki") or {}
+    if not all(str((w.get(l) or {}).get("url", "")).startswith("https://") for l in ("ru", "en")):
+        E("нужна статья Википедии wiki.ru и wiki.en (https)")
+
+
+SCHEMATIC_PART_IDS = {"bus", "solar", "antenna", "dish", "navant", "payload", "truss", "modules"}   # части схем в странице (BUS_PARTS)
 
 
 def check_models(reg, seen, root):
     err, total = [], 0
+    have = {x.get("id") for x in reg.get("schematicParts", [])}
+    for x in reg.get("schematicParts", []):
+        check_part("schematicParts", x, err)
+    if SCHEMATIC_PART_IDS - have:
+        err.append(f"schematicParts: нет описаний для {sorted(SCHEMATIC_PART_IDS - have)}")
     for m in reg.get("models", []):
         tag = f"модель {m.get('file')}"
         E = lambda x: err.append(f"{tag}: {x}")
@@ -83,6 +111,17 @@ def check_models(reg, seen, root):
         if not st:
             E("не GLB")
             continue
+        for x in m.get("parts", []) + m.get("markers", []):
+            check_part(tag, x, err)
+        if m.get("parts"):
+            ids = {x.get("id") for x in m["parts"]}
+            if set(st["parts"]) != ids:
+                E(f"части в файле {sorted(st['parts'])} и в реестре {sorted(ids)} не совпадают")
+        for x in m.get("markers", []):
+            pos = x.get("pos") or []
+            pts = pos if pos and isinstance(pos[0], list) else [pos]
+            if not all(isinstance(q, list) and len(q) == 3 for q in pts):
+                E(f"метка {x.get('id')}: pos — [x,y,z] или список таких точек")
         total += st["bytes"]
         if st["bytes"] > MODEL_MAX_BYTES:
             E(f"{st['bytes']} байт > {MODEL_MAX_BYTES}")
@@ -117,6 +156,12 @@ def check(page, root="."):
             E("нужно имя на русском и английском")
         if not HEX.fullmatch(s.get("color", "")):
             E("цвет — #RRGGBB")
+        if s.get("region") not in REGIONS:
+            E(f"region — одно из {REGIONS} (регион страны оператора)")
+        if s.get("type") not in STYPES:
+            E(f"type — одно из {STYPES}")
+        if not s.get("country") or not s.get("country_en"):
+            E("нужны country и country_en — страна оператора")
         if s.get("bus") and s["bus"] not in BUS_TYPES:
             E(f"bus — одно из {BUS_TYPES} (схема 3D-модели по типу платформы)")
         mil = "Воен" in (s.get("category") or "") or "ilitary" in (s.get("category_en") or "")
