@@ -274,6 +274,8 @@ dialog p{margin:0;color:var(--muted);font-size:12.5px}
 #howDlg .in{max-height:min(78vh,720px);overflow:auto}
 #howDlg h3{margin:10px 0 2px;font-size:13.5px;color:var(--text)}
 #howDlg p{font-size:13px;line-height:1.5}
+#howDlg .howabout{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
+#howDlg .howabout a{color:var(--accent)}
 #howDlg .howhd{display:flex;align-items:center;gap:10px}
 #howDlg .howhd h2{flex:1}
 .howlink{border:0;background:none;color:var(--accent);cursor:pointer;padding:0 0 0 6px;font-size:11.5px;text-decoration:underline}
@@ -935,6 +937,8 @@ ru:{
   'btn.now':'Сейчас', 'tip.now':'Вернуться к реальному времени со скоростью ×1.', 'aria.pause':'Пауза', 'aria.play':'Пуск',
   'tip.play':'Остановить или продолжить ход времени. На паузе спутники замирают.', 'tip.scrub':'Сдвинуть время на ±24 часа от текущего момента: положения считаются по SGP4 на выбранный момент.', 'aria.scrub':'Смещение времени, минуты',
   'ticks':['−24 ч','−12 ч','0','+12 ч','+24 ч'], 'rate.label':'Скорость', 'tip.rate':'Ускорение хода времени от ×1 до ×1000.', 'tb.collapse':'Свернуть панель времени', 'tb.expand':'Развернуть панель времени',
+  'foot.about':'Сделано для популяризации космоса', 'foot.code':'исходный код на GitHub',
+  'how.about':'Трекер — некоммерческий проект для популяризации космоса: чтобы любой мог увидеть, что летает над головой, и понять, как это устроено. Исходный код открыт:',
   'foot.unofficial':'Неофициальный проект, не связан с ООО „Бюро 1440“', 'foot.elements':'Элементы орбит: ', 'foot.snapshot':'Снимок данных: ', 'foot.map':'Карта и глобус: ',
   'tbl.aria':'Таблица аппаратов', 'tbl.h':'Аппараты', 'tbl.ph':'Название или NORAD', 'tbl.qtip':'Фильтр строк по русскому или каталожному названию либо номеру NORAD.', 'tbl.close':'Закрыть таблицу',
   'col':{name:'Аппарат', sysName:'Система', norad:'NORAD', cospar:'COSPAR', launch:'Пуск', status:'Статус', alt:'Высота, км', per:'Перигей, км', apo:'Апогей, км', inc:'Накл., °', period:'Период, мин', cat:'SATCAT, км', age:'Возраст эпохи, сут'},
@@ -1059,6 +1063,8 @@ en:{
   'btn.now':'Now', 'tip.now':'Return to real time at ×1 speed.', 'aria.pause':'Pause', 'aria.play':'Play',
   'tip.play':'Stop or resume the flow of time. When paused, satellites freeze.', 'tip.scrub':'Shift time by ±24 hours from now: positions are computed with SGP4 for the chosen moment.', 'aria.scrub':'Time offset, minutes',
   'ticks':['−24 h','−12 h','0','+12 h','+24 h'], 'rate.label':'Speed', 'tip.rate':'Speed up time from ×1 to ×1000.', 'tb.collapse':'Collapse time panel', 'tb.expand':'Expand time panel',
+  'foot.about':'Made to popularise space', 'foot.code':'source code on GitHub',
+  'how.about':'This tracker is a non-commercial project to popularise space: so that anyone can see what flies overhead and understand how it works. The source code is open:',
   'foot.unofficial':'Unofficial project, not affiliated with Bureau 1440', 'foot.elements':'Orbital elements: ', 'foot.snapshot':'Data snapshot: ', 'foot.map':'Map & globe: ',
   'tbl.aria':'Satellite table', 'tbl.h':'Satellites', 'tbl.ph':'Name or NORAD', 'tbl.qtip':'Filter rows by name or NORAD number.', 'tbl.close':'Close table',
   'col':{name:'Satellite', sysName:'System', norad:'NORAD', cospar:'COSPAR', launch:'Launch', status:'Status', alt:'Altitude, km', per:'Perigee, km', apo:'Apogee, km', inc:'Incl., °', period:'Period, min', cat:'SATCAT, km', age:'Epoch age, days'},
@@ -2056,7 +2062,8 @@ function openHow(){
     d.addEventListener('click',e=>{ if(e.target===d) d.close(); }); }
   d.setAttribute('aria-labelledby','howTitle');
   d.innerHTML=`<div class="in"><div class="howhd"><h2 id="howTitle">${esc(t('how.title'))}</h2><button type="button" class="close" id="howClose" aria-label="${esc(t('card.close'))}">×</button></div>
-    ${t('how.s').map(([h,p])=>`<h3>${esc(h)}</h3><p>${esc(p)}</p>`).join('')}</div>`;
+    ${t('how.s').map(([h,p])=>`<h3>${esc(h)}</h3><p>${esc(p)}</p>`).join('')}
+    <p class="howabout">${esc(t('how.about'))} <a href="${REPO_URL}" target="_blank" rel="noopener">GitHub</a></p></div>`;
   $('#howClose').onclick=()=>d.close();
   if(!d.open) d.showModal();
 }
@@ -2507,12 +2514,13 @@ const MAP_ATTR=[
   ['EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2025)','https://cloudless.eox.at/'],
   ['Contains modified EUMETSAT data','https://github.com/matteason/live-cloud-maps','live']
 ];
+const REPO_URL='https://github.com/AndrewNonsence/rassvet-globe';   // открытый исходный код трекера
 function footMap(){ return esc(t('foot.map'))+MAP_ATTR.filter(a=>a[2]!=='live'||GL3.cloudsLive).map(([n,u])=>`<a href="${u}" target="_blank" rel="noopener">${esc(n)}</a>`).join(', '); }
 function renderFoot(){
   const gen = META.generatedAt || (systems[0]&&systems[0].meta&&systems[0].meta.dataset&&systems[0].meta.dataset.generatedAt);
   const PUB_EN={'Джонатан Макдауэлл':'Jonathan McDowell'};
   const pubs=[...new Set((META.sources||[]).map(s=>s.publisher.replace(/ \(.*\)$/,'')).map(p=>LANG==='en'?p.replace(/Джонатан Макдауэлл/g,PUB_EN['Джонатан Макдауэлл']):p))];
-  $('#foot').innerHTML=`<span>${esc(t('foot.unofficial'))}</span><span>${esc(t('foot.elements'))}${esc(pubs.length?pubs.join(', '):'CelesTrak')}</span><span>${esc(t('foot.snapshot'))}${gen?esc(new Date(gen).toLocaleString(LOC(),{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})):esc(t('nodata'))}</span><span>${footMap()}</span><span><button type="button" class="link" id="howFoot">${esc(t('how.open'))}</button></span>`;
+  $('#foot').innerHTML=`<span>${esc(t('foot.about'))} · <a href="${REPO_URL}" target="_blank" rel="noopener">${esc(t('foot.code'))}</a></span><span>${esc(t('foot.unofficial'))}</span><span>${esc(t('foot.elements'))}${esc(pubs.length?pubs.join(', '):'CelesTrak')}</span><span>${esc(t('foot.snapshot'))}${gen?esc(new Date(gen).toLocaleString(LOC(),{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})):esc(t('nodata'))}</span><span>${footMap()}</span><span><button type="button" class="link" id="howFoot">${esc(t('how.open'))}</button></span>`;
   $('#howFoot').onclick=()=>openHow();
 }
 

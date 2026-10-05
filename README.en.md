@@ -13,7 +13,8 @@
   <a href="#-installing-on-popular-platforms">Platforms</a> ·
   <a href="#-whats-in-the-repository">Files</a> ·
   <a href="#-data-sources">Sources</a> ·
-  <a href="#-faq">FAQ</a>
+  <a href="#-faq">FAQ</a> ·
+  <a href="CHANGELOG.md">Changes</a>
 </p>
 
 ---
@@ -23,6 +24,9 @@ its night side and city lights, surrounded by satellites in real time: the Russi
 constellation Rassvet (Bureau 1440), GLONASS, Gonets, Express and Yamal, Luch, Meridian, weather and
 science satellites, Earth-observation satellites; the GPS, Galileo, BeiDou, QZSS and NavIC navigation
 systems; the ISS and the China Space Station; science satellites, Starlink, OneWeb and Iridium.
+
+The project is non-commercial and made to popularise space: anyone can open the page, see what is flying
+overhead right now and work out how it all works — no sign-up, nothing to install.
 
 Positions are computed right in the browser with the SGP4 model — no computing server, no analytics,
 no CDN. An orbit snapshot is embedded in the page, so the site works right after `git clone`.
