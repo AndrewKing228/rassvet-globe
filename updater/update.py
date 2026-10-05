@@ -610,6 +610,36 @@ def parse_feed(text, feed):
     return out
 
 
+def publish_models(src, out):
+    """3D-модели (models/*.glb, models/iss/*.glb) — рядом со страницей: окно 3D грузит их по /models/….
+    Копируются только новые и изменённые файлы, удалённые из репозитория — убираются. Нет каталога — пропуск."""
+    if not src or not os.path.isdir(src):
+        return 0
+    dst = os.path.join(out, "models")
+    if os.path.realpath(src) == os.path.realpath(dst):
+        return 0
+    copied, keep = 0, set()
+    for dp, _, files in os.walk(src):
+        for f in files:
+            if not f.endswith(".glb"):
+                continue
+            s_, rel = os.path.join(dp, f), os.path.relpath(os.path.join(dp, f), src)
+            d = os.path.join(dst, rel)
+            keep.add(rel)
+            if os.path.exists(d) and os.path.getsize(d) == os.path.getsize(s_) and os.path.getmtime(d) >= os.path.getmtime(s_):
+                continue
+            os.makedirs(os.path.dirname(d), exist_ok=True)
+            with open(s_, "rb") as fh:
+                atomic_write(d, fh.read())
+            copied += 1
+    for dp, _, files in os.walk(dst):
+        for f in files:
+            rel = os.path.relpath(os.path.join(dp, f), dst)
+            if f.endswith(".glb") and rel not in keep:
+                os.remove(os.path.join(dp, f))
+    return copied
+
+
 def jpeg_size(b):
     """(ширина, высота) JPEG по маркеру SOF; None — не JPEG."""
     if b[:2] != b"\xff\xd8":
@@ -995,6 +1025,12 @@ def run_once(args, cfg):
         except Exception as e:
             log.warning("  текстура %s не скопирована (на публикацию не влияет): %s", name, e)
     try:
+        n = publish_models(args.models, args.out)
+        if n:
+            log.info("  3D-модели: скопировано файлов %d", n)
+    except Exception as e:
+        log.warning("  3D-модели не опубликованы (на страницу не влияет, окно 3D покажет схему): %s", e)
+    try:
         publish_clouds(cfg, cfg["http"]["user_agent"].format(domain=domain or "localhost"), args.out, now.date().isoformat())
     except Exception as e:
         log.warning("  облака глобуса не обновлены (на публикацию не влияет, остаются прежние или запасные): %s", e)
@@ -1054,6 +1090,7 @@ def main():
     mode.add_argument("--dry-run", action="store_true", help="всё, кроме публикации")
     ap.add_argument("--template", default="/app/template/rassvet-tracker.html")
     ap.add_argument("--static", default="/app/static")
+    ap.add_argument("--models", default="/app/models", help="каталог 3D-моделей репозитория (models/); нет — пропуск")
     ap.add_argument("--sources", default=os.path.join(here, "sources.yml"))
     ap.add_argument("--out", default="/srv/www", help="каталог сайта")
     ap.add_argument("--data", default="/data", help="логи и состояние")
