@@ -1,0 +1,91 @@
+{
+ "schemaVersion": 1,
+ "generatedAt": "2026-10-04T20:07:14Z",
+ "textures": {
+  "color": {
+   "1024": "color-1024.a60e3fb754.webp",
+   "2048": "color-2048.1f0c174231.webp",
+   "4096": "color-4096.fa359a1fdf.webp"
+  },
+  "relief": {
+   "1024": "relief-1024.31aa480021.webp",
+   "2048": "relief-2048.5bfebb3891.webp",
+   "4096": "relief-4096.77ef1a4dd9.webp"
+  },
+  "night": {
+   "1024": "night-1024.3ca4b1e0a3.webp",
+   "2048": "night-2048.231476ca0e.webp",
+   "4096": "night-4096.747340db35.webp"
+  },
+  "clouds": {
+   "1024": "clouds-1024.415feb7b81.jpg",
+   "2048": "clouds-2048.c738733f8f.jpg",
+   "4096": "clouds-4096.17bc6c7de1.jpg"
+  }
+ },
+ "slopeMax": 1.0,
+ "nearColor": {
+  "gain": [
+   0.8674,
+   0.8992,
+   0.9831
+  ],
+  "bias": [
+   0.0416,
+   0.0308,
+   -0.0074
+  ]
+ },
+ "sources": {
+  "bmng": {
+   "url": "https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73751/world.topo.bathy.200407.3x21600x10800.jpg",
+   "sha256": "d225f1f35a6448a4d1d8f6de6e48f3433e470085b70a35800e64f384f269a7b0"
+  },
+  "blackmarble": {
+   "url": "https://assets.science.nasa.gov/content/dam/science/esd/eo/images/imagerecords/144000/144898/BlackMarble_2016_3km.jpg",
+   "sha256": "230aac448ae68c358be433dd518888cccb3a85ccf66f7b44326441c324ad6725"
+  },
+  "ne_ocean": {
+   "url": "https://naciscdn.org/naturalearth/10m/physical/ne_10m_ocean.zip",
+   "sha256": "db626fcd5d50b096b156c78a2cc95011b39f32a61b4e47d147e3f7a77b8b2719"
+  },
+  "ne_lakes": {
+   "url": "https://naciscdn.org/naturalearth/10m/physical/ne_10m_lakes.zip",
+   "sha256": "0803a06f9c3cb4671d89b68c48b142aad9366ba40f665245e12a913fbc61722a"
+  },
+  "clouds": {
+   "url": "https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57747/cloud_combined_8192.tif",
+   "sha256": "d137775d8966ab8d443fd5126dc6e7ad72072bc1ed50555c5818d221735daf0f"
+  },
+  "gebco": {
+   "url": "https://dap.ceda.ac.uk/bodc/gebco/global/gebco_2026/ice_surface_elevation/geotiff/gebco_2026_geotiff.zip?download=1",
+   "bytes": 4241629269
+  }
+ },
+ "attribution": [
+  {
+   "what": "day",
+   "text": "NASA Earth Observatory, Blue Marble: Next Generation",
+   "url": "https://science.nasa.gov/earth/earth-observatory/"
+  },
+  {
+   "what": "night",
+   "text": "NASA Earth Observatory, Black Marble 2016",
+   "url": "https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/"
+  },
+  {
+   "what": "relief",
+   "text": "GEBCO Bathymetric Compilation Group 2026 (2026). The GEBCO_2026 Grid. doi:10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa",
+   "url": "https://doi.org/10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa"
+  },
+  {
+   "what": "water",
+   "text": "Made with Natural Earth",
+   "url": "https://www.naturalearthdata.com/"
+  }
+ ],
+ "cloudLevels": [
+  0.1,
+  0.8
+ ]
+}
