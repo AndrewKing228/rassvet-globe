@@ -1,0 +1,17 @@
+{
+  "name": "Рассвет — трекер спутников",
+  "short_name": "Рассвет",
+  "description": "Российская группировка «Рассвет» и соседи по орбите: карта и 3D-глобус в реальном времени.",
+  "lang": "ru",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080f20",
+  "theme_color": "#080f20",
+  "icons": [
+    {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
