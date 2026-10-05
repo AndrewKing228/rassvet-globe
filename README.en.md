@@ -21,7 +21,8 @@
 **Rassvet Satellite Globe** is a popular-science tracker in the browser. A photorealistic Earth with
 its night side and city lights, surrounded by satellites in real time: the Russian low-Earth-orbit
 constellation Rassvet (Bureau 1440), GLONASS, Gonets, Express and Yamal, Luch, Meridian, weather and
-science satellites, Earth-observation satellites and Starlink.
+science satellites, Earth-observation satellites; the GPS, Galileo, BeiDou, QZSS and NavIC navigation
+systems; the ISS and the China Space Station; science satellites, Starlink, OneWeb and Iridium.
 
 Positions are computed right in the browser with the SGP4 model — no computing server, no analytics,
 no CDN. An orbit snapshot is embedded in the page, so the site works right after `git clone`.
@@ -49,8 +50,8 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 
 | | |
 |---|---|
-| 🛰 Systems on the map | **13** in two groups — Russian and worldwide |
-| 📡 Satellites in the snapshot | **≈ 11,450**, of which Starlink ≈ 11,070 and Rassvet 38 |
+| 🛰 Systems on the map | **22** in three groups — Russian, world navigation and worldwide |
+| 📡 Satellites in the snapshot | **≈ 12,360**, of which Starlink ≈ 11,070, OneWeb 651 and Rassvet 38 |
 | 🌍 Map | 242 countries, 4,583 regions, 7,342 cities in Russian and English |
 | 🖼 Earth textures | 3 levels of detail, up to 4096 × 2048, ≈ 8 MB |
 | ⚙️ Build step | none: one HTML file, three libraries and fonts in `vendor/` |
@@ -114,7 +115,9 @@ flowchart LR
 ```
 
 1. **Data.** Once a day `updater/update.py` fetches fresh orbital elements from CelesTrak, drops
-   broken and stale ones and writes them into data blocks inside `index.html`.
+   broken and stale ones and writes them into data blocks inside `index.html`. It assembles the line-up
+   of GPS, Galileo, BeiDou, QZSS, NavIC, the stations, science satellites, OneWeb and Iridium from SATCAT
+   catalogue groups, so new satellites appear by themselves.
 2. **Page.** `index.html` is a single file: markup, styles, tracker code and the data itself in
    `<script type="application/json">` blocks. The server computes nothing; it only serves files.
 3. **Propagation.** In the browser, [satellite.js](https://github.com/shashwatak/satellite-js) turns
@@ -543,13 +546,14 @@ rassvet-globe/
 
 **`index.html`** (≈ 4.8 MB) is the application itself. Code takes ≈ 270 KB and ≈ 3,400 lines: the UI,
 position propagation, deck.gl layers, Earth and atmosphere shaders, translations into two languages.
-The remaining ≈ 4.5 MB is data in 19 `<script type="application/json">` blocks:
+The remaining ≈ 4.6 MB is data in 28 `<script type="application/json">` blocks:
 
 | Block | Contents |
 |---|---|
-| `registry` | registry of 13 systems: names, colours, group, and the rules that assign a satellite from the general catalogue to a system |
+| `registry` | registry of 22 systems: names, colours, group, and the rules that assign a satellite from the general catalogue to a system |
 | `data-rassvet` | everything about Rassvet: 38 satellites with orbital elements, 3 generations, 4 launches, plans up to 2030 and 34 sources — every fact marked "confirmed" or "unconfirmed" |
 | `data-glonass` … `data-ru-other` | 11 Russian systems, one row per satellite: NORAD, name, COSPAR, launch date, GCAT program and category, subtype, SATCAT perigee, apogee and inclination, orbital elements and their epoch |
+| `data-gps` … `data-iridium` | 9 systems whose line-up is assembled from CelesTrak SATCAT groups, same row format |
 | `data-starlink` | ≈ 11,070 Starlink satellites (≈ 2.7 MB) — loaded after the first frame so the page opens fast |
 | `geo-data` | Natural Earth (≈ 360 KB): 242 countries — coastlines, borders and labels needed for the first frame |
 | `geo-detail` | Natural Earth (≈ 1.3 MB): region borders, 4,583 regions and 7,342 cities labelled in Russian and English — loaded after the first frame |
@@ -596,6 +600,9 @@ upgrading a library means a new folder rather than editing the old one.
 
 **`updater/update.py`** (≈ 900 lines) is the daily data update:
 - downloads the datasets listed in `sources.yml`, retrying after 5, 15 and 45 seconds on failure;
+- assembles the line-up of systems that name a SATCAT group in the registry (`select.satcatGroup`): one
+  small request per group per day, operational satellites only, no duplicates across systems; if the
+  catalogue is unavailable, the last good download is used;
 - validates every record: TLE checksums, SGP4 parsing, epoch age; if more than 5 % of records are
   broken, the whole dataset is discarded;
 - picks the freshest epoch for each satellite across all sources;
@@ -606,6 +613,11 @@ upgrading a library means a new folder rather than editing the old one.
 **`updater/sources.yml`** says where data comes from: CelesTrak (`NAME=RASSVET` as TLE and
 `GROUP=active` as OMM JSON), optionally Space-Track, four RSS news feeds and the cloud map. Comments in
 the file explain every field.
+
+**`scripts/catalog/check_catalog.py`** checks the catalogue inside the page: systems marked `verifiedAt`
+have a primary source (or two independent secondary ones), military systems are flagged as classified by
+GCAT, NORAD IDs are not repeated across systems, and every satellite has valid COSPAR, dates and orbital
+elements. Run: `python scripts/catalog/check_catalog.py index.html`.
 
 **`scripts/globe/build_globe.py`** builds `globe/` from NASA, GEBCO and Natural Earth sources:
 resumable downloads with size checks, downscaling, terrain slopes, the water mask, WebP encoding and the
@@ -626,8 +638,9 @@ the second pins exact versions with hashes for `pip install --require-hashes`.
 
 | What | From | License |
 |---|---|---|
-| Orbital elements, SATCAT catalogue | [CelesTrak](https://celestrak.org/) | open data |
-| Satellite classification | [GCAT](https://planet4589.org/space/gcat/), Jonathan McDowell | CC BY 4.0 |
+| Orbital elements, SATCAT catalogue, system line-ups by group | [CelesTrak](https://celestrak.org/) | open data |
+| Descriptions of GPS, Galileo, BeiDou, QZSS, NavIC, the stations, OneWeb, Iridium | operators' official websites — linked in the satellite card | — |
+| Classification of Russian satellites (military ones marked “unconfirmed”) | [GCAT](https://planet4589.org/space/gcat/), Jonathan McDowell | CC BY 4.0 |
 | Rassvet details | public sources, linked in each satellite card | — |
 | Borders, regions, cities | [Natural Earth](https://www.naturalearthdata.com/) | public domain |
 | Earth colour, lights, clouds | NASA Blue Marble, Black Marble | public domain |

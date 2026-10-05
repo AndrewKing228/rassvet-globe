@@ -75,6 +75,9 @@ this project.
 | Элементы орбит (TLE / OMM), SATCAT | вшиты в `index.html` (блоки `data-*`) | [CelesTrak](https://celestrak.org/), публичные данные | Orbital data: CelesTrak (T.S. Kelso) |
 | Классификация аппаратов (GCAT) | вшита в `index.html` | [GCAT](https://planet4589.org/space/gcat/), CC BY 4.0 | Jonathan C. McDowell, General Catalog of Artificial Space Objects |
 | Сведения о группировке «Рассвет» (пуски, поколения, статусы) | вшиты в `index.html` (блок `data-rassvet`) | факты из открытых источников, ссылки на каждый источник — в самом блоке и в карточке аппарата | — |
+| Состав GPS, Galileo, BeiDou, QZSS, NavIC, станций, научных спутников, OneWeb, Iridium | вшит в `index.html` (блоки `data-gps` … `data-iridium`), обновляется ежедневно | [CelesTrak SATCAT](https://celestrak.org/satcat/search.php), группы `gps-ops`, `galileo`, `beidou`, `gnss`, `stations`, `science`, `oneweb`, `iridium-NEXT` | Satellite catalog: CelesTrak SATCAT |
+| Описания этих систем (оператор, назначение, орбиты) | реестр систем в `index.html` | официальные сайты операторов — GPS.gov, NAVCEN, EUSPA, BeiDou, QZSS (Cabinet Office, Japan), ISRO, NASA, CMSE, Eutelsat, Iridium; ссылки в карточке аппарата | факты со ссылками на источник |
+| Элементы орбит Space-Track (только если скрипт обновления запущен с учётной записью) | блоки `data-*` | [Space-Track.org](https://www.space-track.org/documentation#/user_agree): общее разрешение USSPACECOM на распространение TLE/OMM/SATCAT с указанием источника | USSPACECOM via Space-Track.org — показывается в подвале страницы, когда данные получены оттуда |
 
 Атрибуция всех источников также показывается в подвале страницы.
 Attribution for all sources is also shown in the page footer.

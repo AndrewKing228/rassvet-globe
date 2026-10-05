@@ -333,6 +333,124 @@ def json_text(obj):
     return s.replace("</", "<\\/").replace("<!--", "<\\u0021--")   # не даём закрыть <script> изнутри
 
 
+# ---------- состав систем по группам SATCAT ----------
+# Системы реестра с select.satcatGroup (GPS, Galileo, станции…): состав берётся из SATCAT CelesTrak по тематической
+# группе — небольшая выгрузка раз в сутки на группу; элементы орбит — из общего набора источников (GROUP=active).
+
+SATCAT_URL = "https://celestrak.org/satcat/records.php?GROUP={group}&FORMAT=json"
+ACTIVE_OPS = {"+", "P", "B", "S", "X"}   # действующие по коду состояния SATCAT
+CATALOG_FIELDS = ["norad", "name", "cospar", "launchDate", "gcatProgram", "gcatCategory", "subtype",
+                  "satcat[perigee,apogee,inc,period,ops]", "elementsSource", "epoch", "elements"]
+
+
+def satcat_systems(page):
+    try:
+        reg = json.loads(get_block(page, "registry") or "{}")
+    except ValueError:
+        return []
+    return [s for s in reg.get("systems", []) if (s.get("select") or {}).get("satcatGroup") and s.get("dataKey")]
+
+
+def collect_satcat(groups, http_cfg, state_dir, ua, now):
+    """SATCAT по группам. При сбое — последняя удачная копия из кэша; группа без данных пропускается
+    (состав системы на странице тогда остаётся прежним)."""
+    out = {}
+    cache_dir = os.path.join(state_dir, "sources")
+    os.makedirs(cache_dir, exist_ok=True)
+    for g in sorted(groups):
+        url = SATCAT_URL.format(group=urllib.parse.quote(g))
+        cache = os.path.join(cache_dir, f"satcat-{g}.json")
+        try:
+            recs = json.loads(http_get(url, http_cfg, ua))
+            if not isinstance(recs, list) or not recs:
+                raise ValueError("пустой ответ")
+            retrieved = now.date().isoformat()
+            atomic_write(cache, json.dumps({"url": url, "retrievedAt": retrieved, "recs": recs}, ensure_ascii=False), 0o600)
+            log.info("  SATCAT %s: %d записей", g, len(recs))
+        except Exception as e:
+            log.warning("  SATCAT %s НЕ ПОЛУЧЕН: %s", g, e)
+            try:
+                with open(cache, encoding="utf-8") as f:
+                    c = json.load(f)
+                recs, url, retrieved = c["recs"], c["url"], c["retrievedAt"]
+                log.warning("  использую последнюю удачную выгрузку от %s", retrieved)
+            except (OSError, ValueError, KeyError):
+                continue
+        out[g] = {"recs": recs, "url": url, "retrievedAt": retrieved}
+    return out
+
+
+def satcat_entry(group, g):
+    return {"id": f"celestrak-satcat-{group}", "tier": 2, "kind": "catalog", "publisher": "CelesTrak SATCAT",
+            "title": f"SATCAT, группа {group}: состав, дата запуска, перигей, апогей, наклонение, период",
+            "url": g["url"], "retrievedAt": g["retrievedAt"]}
+
+
+def row_elements(r):
+    return ["T", r["l1"], r["l2"]] if r["kind"] == "T" else ["O"] + [r["omm"][k] for k in OMM_KEYS]
+
+
+def rebuild_satcat_blocks(page, satcat, pool, entries):
+    """Состав систем с select.satcatGroup: действующие спутники группы (с фильтром по имени или NORAD), которых нет
+    в других системах страницы (у российских систем приоритет). Без элементов орбит аппарат не показывается."""
+    systems = satcat_systems(page)
+    own = {s["dataKey"] for s in systems}
+    taken = set()
+    for bid, bt in find_blocks(page).items():
+        if bt != "application/json" or bid in own:
+            continue
+        try:
+            obj = json.loads(get_block(page, bid))
+        except ValueError:
+            continue
+        if "satellites" in obj:
+            taken.update(x.get("noradId") for x in obj["satellites"])
+        elif "rows" in obj and "norad" in (obj.get("fields") or []):
+            i = obj["fields"].index("norad")
+            taken.update(r[i] for r in obj["rows"])
+    for s in systems:
+        sel, bid = s["select"], s["dataKey"]
+        g, body = satcat.get(sel["satcatGroup"]), get_block(page, bid)
+        if g is None or body is None:
+            continue
+        b = json.loads(body)
+        if b.get("fields") != CATALOG_FIELDS:
+            log.warning("  %s: неожиданные поля блока — состав не пересобран", bid)
+            continue
+        old = {r[0]: r for r in b.get("rows", [])}
+        pat = re.compile(sel["namePattern"]) if sel.get("namePattern") else None
+        only = set(sel.get("norad") or [])
+        rows, noel = [], 0
+        for x in g["recs"]:
+            n = x.get("NORAD_CAT_ID")
+            if not isinstance(n, int) or n in taken or (only and n not in only):
+                continue
+            if x.get("OBJECT_TYPE") != "PAY" or x.get("DECAY_DATE") or x.get("OPS_STATUS_CODE") not in ACTIVE_OPS:
+                continue
+            if pat and not pat.search(x.get("OBJECT_NAME") or ""):
+                continue
+            r, prev = pool.get(n), old.get(n)
+            if r:
+                el = (r["source"], iso(r["epoch"]), row_elements(r))
+            elif prev and prev[10]:
+                el = (prev[8], prev[9], prev[10])
+            else:
+                noel += 1
+                continue
+            sc = [x.get("PERIGEE"), x.get("APOGEE"), x.get("INCLINATION"), x.get("PERIOD"), x.get("OPS_STATUS_CODE")]
+            rows.append([n, x.get("OBJECT_NAME"), x.get("OBJECT_ID"), x.get("LAUNCH_DATE") or None, None, None, None, sc, *el])
+            taken.add(n)
+        rows.sort(key=lambda r: (r[3] or "", r[0]))
+        b["rows"] = rows
+        e = satcat_entry(sel["satcatGroup"], g)
+        b["sources"] = [x for x in b.get("sources", []) if not x.get("id", "").startswith("celestrak-satcat-")] + [e]
+        upsert_sources(b["sources"], entries, {r[8] for r in rows})
+        page = put_block(page, bid, json_text(b))
+        log.info("  %s (SATCAT %s): аппаратов %d%s", bid, sel["satcatGroup"], len(rows), f", без элементов орбит {noel}" if noel else "")
+    return page
+
+
+
 # ---------- история высоты орбиты ----------
 
 HISTORY_DAYS = 32
@@ -547,7 +665,7 @@ def element_for(r, today, policy):
 
 def source_entries(results, today):
     return [{"id": res["src"]["id"], "tier": 2, "kind": "catalog",
-             "publisher": "CelesTrak" if res["src"]["provider"] == "celestrak" else "Space-Track",
+             "publisher": "CelesTrak" if res["src"]["provider"] == "celestrak" else "USSPACECOM via Space-Track.org",   # требование Space-Track: указывать источник
              "title": res["src"].get("title", res["src"]["id"]), "url": res["url"], "retrievedAt": res["retrievedAt"]}
             for res in results]
 
@@ -666,11 +784,13 @@ def ensure_seo(page, domain, now):
     return re.sub(r"</head>", "\n".join(tags) + "\n</head>", page, count=1, flags=re.I)
 
 
-def build(template, results, now, domain, stamp=True, state_dir=None, news=None):
+def build(template, results, now, domain, stamp=True, state_dir=None, news=None, satcat=None):
     """stamp=False — данные не свежие: дату обновления на странице не трогаем."""
     page = template
     pool = merge_pool(results)
     entries = source_entries(results, now.date().isoformat())
+    if satcat:
+        page = rebuild_satcat_blocks(page, satcat, pool, entries)
     blocks = find_blocks(page)
     changed = 0
     for bid, btype in blocks.items():
@@ -704,7 +824,8 @@ def build(template, results, now, domain, stamp=True, state_dir=None, news=None)
     if stamp and "data-meta" in blocks:
         meta = json.loads(get_block(page, "data-meta") or "{}")
         meta["generatedAt"] = iso(now)
-        upsert_sources(meta.setdefault("sources", []), entries, {e["id"] for e in entries})
+        extra = [satcat_entry(g, v) for g, v in sorted((satcat or {}).items())]
+        upsert_sources(meta.setdefault("sources", []), entries + extra, {e["id"] for e in entries + extra})
         page = put_block(page, "data-meta", json_text(meta))
     if stamp:
         page = set_last_updated(page, now)
@@ -796,7 +917,9 @@ def run_once(args, cfg):
     except Exception as e:
         log.warning("Новости пропущены (на публикацию не влияет): %s", e)
         news = None
-    page, changed = build(template, results, now, domain, stamp=bool(fresh), state_dir=state_dir, news=news)
+    groups = {sy["select"]["satcatGroup"] for sy in satcat_systems(template)}
+    satcat = collect_satcat(groups, cfg["http"], state_dir, ua, now) if groups else {}
+    page, changed = build(template, results, now, domain, stamp=bool(fresh), state_dir=state_dir, news=news, satcat=satcat)
     try:
         check_built(template, page)
     except Exception as e:
