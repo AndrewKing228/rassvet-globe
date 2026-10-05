@@ -10,6 +10,7 @@
   <a href="#-run-in-a-minute">Run in a minute</a> ·
   <a href="#-how-it-works">How it works</a> ·
   <a href="#-your-own-server-from-scratch">Own server</a> ·
+  <a href="#-installing-on-popular-platforms">Platforms</a> ·
   <a href="#-whats-in-the-repository">Files</a> ·
   <a href="#-data-sources">Sources</a> ·
   <a href="#-faq">FAQ</a>
@@ -137,7 +138,7 @@ once a day.
 | 🐧 OS | Ubuntu 24.04 LTS or Debian 13 | any Linux with systemd and Python ≥ 3.10 works |
 | 🌐 Network | ports **80** and **443** open | outbound HTTPS to `celestrak.org` (and to news feeds and the cloud map if enabled) |
 | 🏷 Domain | A/AAAA record pointing to the server | `example.org` in the examples below |
-| 🧰 Software | `git`, `python3-venv`, [Caddy](https://caddyserver.com/) 2.6+ | Caddy obtains and renews the HTTPS certificate by itself |
+| 🧰 Software | `git`, `python3-venv`, `sudo`, [Caddy](https://caddyserver.com/) 2.6+ | Caddy obtains and renews the HTTPS certificate by itself |
 
 All commands below run as root (or with `sudo`). Directory layout:
 
@@ -152,7 +153,7 @@ All commands below run as root (or with `sudo`). Directory layout:
 ### 1. Packages
 
 ```bash
-apt update && apt install -y git python3-venv caddy
+apt update && apt install -y git python3-venv caddy sudo
 ```
 
 <details>
@@ -319,6 +320,180 @@ minute later the site opens at an address like `https://<user>.github.io/rassvet
   the next section and commit `index.html` together with the `data-starlink.*.json` file;
 - the site lives in a subfolder while the service worker and manifest expect the site root, so offline
   mode and installing as an app are limited. A custom domain in the Pages settings removes this.
+
+## 🧭 Installing on popular platforms
+
+| Platform | How | Orbits refresh by themselves | HTTPS and offline mode |
+|---|---|---|---|
+| 🐧 VPS with Ubuntu or Debian | [Caddy and a systemd timer](#-your-own-server-from-scratch) | yes | yes |
+| 🟧 Proxmox VE | a light LXC container running the same guide | yes | yes with a domain; HTTP on a home network |
+| 🐳 Docker: Linux, NAS, Docker Desktop | a Caddy container and a one-shot Python container | yes, via cron | yes with a domain |
+| 🍓 Raspberry Pi | Raspberry Pi OS is Debian — the server guide applies | yes | yes |
+| 🪟 Windows | Python or Caddy from winget | manually | on `localhost` |
+| 🍎 macOS | Python or Caddy from Homebrew | manually | on `localhost` |
+| ☁️ GitHub Pages, Netlify, Cloudflare Pages | upload the files as they are | no, the repository snapshot | yes |
+
+### 🟧 Proxmox VE
+
+An unprivileged LXC container is enough — no virtual machine needed. On the Proxmox host
+(web UI → node → **Shell**):
+
+```bash
+# a fresh Debian template: 13 if your Proxmox version has it, otherwise 12
+pveam update
+T=$(pveam available --section system | awk '/debian-1[23]-standard/ {print $2}' | sort -V | tail -1)
+pveam download local "$T"
+
+# container: 1 core, 512 MB RAM, 4 GB disk, DHCP address, starts with the host
+pct create 210 "local:vztmpl/$T" \
+    --hostname rassvet-globe --cores 1 --memory 512 --swap 512 \
+    --rootfs local-lvm:4 --net0 name=eth0,bridge=vmbr0,ip=dhcp \
+    --unprivileged 1 --features nesting=1 --onboot 1
+pct start 210
+pct enter 210
+```
+
+- `210` is any free container ID; `local-lvm` is the disk storage (usually `local-zfs` on ZFS),
+  `vmbr0` is the network bridge.
+- `nesting=1` lets systemd of recent Debian releases work properly inside the container.
+
+Inside the container you are root. Continue with steps 1–6 of
+["Your own server from scratch"](#-your-own-server-from-scratch). Debian 12 has no `caddy` package in its
+standard repositories — install it via the link in step 1.
+
+Opening the site:
+- **From the internet, with a domain.** Forward ports 80 and 443 on your router to the container address
+  (`ip -4 addr show eth0` inside it) — the rest is as in the guide, Caddy gets HTTPS by itself.
+- **Home network only.** Write `:80` instead of `example.org` in the Caddyfile — the site opens at
+  `http://<container address>/`. The globe and the map work fully, but without HTTPS browsers do not
+  enable the service worker: no offline mode and no installing as an app.
+
+### 🐳 Docker
+
+Works on a Linux server, a NAS with Docker support or Docker Desktop. On Windows run the commands
+below in a WSL terminal.
+
+```bash
+mkdir rassvet-globe && cd rassvet-globe
+git clone https://github.com/AndrewKing228/rassvet-globe.git repo
+mkdir www state
+```
+
+Next to it create a `Caddyfile` — the same two-directory setup as on the server:
+
+```caddyfile
+:80 {
+	encode zstd gzip
+
+	@private path /.* /updater/* /scripts/* /docs/*
+	handle @private {
+		respond 404
+	}
+
+	@daily path / /index.html /data-starlink.* /clouds/*
+	handle @daily {
+		root * /srv/www
+		file_server {
+			precompressed gzip
+		}
+	}
+
+	handle {
+		root * /srv/repo
+		file_server
+	}
+}
+```
+
+Put the update into `update.sh`; it starts a clean Python container every time:
+
+```bash
+cat > update.sh <<'SH'
+#!/bin/sh
+cd "$(dirname "$0")"
+docker run --rm -v "$PWD/repo:/repo:ro" -v "$PWD/www:/www" -v "$PWD/state:/state" python:3.12-slim \
+    sh -c "pip install -q --root-user-action=ignore --require-hashes -r /repo/updater/requirements.lock \
+           && python /repo/updater/update.py --once --template /repo/index.html --static /repo --out /www --data /state"
+SH
+chmod +x update.sh && ./update.sh
+```
+
+Start the site:
+
+```bash
+docker run -d --name rassvet-globe --restart unless-stopped -p 8080:80 \
+    -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" \
+    -v "$PWD/repo:/srv/repo:ro" -v "$PWD/www:/srv/www:ro" \
+    caddy:2
+```
+
+The site opens at <http://localhost:8080/>. For a daily refresh add a line with the full folder path
+via `crontab -e`:
+
+```
+30 3 * * * /full/path/rassvet-globe/update.sh >/dev/null 2>&1
+```
+
+> [!TIP]
+> For HTTPS with a domain replace `:80` with `example.org` in the Caddyfile, and `-p 8080:80` with
+> `-p 80:80 -p 443:443 -v caddy_data:/data` in `docker run`: Caddy keeps its certificate in the
+> `caddy_data` volume.
+
+### 🍓 Raspberry Pi
+
+Raspberry Pi 3, 4, 5 and Zero 2 W with 64-bit Raspberry Pi OS will do. It is Debian, so follow
+["Your own server from scratch"](#-your-own-server-from-scratch): Caddy installs via the link in step 1,
+and sgp4 and PyYAML have ready-made ARM64 builds, no compiler needed. Open the globe from a computer or
+phone: the browser on the Pi itself may lack GPU power.
+
+### 🪟 Windows
+
+To look locally, install Git and Python — `winget install Git.Git`, then
+`winget install Python.Python.3.12` — and in a new PowerShell window:
+
+```powershell
+git clone https://github.com/AndrewKing228/rassvet-globe.git
+cd rassvet-globe
+py -m http.server 8000
+```
+
+Caddy works instead of Python too: `winget install CaddyServer.Caddy`, then
+`caddy file-server --listen :8000` in the repository folder.
+
+Refresh orbits:
+
+```powershell
+py -m venv .venv
+.venv\Scripts\pip install --require-hashes -r updater\requirements.lock
+.venv\Scripts\python updater\update.py --once --template index.html --static . --out . --data .cache
+```
+
+For a permanent site on Windows, [Docker](#-docker) via Docker Desktop or WSL with Ubuntu and the server
+guide is more convenient.
+
+### 🍎 macOS
+
+With [Homebrew](https://brew.sh/):
+
+```bash
+brew install git python caddy
+git clone https://github.com/AndrewKing228/rassvet-globe.git
+cd rassvet-globe
+python3 -m http.server 8000          # or: caddy file-server --listen :8000
+```
+
+Refresh orbits with the commands from ["Refresh orbits locally"](#-refresh-orbits-locally)
+(using `python3` instead of `python`).
+
+### ☁️ Static hosting
+
+The site works on any static host with no build step. Orbits stay at the repository snapshot date —
+refresh them locally and upload again.
+
+- **GitHub Pages** — see [above](#no-server-github-pages).
+- **Netlify** — manual deploy (*Deploy manually*): drag in the repository folder without `.git`.
+- **Cloudflare Pages** — a project with direct file upload (*Upload assets*), the same folder. The
+  largest file, `index.html`, is ≈ 4.8 MB — within the 25 MB per-file limit.
 
 ## 🔄 Refresh orbits locally
 

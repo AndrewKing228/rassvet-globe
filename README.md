@@ -10,6 +10,7 @@
   <a href="#-запуск-за-минуту">Запуск за минуту</a> ·
   <a href="#-как-это-устроено">Как устроено</a> ·
   <a href="#-свой-сервер-с-нуля">Свой сервер</a> ·
+  <a href="#-установка-на-популярные-платформы">Платформы</a> ·
   <a href="#-что-лежит-в-репозитории">Файлы</a> ·
   <a href="#-источники-данных">Источники</a> ·
   <a href="#-вопросы-и-ответы">Вопросы</a>
@@ -137,7 +138,7 @@ flowchart LR
 | 🐧 Система | Ubuntu 24.04 LTS или Debian 13 | подойдёт любой Linux с systemd и Python ≥ 3.10 |
 | 🌐 Сеть | порты **80** и **443** открыты | исходящий HTTPS к `celestrak.org` (и к лентам новостей и карте облаков, если они включены) |
 | 🏷 Домен | A/AAAA-запись на IP сервера | дальше в примерах — `example.org` |
-| 🧰 Программы | `git`, `python3-venv`, [Caddy](https://caddyserver.com/) 2.6+ | Caddy сам получает и продлевает HTTPS-сертификат |
+| 🧰 Программы | `git`, `python3-venv`, `sudo`, [Caddy](https://caddyserver.com/) 2.6+ | Caddy сам получает и продлевает HTTPS-сертификат |
 
 Ниже все команды выполняются от root (или через `sudo`). Схема каталогов:
 
@@ -152,7 +153,7 @@ flowchart LR
 ### 1. Пакеты
 
 ```bash
-apt update && apt install -y git python3-venv caddy
+apt update && apt install -y git python3-venv caddy sudo
 ```
 
 <details>
@@ -319,6 +320,178 @@ systemctl start rassvet-globe-update.service
   раздела и закоммитить `index.html` вместе с файлом `data-starlink.*.json`;
 - сайт живёт в подпапке, а service worker и манифест рассчитаны на корень, поэтому работа без сети
   и установка на телефон будут ограничены. С собственным доменом в настройках Pages этого нет.
+
+## 🧭 Установка на популярные платформы
+
+| Платформа | Как ставится | Орбиты обновляются сами | HTTPS и работа без сети |
+|---|---|---|---|
+| 🐧 VPS с Ubuntu или Debian | [Caddy и таймер systemd](#-свой-сервер-с-нуля) | да | да |
+| 🟧 Proxmox VE | лёгкий LXC-контейнер, внутри — та же инструкция | да | да, с доменом; в домашней сети — по HTTP |
+| 🐳 Docker: Linux, NAS, Docker Desktop | контейнер Caddy и разовый контейнер Python | да, по cron | с доменом — да |
+| 🍓 Raspberry Pi | Raspberry Pi OS — это Debian, инструкция для сервера | да | да |
+| 🪟 Windows | Python или Caddy из winget | вручную | на `localhost` |
+| 🍎 macOS | Python или Caddy из Homebrew | вручную | на `localhost` |
+| ☁️ GitHub Pages, Netlify, Cloudflare Pages | загрузить файлы как есть | нет, снимок из репозитория | да |
+
+### 🟧 Proxmox VE
+
+Хватит непривилегированного LXC-контейнера — виртуальная машина не нужна. На хосте Proxmox
+(веб-интерфейс → узел → **Shell**):
+
+```bash
+# свежий шаблон Debian: 13, если он есть в вашей версии Proxmox, иначе 12
+pveam update
+T=$(pveam available --section system | awk '/debian-1[23]-standard/ {print $2}' | sort -V | tail -1)
+pveam download local "$T"
+
+# контейнер: 1 ядро, 512 МБ памяти, 4 ГБ диска, адрес по DHCP, запуск вместе с хостом
+pct create 210 "local:vztmpl/$T" \
+    --hostname rassvet-globe --cores 1 --memory 512 --swap 512 \
+    --rootfs local-lvm:4 --net0 name=eth0,bridge=vmbr0,ip=dhcp \
+    --unprivileged 1 --features nesting=1 --onboot 1
+pct start 210
+pct enter 210
+```
+
+- `210` — любой свободный номер контейнера; `local-lvm` — хранилище дисков (на ZFS обычно `local-zfs`),
+  `vmbr0` — сетевой мост.
+- `nesting=1` нужен, чтобы внутри контейнера нормально работал systemd свежих Debian.
+
+Внутри контейнера вы root. Дальше — шаги 1–6 из раздела [«Свой сервер с нуля»](#-свой-сервер-с-нуля).
+На Debian 12 пакета `caddy` в стандартных репозиториях нет — поставьте его по ссылке из шага 1.
+
+Как открыть сайт:
+- **Из интернета, с доменом.** На роутере пробросьте порты 80 и 443 на адрес контейнера
+  (`ip -4 addr show eth0` внутри него) — дальше всё как в инструкции, HTTPS Caddy получит сам.
+- **Только в домашней сети.** В Caddyfile вместо `example.org` напишите `:80` — сайт откроется по
+  `http://<адрес контейнера>/`. Глобус и карта работают полностью, но без HTTPS браузер не включит
+  service worker: не будет работы без сети и установки на телефон.
+
+### 🐳 Docker
+
+Подойдёт Linux-сервер, NAS с поддержкой Docker или Docker Desktop. На Windows команды ниже
+выполняйте в терминале WSL.
+
+```bash
+mkdir rassvet-globe && cd rassvet-globe
+git clone https://github.com/AndrewKing228/rassvet-globe.git repo
+mkdir www state
+```
+
+Рядом создайте `Caddyfile` — та же раздача из двух каталогов, что и на сервере:
+
+```caddyfile
+:80 {
+	encode zstd gzip
+
+	@private path /.* /updater/* /scripts/* /docs/*
+	handle @private {
+		respond 404
+	}
+
+	@daily path / /index.html /data-starlink.* /clouds/*
+	handle @daily {
+		root * /srv/www
+		file_server {
+			precompressed gzip
+		}
+	}
+
+	handle {
+		root * /srv/repo
+		file_server
+	}
+}
+```
+
+Скрипт обновления — в файл `update.sh`; он каждый раз запускает чистый контейнер Python:
+
+```bash
+cat > update.sh <<'SH'
+#!/bin/sh
+cd "$(dirname "$0")"
+docker run --rm -v "$PWD/repo:/repo:ro" -v "$PWD/www:/www" -v "$PWD/state:/state" python:3.12-slim \
+    sh -c "pip install -q --root-user-action=ignore --require-hashes -r /repo/updater/requirements.lock \
+           && python /repo/updater/update.py --once --template /repo/index.html --static /repo --out /www --data /state"
+SH
+chmod +x update.sh && ./update.sh
+```
+
+Запуск сайта:
+
+```bash
+docker run -d --name rassvet-globe --restart unless-stopped -p 8080:80 \
+    -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" \
+    -v "$PWD/repo:/srv/repo:ro" -v "$PWD/www:/srv/www:ro" \
+    caddy:2
+```
+
+Сайт откроется на <http://localhost:8080/>. Чтобы орбиты обновлялись каждый день, добавьте в
+`crontab -e` строку с полным путём к папке:
+
+```
+30 3 * * * /полный/путь/rassvet-globe/update.sh >/dev/null 2>&1
+```
+
+> [!TIP]
+> Для HTTPS с доменом замените в Caddyfile `:80` на `example.org`, а в `docker run` — `-p 8080:80` на
+> `-p 80:80 -p 443:443 -v caddy_data:/data`: в томе `caddy_data` Caddy хранит полученный сертификат.
+
+### 🍓 Raspberry Pi
+
+Подойдут Raspberry Pi 3, 4, 5 и Zero 2 W с 64-битной Raspberry Pi OS. Это Debian, поэтому дальше —
+раздел [«Свой сервер с нуля»](#-свой-сервер-с-нуля): Caddy ставится по ссылке из шага 1, а для sgp4
+и PyYAML есть готовые сборки под ARM64, компилятор не нужен. Сам глобус удобнее открывать с компьютера
+или телефона: браузеру на Pi может не хватить видеокарты.
+
+### 🪟 Windows
+
+Посмотреть локально: поставьте Git и Python — `winget install Git.Git`, затем
+`winget install Python.Python.3.12` — и в новом окне PowerShell:
+
+```powershell
+git clone https://github.com/AndrewKing228/rassvet-globe.git
+cd rassvet-globe
+py -m http.server 8000
+```
+
+Вместо Python можно взять Caddy: `winget install CaddyServer.Caddy`, затем в папке репозитория
+`caddy file-server --listen :8000`.
+
+Обновить орбиты:
+
+```powershell
+py -m venv .venv
+.venv\Scripts\pip install --require-hashes -r updater\requirements.lock
+.venv\Scripts\python updater\update.py --once --template index.html --static . --out . --data .cache
+```
+
+Для постоянного сайта на Windows удобнее [Docker](#-docker) через Docker Desktop или WSL с Ubuntu
+и инструкцией для сервера.
+
+### 🍎 macOS
+
+С [Homebrew](https://brew.sh/):
+
+```bash
+brew install git python caddy
+git clone https://github.com/AndrewKing228/rassvet-globe.git
+cd rassvet-globe
+python3 -m http.server 8000          # или: caddy file-server --listen :8000
+```
+
+Орбиты обновляются командами из раздела [«Обновить орбиты локально»](#-обновить-орбиты-локально)
+(с `python3` вместо `python`).
+
+### ☁️ Статические хостинги
+
+Сайт работает на любом хостинге статики без сборки. Орбиты при этом остаются на дату снимка в
+репозитории — обновляйте их локально и выкладывайте заново.
+
+- **GitHub Pages** — см. [выше](#без-своего-сервера-github-pages).
+- **Netlify** — ручная публикация (*Deploy manually*): перетащите в окно папку репозитория без `.git`.
+- **Cloudflare Pages** — проект с загрузкой файлов (*Upload assets*), та же папка. Самый крупный файл,
+  `index.html`, весит ≈ 4,8 МБ — в лимит 25 МБ на файл укладывается.
 
 ## 🔄 Обновить орбиты локально
 
