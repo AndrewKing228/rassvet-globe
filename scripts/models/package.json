@@ -1,0 +1,8 @@
+{
+  "name": "rassvet-models",
+  "private": true,
+  "description": "Подготовка 3D-моделей для трекера (только для разработки, на сайт не попадает)",
+  "devDependencies": {
+    "@gltf-transform/cli": "4.5.1"
+  }
+}

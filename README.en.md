@@ -77,9 +77,10 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 - ±24-hour time scale with speed-up: scroll ahead to see where a satellite will be tonight.
 - "How it works": orbital elements, the SGP4 model, inclination, orbit types, the ground track, the coverage
   zone and when a satellite is visible to the eye — in plain words, in Russian and English.
-- A 3D model of the selected satellite behind the cube button: until a satellite has an official model under
-  an open licence, a schematic by platform type is shown and labelled "schematic" — sizes are approximate,
-  it is not a drawing.
+- A 3D model of the selected satellite behind the cube button. The ISS and the Hubble Space Telescope get
+  official NASA models (NASA 3D Resources), labelled "official model", with a link to the source and a note
+  on what was changed for the web. Other satellites get a schematic by platform type labelled "schematic":
+  sizes are approximate, it is not a drawing.
 - "Where this data comes from": source and epoch of the orbital elements with a freshness rating, the
   catalogue download date, when the system description was checked against primary sources; military
   satellites are flagged as classified by GCAT and not officially confirmed.
@@ -548,9 +549,12 @@ rassvet-globe/
 ├── earth-night.jpg           ← city lights for the 2D map
 ├── favicon.ico, apple-touch-icon.png, icon-*.png
 ├── globe/                    ← 3D globe textures and their manifest
+├── models/                   ← official NASA 3D models: ISS and Hubble
 ├── vendor/                   ← deck.gl, satellite.js, topojson-client, fonts
 ├── updater/                  ← daily orbit update script
 ├── scripts/globe/            ← builds globe textures from the sources
+├── scripts/catalog/          ← catalogue and model checks
+├── scripts/models/           ← 3D model preparation (gltf-transform)
 └── docs/                     ← banner and screenshots for this README
 ```
 
@@ -596,6 +600,21 @@ the large one when the GPU allows. File names contain a content hash, so browser
 | `clouds-*.jpg` | NASA clouds — a fallback when there is no daily cloud map |
 | `globe.json` | manifest: files per level, cloud thresholds, colour calibration, source URLs and SHA-256, attribution |
 
+### 🛰 3D models — `models/`
+
+Official NASA models from [NASA 3D Resources](https://github.com/nasa/NASA-3D-Resources), prepared for the
+browser. They open from the cube button in the satellite card and are loaded only at that moment.
+
+| File | Satellite | Size | Triangles | What was changed |
+|---|---|---|---|---|
+| `iss.glb` | ISS, NORAD 25544 | 795 KB | 47,723 | Draco removed, mesh simplified from 174,440 triangles, animations removed, quantised |
+| `hubble.glb` | Hubble, NORAD 20580 | 333 KB | 7,672 | textures reduced to 1024 px and re-encoded as WebP, quantised |
+
+The models are compressed without Draco or meshopt: their decoders need WebAssembly, and the page works
+without it. For every model the registry (`registry` → `models`) records the source, the SHA-256 of the
+original, the licence, what was changed, and the centre and radius the camera uses to frame it. If the file
+is missing or fails to load, the schematic is shown instead.
+
 ### 📦 Libraries — `vendor/`
 
 Unmodified copies from npm with their license texts alongside. The version is in the folder name, so
@@ -629,7 +648,27 @@ the file explain every field.
 **`scripts/catalog/check_catalog.py`** checks the catalogue inside the page: systems marked `verifiedAt`
 have a primary source (or two independent secondary ones), military systems are flagged as classified by
 GCAT, NORAD IDs are not repeated across systems, and every satellite has valid COSPAR, dates and orbital
-elements. Run: `python scripts/catalog/check_catalog.py index.html`.
+elements. Models in `models/` must stay within 1.5 MB and 50,000 triangles each and 25 MB in total, use only
+glTF extensions that need no WebAssembly, and official ones must carry a licence and a source.
+Run: `python scripts/catalog/check_catalog.py index.html`.
+
+**`scripts/models/`** prepares 3D models: `package.json` pins
+[gltf-transform](https://gltf-transform.dev/) 4.5.1 (MIT, development only — not shipped to the site),
+`strip-animations.mjs` removes the original animations (the model is shown static). The commands that
+produced the files in `models/`:
+
+```bash
+cd scripts/models && npm install     # gltf-transform 4.5.1, version pinned in package.json
+# ISS: decode Draco, simplify, quantise, remove animations
+npx gltf-transform copy ISS_B.glb iss.raw.glb
+npx gltf-transform optimize iss.raw.glb iss.opt.glb --compress quantize --texture-compress false \
+    --simplify true --simplify-ratio 0.26 --simplify-error 0.004 --join true --flatten true
+node strip-animations.mjs iss.opt.glb ../../models/iss.glb
+# Hubble: textures to 1024 px WebP, quantise
+npx gltf-transform copy Hubble_A.glb hubble.raw.glb
+npx gltf-transform optimize hubble.raw.glb ../../models/hubble.glb --compress quantize \
+    --texture-compress webp --texture-size 1024 --simplify false --join true
+```
 
 **`scripts/globe/build_globe.py`** builds `globe/` from NASA, GEBCO and Natural Earth sources:
 resumable downloads with size checks, downscaling, terrain slopes, the water mask, WebP encoding and the

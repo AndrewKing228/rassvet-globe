@@ -11,15 +11,21 @@
 - военная система (категория «Военные» или classification) помечена classification: "gcat" — назначение по GCAT,
   официально не подтверждено;
 - система с select.satcatGroup: блок в формате каталога с источником SATCAT;
-- аппарат: NORAD 1..999999 без повторов между системами, COSPAR ГГГГ-NNNA, даты ISO, элементы орбиты TLE или OMM.
+- аппарат: NORAD 1..999999 без повторов между системами, COSPAR ГГГГ-NNNA, даты ISO, элементы орбиты TLE или OMM;
+- 3D-модель (registry.models): аппарат есть в каталоге, у official/open — лицензия, автор и https-источник,
+  файл models/<имя>.glb ≤ 1,5 МБ и ≤ 50 000 треугольников, все вместе ≤ 25 МБ, без расширений, требующих WebAssembly.
 """
-import json, re, sys, urllib.parse
+import json, os, re, struct, sys, urllib.parse
 
 CATALOG_FIELDS = ["norad", "name", "cospar", "launchDate", "gcatProgram", "gcatCategory", "subtype",
                   "satcat[perigee,apogee,inc,period,ops,owner]", "elementsSource", "epoch", "elements"]
 COSPAR = re.compile(r"\d{4}-\d{3}[A-Z]{1,3}")
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 HEX = re.compile(r"#[0-9a-fA-F]{6}")
+ACCURACY = ("official", "open", "schematic")
+# обязательные расширения glTF, которые страница открывает без WebAssembly и внешних декодеров
+MODEL_EXT_OK = {"KHR_mesh_quantization", "EXT_texture_webp", "KHR_texture_transform", "KHR_materials_unlit"}
+MODEL_MAX_BYTES, MODEL_MAX_TRI, MODELS_MAX_TOTAL = 1_500_000, 50_000, 25_000_000
 BUS_TYPES = ["leo-flat", "gnss", "geo-comm", "leo-small", "station"]   # схемы 3D-моделей в странице (BUS_MESH)
 
 
@@ -31,7 +37,66 @@ def blocks(page):
     return out
 
 
-def check(page):
+def glb_stats(path):
+    with open(path, "rb") as f:
+        data = f.read()
+    if data[:4] != b"glTF":
+        return None
+    ln, = struct.unpack_from("<I", data, 12)
+    js = json.loads(data[20:20 + ln])
+    use = {}
+    for n in js.get("nodes", []):
+        if n.get("mesh") is not None:
+            use[n["mesh"]] = use.get(n["mesh"], 0) + 1
+    tri = 0
+    for i, m in enumerate(js.get("meshes", [])):
+        t = sum(js["accessors"][p.get("indices", p["attributes"]["POSITION"])]["count"] // 3 for p in m["primitives"] if p.get("mode", 4) == 4)
+        tri += t * use.get(i, 0)
+    return {"bytes": len(data), "triangles": tri, "required": js.get("extensionsRequired", [])}
+
+
+def check_models(reg, seen, root):
+    err, total = [], 0
+    for m in reg.get("models", []):
+        tag = f"модель {m.get('file')}"
+        E = lambda x: err.append(f"{tag}: {x}")
+        if m.get("norad") not in seen:
+            E(f"аппарата NORAD {m.get('norad')} нет в каталоге")
+        if m.get("accuracy") not in ACCURACY:
+            E(f"accuracy — одно из {ACCURACY}")
+        if m.get("accuracy") in ("official", "open"):
+            if not m.get("license") or not m.get("credit"):
+                E("нужны license и credit")
+            if not str(m.get("source_url", "")).startswith("https://"):
+                E("нужен https-адрес источника (source_url)")
+        if not (isinstance(m.get("center"), list) and len(m["center"]) == 3 and (m.get("radius") or 0) > 0):
+            E("нужны center [x,y,z] и radius > 0 — по ним камера вписывает модель")
+        f = str(m.get("file", ""))
+        if not re.fullmatch(r"models/[a-z0-9-]+\.glb", f):
+            E("файл — models/<имя>.glb")
+            continue
+        path = os.path.join(root, f)
+        if not os.path.exists(path):
+            E(f"файл не найден ({path})")
+            continue
+        st = glb_stats(path)
+        if not st:
+            E("не GLB")
+            continue
+        total += st["bytes"]
+        if st["bytes"] > MODEL_MAX_BYTES:
+            E(f"{st['bytes']} байт > {MODEL_MAX_BYTES}")
+        if st["triangles"] > MODEL_MAX_TRI:
+            E(f"{st['triangles']} треугольников > {MODEL_MAX_TRI}")
+        bad = [x for x in st["required"] if x not in MODEL_EXT_OK]
+        if bad:
+            E(f"обязательные расширения {bad} требуют WebAssembly или внешних декодеров")
+    if total > MODELS_MAX_TOTAL:
+        err.append(f"все модели вместе {total} байт > {MODELS_MAX_TOTAL}")
+    return err
+
+
+def check(page, root="."):
     err, warn = [], []
     B = blocks(page)
     try:
@@ -116,16 +181,21 @@ def check(page):
                     err.append(f"{sid}/{n}: уже есть в системе {seen[n]}")
                 elif n is not None:
                     seen[n] = sid
+    err += check_models(reg, seen, root)
     if legacy:
         warn.append(f"систем без verifiedAt (описания до введения правил источников): {legacy}")
     return err, warn
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        sys.exit("Использование: check_catalog.py <страница.html>")
-    with open(sys.argv[1], encoding="utf-8") as f:
-        errors, warnings = check(f.read())
+    args = sys.argv[1:]
+    root = None
+    if "--root" in args:
+        k = args.index("--root"); root = args[k + 1]; del args[k:k + 2]
+    if len(args) != 1:
+        sys.exit("Использование: check_catalog.py <страница.html> [--root <корень сайта, где лежит models/>]")
+    with open(args[0], encoding="utf-8") as f:
+        errors, warnings = check(f.read(), root or os.path.dirname(os.path.abspath(args[0])))
     for w in warnings:
         print("предупреждение:", w)
     for e in errors:

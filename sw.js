@@ -4,7 +4,7 @@
    Страница — сначала сеть (свежие данные), без сети — сохранённая копия.
    Файлы с версией или хешем в имени (/vendor/, текстуры глобуса, data-*.json, geo-detail.*.json) — из кэша, они не меняются.
    Тайлы ближнего вида — из кэша, не больше MAX_TILES штук. Остальное — из кэша с обновлением в фоне. */
-const V = 'rassvet-v2', SHELL = V + '-shell', STATIC = V + '-static', TILES = V + '-tiles', MAX_TILES = 600;
+const V = 'rassvet-v3', SHELL = V + '-shell', STATIC = V + '-static', TILES = V + '-tiles', MAX_TILES = 600;
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil((async () => {
@@ -21,7 +21,7 @@ self.addEventListener('fetch', e => {
   if (r.mode === 'navigate' || p === '/' || p === '/index.html') return e.respondWith(page(r));
   if (p.startsWith('/vendor/') || /^\/globe\/.+\.(webp|jpg)$/.test(p) || /^\/(data-|geo-detail\.).+\.json$/.test(p)) return e.respondWith(cacheFirst(r, STATIC));
   if (p.startsWith('/tiles/')) return e.respondWith(cacheFirst(r, TILES, MAX_TILES));
-  if (p === '/globe/globe.json' || p.startsWith('/clouds/') || /\.(png|ico|webmanifest)$/.test(p)) return e.respondWith(fresh(r, STATIC));
+  if (p === '/globe/globe.json' || p.startsWith('/clouds/') || p.startsWith('/models/') || /\.(png|ico|webmanifest)$/.test(p)) return e.respondWith(fresh(r, STATIC));
 });
 
 async function page(r) {
