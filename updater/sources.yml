@@ -1,0 +1,59 @@
+# Откуда updater берёт орбитальные данные: CelesTrak (без регистрации) и, по желанию, Space-Track.
+# Когда менять: добавить или убрать источник, поменять запросы к CelesTrak.
+#
+# Для каждого NORAD из всех источников берётся запись с самой свежей эпохой
+# (при равенстве — TLE, у него проверяется контрольная сумма).
+#
+# provider: celestrak  — без авторизации, params уходят в gp.php (GROUP / NAME / CATNR / INTDES)
+#           spacetrack — только если в переменных окружения заданы SPACETRACK_USER и SPACETRACK_PASS, иначе пропускается
+# format:   tle — 3LE/TLE, проверяются контрольные суммы строк
+#           omm — OMM JSON; нужен для аппаратов с шестизначным NORAD (TLE их не вмещает)
+# blocks:   id блоков <script type="text/plain">, в которые пишется 3LE этого источника.
+#           JSON-блоки (<script type="application/json">) настоящего трекера обновляются
+#           по NORAD из общего набора всех источников, отдельно их перечислять не нужно.
+
+http:
+  timeout_seconds: 60
+  retries: 3            # повторов после первой попытки; пауза backoff * 3^n: 5, 15, 45 с
+  backoff_seconds: 5
+  user_agent: "RassvetTracker/1.0 (+https://{domain}/; daily orbit refresh, 1 req/source/day)"
+
+sources:
+  - id: celestrak-rassvet
+    provider: celestrak
+    title: "GP NAME=RASSVET, TLE"
+    params: {NAME: RASSVET}
+    format: tle
+    blocks: [data-rassvet]
+
+  # Все действующие аппараты одной выгрузкой. Именно OMM: CelesTrak отдаёт один GROUP не чаще раза
+  # в 2 часа независимо от FORMAT (повтор = HTTP 403), а TLE не вмещает шестизначные NORAD.
+  - id: celestrak-active-omm
+    provider: celestrak
+    title: "GP GROUP=active, OMM JSON"
+    params: {GROUP: active}
+    format: omm
+
+  - id: spacetrack-rassvet
+    provider: spacetrack
+    title: "GP OBJECT_NAME~~RASSVET, 3LE"
+    query: "class/gp/OBJECT_NAME/~~RASSVET/decay_date/null-val/orderby/NORAD_CAT_ID/format/3le"
+    format: tle
+    blocks: [data-rassvet]
+
+# Новостные RSS для фида (кнопка «Новости»). Собираются раз в сутки, встраиваются в блок data-news.
+# filter: true — оставлять только элементы со словами про космос (title+описание). Сбой фида изолирован.
+news:
+  - {id: spacenews, name: "SpaceNews", url: "https://spacenews.com/feed/", lang: en, filter: false}
+  - {id: nasa, name: "NASA", url: "https://www.nasa.gov/feed/", lang: en, filter: true}
+  - {id: habr-space, name: "Habr «Космос»", url: "https://habr.com/ru/rss/hub/space/", lang: ru, filter: true}
+  - {id: nplus1, name: "N+1", url: "https://nplus1.ru/rss", lang: ru, filter: true}
+
+# Облака для 3D-глобуса: снимок Live Cloud Maps раз в сутки (картинки CC0, данные EUMETSAT — атрибуция в подвале).
+# Кладутся в <сайт>/clouds/ с датой в имени + latest.json. Сбой не влияет на публикацию: глобус берёт запасные облака NASA.
+clouds:
+  url: "https://clouds.matteason.co.uk/images/{w}x{h}/clouds.jpg"
+  sizes: [1024, 2048, 4096]
+  # Яркость -> облачность в шейдере: ниже первого порога ясно, выше второго сплошная облачность.
+  # Карта построена по ИК-каналу: чистый океан на ней серый (~0,45–0,5), поэтому порог выше, чем у облаков NASA.
+  levels: [0.58, 0.97]
