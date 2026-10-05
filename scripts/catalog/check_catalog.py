@@ -16,7 +16,7 @@
 import json, re, sys, urllib.parse
 
 CATALOG_FIELDS = ["norad", "name", "cospar", "launchDate", "gcatProgram", "gcatCategory", "subtype",
-                  "satcat[perigee,apogee,inc,period,ops]", "elementsSource", "epoch", "elements"]
+                  "satcat[perigee,apogee,inc,period,ops,owner]", "elementsSource", "epoch", "elements"]
 COSPAR = re.compile(r"\d{4}-\d{3}[A-Z]{1,3}")
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 HEX = re.compile(r"#[0-9a-fA-F]{6}")

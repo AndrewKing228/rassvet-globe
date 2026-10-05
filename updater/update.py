@@ -340,7 +340,7 @@ def json_text(obj):
 SATCAT_URL = "https://celestrak.org/satcat/records.php?GROUP={group}&FORMAT=json"
 ACTIVE_OPS = {"+", "P", "B", "S", "X"}   # действующие по коду состояния SATCAT
 CATALOG_FIELDS = ["norad", "name", "cospar", "launchDate", "gcatProgram", "gcatCategory", "subtype",
-                  "satcat[perigee,apogee,inc,period,ops]", "elementsSource", "epoch", "elements"]
+                  "satcat[perigee,apogee,inc,period,ops,owner]", "elementsSource", "epoch", "elements"]
 
 
 def satcat_systems(page):
@@ -382,7 +382,7 @@ def collect_satcat(groups, http_cfg, state_dir, ua, now):
 
 def satcat_entry(group, g):
     return {"id": f"celestrak-satcat-{group}", "tier": 2, "kind": "catalog", "publisher": "CelesTrak SATCAT",
-            "title": f"SATCAT, группа {group}: состав, дата запуска, перигей, апогей, наклонение, период",
+            "title": f"SATCAT, группа {group}: состав, владелец, дата запуска, перигей, апогей, наклонение, период",
             "url": g["url"], "retrievedAt": g["retrievedAt"]}
 
 
@@ -437,7 +437,7 @@ def rebuild_satcat_blocks(page, satcat, pool, entries):
             else:
                 noel += 1
                 continue
-            sc = [x.get("PERIGEE"), x.get("APOGEE"), x.get("INCLINATION"), x.get("PERIOD"), x.get("OPS_STATUS_CODE")]
+            sc = [x.get("PERIGEE"), x.get("APOGEE"), x.get("INCLINATION"), x.get("PERIOD"), x.get("OPS_STATUS_CODE"), x.get("OWNER")]
             rows.append([n, x.get("OBJECT_NAME"), x.get("OBJECT_ID"), x.get("LAUNCH_DATE") or None, None, None, None, sc, *el])
             taken.add(n)
         rows.sort(key=lambda r: (r[3] or "", r[0]))

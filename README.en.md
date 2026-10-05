@@ -68,11 +68,18 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 - Layers: ±½-orbit ground tracks, non-overlapping labels, motion trails, coverage zones with an
   adjustable minimum elevation above the horizon.
 - Colouring by system, launch or satellite; Starlink is shaded by generation.
+- Filters on top of systems: orbit type (low, medium, geosynchronous, highly elliptical), owner per the
+  SATCAT catalogue and launch year; each option shows how many satellites remain.
 - Satellite card: status (marked "unconfirmed" when sources disagree), generation, launch, NORAD and
   COSPAR IDs, altitude, speed, sub-satellite point, sunlit or in shadow, perigee and apogee.
 
 **Time and observing**
 - ±24-hour time scale with speed-up: scroll ahead to see where a satellite will be tonight.
+- "Where this data comes from": source and epoch of the orbital elements with a freshness rating, the
+  catalogue download date, when the system description was checked against primary sources; military
+  satellites are flagged as classified by GCAT and not officially confirmed.
+- The next three passes of any selected satellite right in its card, with a calendar file and a
+  reminder 5 minutes before.
 - "Overhead": what is above your horizon right now and the next Rassvet passes, flagged when visible
   to the naked eye. Geolocation stays in the browser and is never sent anywhere.
 
@@ -553,7 +560,7 @@ The remaining ≈ 4.6 MB is data in 28 `<script type="application/json">` blocks
 | `registry` | registry of 22 systems: names, colours, group, and the rules that assign a satellite from the general catalogue to a system |
 | `data-rassvet` | everything about Rassvet: 38 satellites with orbital elements, 3 generations, 4 launches, plans up to 2030 and 34 sources — every fact marked "confirmed" or "unconfirmed" |
 | `data-glonass` … `data-ru-other` | 11 Russian systems, one row per satellite: NORAD, name, COSPAR, launch date, GCAT program and category, subtype, SATCAT perigee, apogee and inclination, orbital elements and their epoch |
-| `data-gps` … `data-iridium` | 9 systems whose line-up is assembled from CelesTrak SATCAT groups, same row format |
+| `data-gps` … `data-iridium` | 9 systems whose line-up is assembled from CelesTrak SATCAT groups, same row format plus the SATCAT owner |
 | `data-starlink` | ≈ 11,070 Starlink satellites (≈ 2.7 MB) — loaded after the first frame so the page opens fast |
 | `geo-data` | Natural Earth (≈ 360 KB): 242 countries — coastlines, borders and labels needed for the first frame |
 | `geo-detail` | Natural Earth (≈ 1.3 MB): region borders, 4,583 regions and 7,342 cities labelled in Russian and English — loaded after the first frame |
