@@ -100,7 +100,7 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 Any static web server will do. The simplest is Python 3:
 
 ```bash
-git clone https://github.com/AndrewKing228/rassvet-globe.git
+git clone https://github.com/AndrewNonsence/rassvet-globe.git
 cd rassvet-globe
 python -m http.server 8000
 ```
@@ -187,7 +187,7 @@ The script runs as a dedicated user that cannot log in:
 useradd --system --no-create-home --home-dir /var/lib/rassvet-globe --shell /usr/sbin/nologin globe
 install -d -m 0755 -o globe -g globe /var/lib/rassvet-globe
 cd /var/lib/rassvet-globe
-sudo -u globe git clone https://github.com/AndrewKing228/rassvet-globe.git repo
+sudo -u globe git clone https://github.com/AndrewNonsence/rassvet-globe.git repo
 sudo -u globe python3 -m venv venv
 sudo -u globe venv/bin/pip install --require-hashes -r repo/updater/requirements.lock
 ```
@@ -391,7 +391,7 @@ below in a WSL terminal.
 
 ```bash
 mkdir rassvet-globe && cd rassvet-globe
-git clone https://github.com/AndrewKing228/rassvet-globe.git repo
+git clone https://github.com/AndrewNonsence/rassvet-globe.git repo
 mkdir www state
 ```
 
@@ -468,7 +468,7 @@ To look locally, install Git and Python — `winget install Git.Git`, then
 `winget install Python.Python.3.12` — and in a new PowerShell window:
 
 ```powershell
-git clone https://github.com/AndrewKing228/rassvet-globe.git
+git clone https://github.com/AndrewNonsence/rassvet-globe.git
 cd rassvet-globe
 py -m http.server 8000
 ```
@@ -493,7 +493,7 @@ With [Homebrew](https://brew.sh/):
 
 ```bash
 brew install git python caddy
-git clone https://github.com/AndrewKing228/rassvet-globe.git
+git clone https://github.com/AndrewNonsence/rassvet-globe.git
 cd rassvet-globe
 python3 -m http.server 8000          # or: caddy file-server --listen :8000
 ```

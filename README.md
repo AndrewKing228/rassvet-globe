@@ -101,7 +101,7 @@ Starlink, OneWeb и Iridium.
 Нужен любой статический веб-сервер. Проще всего — Python 3:
 
 ```bash
-git clone https://github.com/AndrewKing228/rassvet-globe.git
+git clone https://github.com/AndrewNonsence/rassvet-globe.git
 cd rassvet-globe
 python -m http.server 8000
 ```
@@ -188,7 +188,7 @@ apt update && apt install -y git python3-venv caddy sudo
 useradd --system --no-create-home --home-dir /var/lib/rassvet-globe --shell /usr/sbin/nologin globe
 install -d -m 0755 -o globe -g globe /var/lib/rassvet-globe
 cd /var/lib/rassvet-globe
-sudo -u globe git clone https://github.com/AndrewKing228/rassvet-globe.git repo
+sudo -u globe git clone https://github.com/AndrewNonsence/rassvet-globe.git repo
 sudo -u globe python3 -m venv venv
 sudo -u globe venv/bin/pip install --require-hashes -r repo/updater/requirements.lock
 ```
@@ -391,7 +391,7 @@ pct enter 210
 
 ```bash
 mkdir rassvet-globe && cd rassvet-globe
-git clone https://github.com/AndrewKing228/rassvet-globe.git repo
+git clone https://github.com/AndrewNonsence/rassvet-globe.git repo
 mkdir www state
 ```
 
@@ -467,7 +467,7 @@ docker run -d --name rassvet-globe --restart unless-stopped -p 8080:80 \
 `winget install Python.Python.3.12` — и в новом окне PowerShell:
 
 ```powershell
-git clone https://github.com/AndrewKing228/rassvet-globe.git
+git clone https://github.com/AndrewNonsence/rassvet-globe.git
 cd rassvet-globe
 py -m http.server 8000
 ```
@@ -492,7 +492,7 @@ py -m venv .venv
 
 ```bash
 brew install git python caddy
-git clone https://github.com/AndrewKing228/rassvet-globe.git
+git clone https://github.com/AndrewNonsence/rassvet-globe.git
 cd rassvet-globe
 python3 -m http.server 8000          # или: caddy file-server --listen :8000
 ```

@@ -27,7 +27,7 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = None          # исходники NASA больше лимита Pillow по умолчанию
 log = logging.getLogger("globe")
 
-UA = "rassvet-globe-build/1.0 (+https://github.com/AndrewKing228)"
+UA = "rassvet-globe-build/1.0 (+https://github.com/AndrewNonsence)"
 SOURCES = {
     # ключ: (URL, имя файла в --src, размер в байтах на 2026-10-04 для проверки докачки; None — не проверять)
     "bmng": ("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73751/world.topo.bathy.200407.3x21600x10800.jpg",
