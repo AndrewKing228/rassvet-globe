@@ -3,6 +3,21 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## 2026-10-06
+
+### Русский
+- **МКС из 53 частей:** модули, сегменты фермы, батареи, робототехника и внешние эксперименты — NICER, GEDI,
+  ECOSTRESS, OCO-3, CALET, MAXI, ASIM и другие; выбранная часть подгружается подробнее.
+- **Новые официальные модели NASA:** Terra, Swift, OCO-2, Hinode и MMS, тоже по частям.
+- **Фильтры удобнее:** панель шире, страны и типы видны сразу, сверху — сводка включённых фильтров с крестиками.
+
+### English
+- **The ISS in 53 parts:** modules, truss segments, arrays, robotics and external experiments — NICER, GEDI,
+  ECOSTRESS, OCO-3, CALET, MAXI, ASIM and more; the selected part loads in more detail.
+- **New official NASA models:** Terra, Swift, OCO-2, Hinode and MMS, also in parts.
+- **Easier filters:** a wider panel, all countries and types visible at once, a summary of active filters with
+  remove buttons on top.
+
 ## 2026-10-05
 
 ### Русский

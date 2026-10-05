@@ -88,8 +88,9 @@ def check_models(reg, seen, root):
     for m in reg.get("models", []):
         tag = f"модель {m.get('file')}"
         E = lambda x: err.append(f"{tag}: {x}")
-        if m.get("norad") not in seen:
-            E(f"аппарата NORAD {m.get('norad')} нет в каталоге")
+        for nr in [m.get("norad")] + list(m.get("norads") or []):
+            if nr not in seen:
+                E(f"аппарата NORAD {nr} нет в каталоге")
         if m.get("accuracy") not in ACCURACY:
             E(f"accuracy — одно из {ACCURACY}")
         if m.get("accuracy") in ("official", "open"):
@@ -117,6 +118,22 @@ def check_models(reg, seen, root):
             ids = {x.get("id") for x in m["parts"]}
             if set(st["parts"]) != ids:
                 E(f"части в файле {sorted(st['parts'])} и в реестре {sorted(ids)} не совпадают")
+        if m.get("detailDir"):
+            for x in m.get("parts", []):
+                if not x.get("detail"):
+                    continue
+                df = os.path.join(root, m["detailDir"], x["id"] + ".glb")
+                ds = glb_stats(df) if os.path.exists(df) else None
+                if not ds:
+                    E(f"подробная часть {x['id']}: нет файла или не GLB ({df})")
+                    continue
+                total += ds["bytes"]
+                if ds["bytes"] > MODEL_MAX_BYTES or ds["triangles"] > MODEL_MAX_TRI:
+                    E(f"подробная часть {x['id']}: {ds['bytes']} байт, {ds['triangles']} треугольников — больше лимита")
+                if [q for q in ds["required"] if q not in MODEL_EXT_OK]:
+                    E(f"подробная часть {x['id']}: расширения, требующие WebAssembly")
+                if ds["parts"] != [x["id"]]:
+                    E(f"подробная часть {x['id']}: в файле части {ds['parts']}")
         for x in m.get("markers", []):
             pos = x.get("pos") or []
             pts = pos if pos and isinstance(pos[0], list) else [pos]
