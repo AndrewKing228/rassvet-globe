@@ -1,0 +1,7 @@
+# Рабочие файлы скрипта обновления орбит / Working files of the orbit update script
+.cache/
+*.gz
+clouds/
+__pycache__/
+*.pyc
+.venv/
