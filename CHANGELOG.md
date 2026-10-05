@@ -3,7 +3,7 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
-## 2026-10-06
+## v1.5.0 — 2026-10-05
 
 ### Русский
 - **МКС из 53 частей:** модули, сегменты фермы, батареи, робототехника и внешние эксперименты — NICER, GEDI,
@@ -18,7 +18,7 @@ What changes on the page and in the repository. Dates are UTC.
 - **Easier filters:** a wider panel, all countries and types visible at once, a summary of active filters with
   remove buttons on top.
 
-## 2026-10-05
+## v1.4.0 — 2026-10-05
 
 ### Русский
 
