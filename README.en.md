@@ -118,8 +118,8 @@ flowchart LR
 2. **Page.** `index.html` is a single file: markup, styles, tracker code and the data itself in
    `<script type="application/json">` blocks. The server computes nothing; it only serves files.
 3. **Propagation.** In the browser, [satellite.js](https://github.com/shashwatak/satellite-js) turns
-   orbital elements into coordinates for any moment with SGP4 — for every frame and every point on the
-   time scale.
+   orbital elements into coordinates for any moment with SGP4. Thousands of satellites are computed in a
+   background thread (Web Worker); between its answers the main thread smoothly extends their motion and only draws.
 4. **Rendering.** [deck.gl](https://deck.gl/) draws the globe and the map with WebGL 2; Earth lighting,
    the night side, clouds and the atmosphere are the tracker's own shaders.
 
@@ -185,8 +185,8 @@ sudo -u globe venv/bin/python repo/updater/update.py --once \
     --template repo/index.html --static repo --out www --data state
 ```
 
-`www/` now holds `index.html`, its compressed copy, a `data-starlink.<hash>.json` file and, if enabled,
-clouds in `clouds/`. The script never modifies the template `repo/index.html`, so `git pull` later runs
+`www/` now holds `index.html`, its compressed copy, the `data-starlink.<hash>.json` and `geo-detail.<hash>.json`
+files and, if enabled, clouds in `clouds/`. The script never modifies the template `repo/index.html`, so `git pull` later runs
 without conflicts.
 
 ### 4. Caddy
@@ -204,7 +204,7 @@ example.org {
 	}
 
 	# the page and daily data come from the directory the update script writes
-	@daily path / /index.html /data-starlink.* /clouds/*
+	@daily path / /index.html /data-starlink.* /geo-detail.* /clouds/*
 	handle @daily {
 		root * /var/lib/rassvet-globe/www
 		file_server {
@@ -219,7 +219,7 @@ example.org {
 	}
 
 	# files with a version or hash in the name never change — let browsers keep them
-	@immutable path /vendor/* /globe/*.webp /globe/*.jpg /data-starlink.*
+	@immutable path /vendor/* /globe/*.webp /globe/*.jpg /data-starlink.* /geo-detail.*
 	header @immutable Cache-Control "public, max-age=31536000, immutable"
 	@revalidate path / /index.html /sw.js /manifest.webmanifest /globe/globe.json /clouds/*
 	header @revalidate Cache-Control "no-cache"
@@ -317,7 +317,7 @@ Fork the repository and enable **Pages → Deploy from a branch → main / (root
 minute later the site opens at an address like `https://<user>.github.io/rassvet-globe/`. Two limits:
 
 - the orbits stay at the snapshot date in the repository — refresh them locally with the command from
-  the next section and commit `index.html` together with the `data-starlink.*.json` file;
+  the next section and commit `index.html` together with the `data-starlink.*.json` and `geo-detail.*.json` files;
 - the site lives in a subfolder while the service worker and manifest expect the site root, so offline
   mode and installing as an app are limited. A custom domain in the Pages settings removes this.
 
@@ -390,7 +390,7 @@ Next to it create a `Caddyfile` — the same two-directory setup as on the serve
 		respond 404
 	}
 
-	@daily path / /index.html /data-starlink.* /clouds/*
+	@daily path / /index.html /data-starlink.* /geo-detail.* /clouds/*
 	handle @daily {
 		root * /srv/www
 		file_server {
@@ -503,8 +503,8 @@ python -m venv .venv
 .venv/bin/python updater/update.py --once --template index.html --static . --out . --data .cache
 ```
 
-This updates the page in place: `index.html` is rewritten, the Starlink block moves into a
-`data-starlink.<hash>.json` file next to it, cache and logs go to `.cache/`. To preview first, use
+This updates the page in place: `index.html` is rewritten, the Starlink and the regions-and-cities blocks move
+into `data-starlink.<hash>.json` and `geo-detail.<hash>.json` files next to it, cache and logs go to `.cache/`. To preview first, use
 `--dry-run` instead of `--once`: the built page lands in `.cache/state/dry-run/` and your files stay
 untouched.
 
@@ -541,9 +541,9 @@ rassvet-globe/
 
 ### 📄 The page
 
-**`index.html`** (≈ 4.8 MB) is the application itself. Code takes ≈ 250 KB and ≈ 3,300 lines: the UI,
+**`index.html`** (≈ 4.8 MB) is the application itself. Code takes ≈ 270 KB and ≈ 3,400 lines: the UI,
 position propagation, deck.gl layers, Earth and atmosphere shaders, translations into two languages.
-The remaining ≈ 4.5 MB is data in 18 `<script type="application/json">` blocks:
+The remaining ≈ 4.5 MB is data in 19 `<script type="application/json">` blocks:
 
 | Block | Contents |
 |---|---|
@@ -551,7 +551,8 @@ The remaining ≈ 4.5 MB is data in 18 `<script type="application/json">` blocks
 | `data-rassvet` | everything about Rassvet: 38 satellites with orbital elements, 3 generations, 4 launches, plans up to 2030 and 34 sources — every fact marked "confirmed" or "unconfirmed" |
 | `data-glonass` … `data-ru-other` | 11 Russian systems, one row per satellite: NORAD, name, COSPAR, launch date, GCAT program and category, subtype, SATCAT perigee, apogee and inclination, orbital elements and their epoch |
 | `data-starlink` | ≈ 11,070 Starlink satellites (≈ 2.7 MB) — loaded after the first frame so the page opens fast |
-| `geo-data` | Natural Earth (≈ 1.7 MB): 242 countries, region borders, 4,583 regions and 7,342 cities labelled in Russian and English |
+| `geo-data` | Natural Earth (≈ 360 KB): 242 countries — coastlines, borders and labels needed for the first frame |
+| `geo-detail` | Natural Earth (≈ 1.3 MB): region borders, 4,583 regions and 7,342 cities labelled in Russian and English — loaded after the first frame |
 | `data-meta` | snapshot date and the list of sources it was built from |
 | `data-history`, `data-news` | orbit altitude history and the news feed — filled by the update script |
 

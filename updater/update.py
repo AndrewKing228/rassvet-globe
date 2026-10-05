@@ -733,7 +733,7 @@ def check_built(template, page):
                 raise ValueError(f"{bid}: 3LE не разбирается")
 
 
-EXTERNAL_BLOCKS = ("data-starlink",)   # крупные блоки (Starlink ~3 МБ): отдельным файлом, страница догружает после первого кадра
+EXTERNAL_BLOCKS = ("data-starlink", "geo-detail")   # крупные блоки (Starlink ~3 МБ, регионы и города ~1,3 МБ): отдельными файлами, страница догружает после первого кадра
 
 
 def externalize(page, out_dir):

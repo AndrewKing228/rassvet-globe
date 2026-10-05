@@ -118,8 +118,8 @@ flowchart LR
 2. **Страница.** `index.html` — один файл: разметка, стили, код трекера и сами данные в блоках
    `<script type="application/json">`. Сервер ничего не вычисляет, он только раздаёт файлы.
 3. **Расчёт.** В браузере [satellite.js](https://github.com/shashwatak/satellite-js) по модели SGP4
-   переводит элементы орбит в координаты на нужный момент времени — для каждого кадра и каждой
-   отметки на шкале времени.
+   переводит элементы орбит в координаты на нужный момент времени. Тысячи аппаратов считаются в фоновом
+   потоке (Web Worker), а главный поток между ответами плавно продлевает их движение и только рисует.
 4. **Отрисовка.** [deck.gl](https://deck.gl/) рисует глобус и карту на WebGL 2; освещение Земли,
    ночная сторона, облака и атмосфера — собственные шейдеры трекера.
 
@@ -185,8 +185,8 @@ sudo -u globe venv/bin/python repo/updater/update.py --once \
     --template repo/index.html --static repo --out www --data state
 ```
 
-В `www/` появятся `index.html`, его сжатая копия, файл `data-starlink.<хеш>.json` и, если включены,
-облака в `clouds/`. Шаблон `repo/index.html` скрипт не меняет, поэтому `git pull` потом проходит
+В `www/` появятся `index.html`, его сжатая копия, файлы `data-starlink.<хеш>.json` и `geo-detail.<хеш>.json`
+и, если включены, облака в `clouds/`. Шаблон `repo/index.html` скрипт не меняет, поэтому `git pull` потом проходит
 без конфликтов.
 
 ### 4. Caddy
@@ -204,7 +204,7 @@ example.org {
 	}
 
 	# страница и ежедневные данные — из каталога, который пишет скрипт обновления
-	@daily path / /index.html /data-starlink.* /clouds/*
+	@daily path / /index.html /data-starlink.* /geo-detail.* /clouds/*
 	handle @daily {
 		root * /var/lib/rassvet-globe/www
 		file_server {
@@ -219,7 +219,7 @@ example.org {
 	}
 
 	# файлы с версией или хешем в имени не меняются — пусть браузер хранит их долго
-	@immutable path /vendor/* /globe/*.webp /globe/*.jpg /data-starlink.*
+	@immutable path /vendor/* /globe/*.webp /globe/*.jpg /data-starlink.* /geo-detail.*
 	header @immutable Cache-Control "public, max-age=31536000, immutable"
 	@revalidate path / /index.html /sw.js /manifest.webmanifest /globe/globe.json /clouds/*
 	header @revalidate Cache-Control "no-cache"
@@ -317,7 +317,7 @@ systemctl start rassvet-globe-update.service
 сайт откроется по адресу вида `https://<имя>.github.io/rassvet-globe/`. Два ограничения:
 
 - орбиты остаются на дату снимка в репозитории — обновить их можно локально командой из следующего
-  раздела и закоммитить `index.html` вместе с файлом `data-starlink.*.json`;
+  раздела и закоммитить `index.html` вместе с файлами `data-starlink.*.json` и `geo-detail.*.json`;
 - сайт живёт в подпапке, а service worker и манифест рассчитаны на корень, поэтому работа без сети
   и установка на телефон будут ограничены. С собственным доменом в настройках Pages этого нет.
 
@@ -389,7 +389,7 @@ mkdir www state
 		respond 404
 	}
 
-	@daily path / /index.html /data-starlink.* /clouds/*
+	@daily path / /index.html /data-starlink.* /geo-detail.* /clouds/*
 	handle @daily {
 		root * /srv/www
 		file_server {
@@ -501,8 +501,8 @@ python -m venv .venv
 .venv/bin/python updater/update.py --once --template index.html --static . --out . --data .cache
 ```
 
-Так страница обновляется на месте: `index.html` переписывается, блок Starlink уходит в
-`data-starlink.<хеш>.json` рядом, кэш и журнал — в `.cache/`. Чтобы сначала посмотреть результат,
+Так страница обновляется на месте: `index.html` переписывается, блоки Starlink и регионов с городами уходят
+в файлы `data-starlink.<хеш>.json` и `geo-detail.<хеш>.json` рядом, кэш и журнал — в `.cache/`. Чтобы сначала посмотреть результат,
 замените `--once` на `--dry-run`: собранная страница окажется в `.cache/state/dry-run/`, а рабочие
 файлы не изменятся.
 
@@ -540,9 +540,9 @@ rassvet-globe/
 
 ### 📄 Страница
 
-**`index.html`** (≈ 4,8 МБ) — это и есть приложение. Код занимает ≈ 250 КБ и ≈ 3 300 строк:
+**`index.html`** (≈ 4,8 МБ) — это и есть приложение. Код занимает ≈ 270 КБ и ≈ 3 400 строк:
 интерфейс, расчёт положений, слои deck.gl, шейдеры Земли и атмосферы, переводы на два языка.
-Остальные ≈ 4,5 МБ — данные в 18 блоках `<script type="application/json">`:
+Остальные ≈ 4,5 МБ — данные в 19 блоках `<script type="application/json">`:
 
 | Блок | Что внутри |
 |---|---|
@@ -550,7 +550,8 @@ rassvet-globe/
 | `data-rassvet` | всё о «Рассвете»: 38 аппаратов с элементами орбит, 3 поколения, 4 пуска, планы до 2030 года и 34 источника — у каждого факта статус «подтверждено» или «не подтверждено» |
 | `data-glonass` … `data-ru-other` | 11 российских систем, по строке на аппарат: NORAD, название, COSPAR, дата пуска, программа и категория по GCAT, подтип, перигей, апогей и наклонение по SATCAT, элементы орбиты и их эпоха |
 | `data-starlink` | ≈ 11 070 аппаратов Starlink (≈ 2,7 МБ) — догружается после первого кадра, чтобы страница открывалась быстро |
-| `geo-data` | Natural Earth (≈ 1,7 МБ): 242 страны, границы регионов, 4 583 региона и 7 342 города с подписями на русском и английском |
+| `geo-data` | Natural Earth (≈ 360 КБ): 242 страны — берега, границы и подписи, нужные для первого кадра |
+| `geo-detail` | Natural Earth (≈ 1,3 МБ): границы регионов, 4 583 региона и 7 342 города с подписями на русском и английском — подгружаются после первого кадра |
 | `data-meta` | дата снимка и список источников, из которых он собран |
 | `data-history`, `data-news` | история высоты орбит и лента новостей — заполняет скрипт обновления |
 
