@@ -20,6 +20,7 @@ CATALOG_FIELDS = ["norad", "name", "cospar", "launchDate", "gcatProgram", "gcatC
 COSPAR = re.compile(r"\d{4}-\d{3}[A-Z]{1,3}")
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 HEX = re.compile(r"#[0-9a-fA-F]{6}")
+BUS_TYPES = ["leo-flat", "gnss", "geo-comm", "leo-small", "station"]   # схемы 3D-моделей в странице (BUS_MESH)
 
 
 def blocks(page):
@@ -51,6 +52,8 @@ def check(page):
             E("нужно имя на русском и английском")
         if not HEX.fullmatch(s.get("color", "")):
             E("цвет — #RRGGBB")
+        if s.get("bus") and s["bus"] not in BUS_TYPES:
+            E(f"bus — одно из {BUS_TYPES} (схема 3D-модели по типу платформы)")
         mil = "Воен" in (s.get("category") or "") or "ilitary" in (s.get("category_en") or "")
         if mil and s.get("classification") != "gcat":
             E("военная система без classification: \"gcat\" (назначение официально не раскрывается)")

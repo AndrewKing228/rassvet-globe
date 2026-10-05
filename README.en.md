@@ -75,6 +75,9 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 
 **Time and observing**
 - ±24-hour time scale with speed-up: scroll ahead to see where a satellite will be tonight.
+- A 3D model of the selected satellite behind the cube button: until a satellite has an official model under
+  an open licence, a schematic by platform type is shown and labelled "schematic" — sizes are approximate,
+  it is not a drawing.
 - "Where this data comes from": source and epoch of the orbital elements with a freshness rating, the
   catalogue download date, when the system description was checked against primary sources; military
   satellites are flagged as classified by GCAT and not officially confirmed.
