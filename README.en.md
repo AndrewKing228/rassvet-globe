@@ -88,7 +88,8 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 - ±24-hour time scale with speed-up: scroll ahead to see where a satellite will be tonight.
 - "How it works": orbital elements, the SGP4 model, inclination, orbit types, the ground track, the coverage
   zone and when a satellite is visible to the eye — in plain words, in Russian and English.
-- A 3D model of the selected satellite behind the cube button: rotate it, take it apart, tap a part for a
+- A 3D model of the selected satellite behind the cube button (the window adapts to the screen and has a
+  full-screen mode): rotate it, take it apart, tap a part for a
   short description with links to the primary source (NASA, ESA) and to Wikipedia.
   - The ISS — NASA's official model (IGOAL lab) split into 53 parts in six groups: Russian modules, US and
     partner modules, truss segments, arrays and radiators, robotics, external experiments (NICER, GEDI,

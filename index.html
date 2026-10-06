@@ -440,7 +440,7 @@ dialog .acts .grow{flex:1}
 .tag.fresh{color:var(--ok)}
 .tag.aging{color:var(--accent)}
 .m3d{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:rgba(4,8,20,.55)}
-.m3d-box{width:min(900px,94vw);height:min(700px,88vh);display:flex;flex-direction:column;border-radius:16px;overflow:hidden}
+.m3d-box{width:min(1280px,94vw);height:min(900px,90vh);display:flex;flex-direction:column;border-radius:16px;overflow:hidden}
 .m3d-box header{display:flex;align-items:center;gap:10px;padding:12px 14px 8px}
 .m3d-box h2{margin:0;font-size:15px;flex:1}
 .m3d-view{flex:1;position:relative;min-height:0;background:radial-gradient(ellipse at 50% 40%,rgba(80,110,180,.18),transparent 70%)}
@@ -468,7 +468,14 @@ dialog .acts .grow{flex:1}
 .m3d-pins{position:absolute;inset:0;pointer-events:none;z-index:2}
 .m3d-pin{position:absolute;left:-13px;top:-13px;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:rgba(255,180,94,.92);color:#1b1206;font:700 12px/1 var(--font);cursor:pointer;pointer-events:auto;box-shadow:0 2px 8px rgba(0,0,0,.5)}
 .m3d-pin[aria-pressed="true"]{background:#fff}
-@media (min-width:721px){ .m3d-info{left:auto;right:10px;top:10px;bottom:auto;width:310px;max-height:calc(100% - 20px)} }
+@media (min-width:721px){ .m3d-info{left:auto;right:10px;top:10px;bottom:auto;width:330px;max-height:calc(100% - 20px)} }
+/* планшеты и средние экраны: окно почти на весь экран — по мелким частям легче попасть */
+@media (min-width:721px) and (max-width:1199px){ .m3d-box{width:96vw;height:92vh} }
+@media (min-height:900px) and (min-width:1200px){ .m3d-parts .pl{max-height:120px} }
+.m3d.full .m3d-box{width:100vw;height:100vh;height:100dvh;max-height:none;border-radius:0}
+.m3d-fs{width:32px;height:32px;display:inline-grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--muted);cursor:pointer}
+.m3d-fs:hover,.m3d-fs[aria-pressed="true"]{color:var(--text);border-color:var(--muted)}
+@media (max-width:720px){ .m3d-fs{display:none} }
 @media (max-width:720px){ .m3d-box{width:100vw;height:100%;max-height:100dvh;border-radius:0} .m3d-info{max-height:52%}
   .m3d-box footer{font-size:11px;line-height:1.35;max-height:5.6em;overflow:auto;padding:6px 12px 10px} .m3d-box footer small{display:none} }
 .tag.schematic{color:var(--warn)}
@@ -983,7 +990,7 @@ ru:{
   ],
   'm3d.official':'официальная модель', 'm3d.credit':(c,p)=>`Модель: ${c} (NASA 3D Resources). Для сайта: ${p}.`, 'm3d.source':'Исходник',
   'm3d.open':'3D-модель аппарата', 'm3d.close':'Закрыть', 'm3d.schematic':'схема',
-  'm3d.explode':'Разобрать', 'm3d.assemble':'Собрать', 'm3d.explodeTip':'Развести части в стороны, чтобы рассмотреть каждую', 'm3d.parts':'Части аппарата',
+  'm3d.full':'Во весь экран', 'm3d.explode':'Разобрать', 'm3d.assemble':'Собрать', 'm3d.explodeTip':'Развести части в стороны, чтобы рассмотреть каждую', 'm3d.parts':'Части аппарата',
   'm3d.hintParts':'Нажмите на часть или выберите её в списке — появится короткое описание. Перетаскивайте, чтобы повернуть; колесо или щипок — масштаб.',
   'm3d.hintPins':'Нажмите на номер или выберите часть в списке. Перетаскивайте, чтобы повернуть; колесо или щипок — масштаб.',
   'm3d.generic':'Типовая часть такой платформы: у конкретного аппарата устройство может отличаться.',
@@ -1120,7 +1127,7 @@ en:{
   ],
   'm3d.official':'official model', 'm3d.credit':(c,p)=>`Model: ${c} (NASA 3D Resources). For the web: ${p}.`, 'm3d.source':'Source',
   'm3d.open':'3D model of the satellite', 'm3d.close':'Close', 'm3d.schematic':'schematic',
-  'm3d.explode':'Take apart', 'm3d.assemble':'Assemble', 'm3d.explodeTip':'Move the parts apart to look at each one', 'm3d.parts':'Satellite parts',
+  'm3d.full':'Full screen', 'm3d.explode':'Take apart', 'm3d.assemble':'Assemble', 'm3d.explodeTip':'Move the parts apart to look at each one', 'm3d.parts':'Satellite parts',
   'm3d.hintParts':'Tap a part or pick it in the list to read a short description. Drag to rotate; wheel or pinch to zoom.',
   'm3d.hintPins':'Tap a number or pick a part in the list. Drag to rotate; wheel or pinch to zoom.',
   'm3d.generic':'A typical part of this platform: the actual satellite may be built differently.',
@@ -2167,17 +2174,25 @@ function m3dShell(s, foot, canExplode){
   const wrap=document.createElement('div'); wrap.className='m3d'; wrap.id='m3d';
   wrap.innerHTML=`<div class="m3d-box glass" role="dialog" aria-modal="true" aria-labelledby="m3dTitle"><header><h2 id="m3dTitle">${esc(s.name)}</h2>
     ${canExplode?`<button type="button" class="btn m3d-ex" id="m3dEx" aria-pressed="false" data-tip="${esc(t('m3d.explodeTip'))}">${esc(t('m3d.explode'))}</button>`:''}
+    <button type="button" class="m3d-fs" id="m3dFs" aria-pressed="false" aria-label="${esc(t('m3d.full'))}" data-tip="${esc(t('m3d.full'))}"><svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
     <button class="close" id="m3dClose" aria-label="${esc(t('m3d.close'))}">×</button></header>
     <div class="m3d-view" id="m3dView"><div class="m3d-pins" id="m3dPins"></div><div class="m3d-info" id="m3dInfo" hidden></div></div>
     <div class="m3d-parts" id="m3dParts" role="group" aria-label="${esc(t('m3d.parts'))}"></div>
     <footer>${foot}<br><small>${esc(t(canExplode?'m3d.hintParts':'m3d.hintPins'))}</small></footer></div>`;
   document.body.appendChild(wrap);
   $('#m3dClose').onclick=closeModel; wrap.addEventListener('click',e=>{ if(e.target===wrap) closeModel(); });
+  // во весь экран: выбор запоминается в браузере; deck.gl сам подстраивает холст под новый размер
+  const fs=$('#m3dFs'), setFull=v=>{ wrap.classList.toggle('full',v); fs.setAttribute('aria-pressed',String(v)); };
+  let full=false; try{ full=localStorage.getItem('rassvet.m3dFull')==='1'; }catch(e){}
+  setFull(full); fs.onclick=()=>{ full=!full; setFull(full); try{ localStorage.setItem('rassvet.m3dFull',full?'1':'0'); }catch(e){}
+    // окно изменилось — вписать модель заново, сохранив поворот
+    requestAnimationFrame(()=>{ const M=M3D; if(!M || !M.fit || !M.d) return; const k=Math.log2(fitSize($('#m3dView'))/M.fit); M.fit*=2**k; M.zoom0+=k;
+      M.vs={...M.vs, zoom:M.vs.zoom+k}; M.d.setProps({viewState:M.vs}); }); };
   return wrap;
 }
 function m3dDeck(M, view, vs, layers, effects){
   M.d=new deck.Deck({ parent:view, views:new deck.OrbitView({id:'m3d', orbitAxis:M.up==='Z'?'Z':'Y'}), viewState:vs, controller:true, layers, effects:effects||[],
-    useDevicePixels:Math.min(window.devicePixelRatio||1, mqCoarse.matches?1.5:2), pickingRadius:4,
+    useDevicePixels:Math.min(window.devicePixelRatio||1, mqCoarse.matches?1.5:2), pickingRadius: mqCoarse.matches ? 14 : 6,   // палец толще курсора
     getCursor:({isHovering,isDragging})=>isHovering?'pointer':(isDragging?'grabbing':'grab'),
     onClick:(info)=>{ if(!M3D) return; if(info && info.layer && info.layer.props.partId) selectPart(info.layer.props.partId); else if(M.sel) selectPart(null); },
     onViewStateChange:({viewState, interactionState})=>{ if(!M3D) return; const {transitionDuration, transitionInterpolator, ...v}=viewState; M.vs=v;
@@ -2272,13 +2287,16 @@ async function openPartsModel(s, om){
     const G=withGeometry(parts.map(p=>({...p, color:p.color})), om.upAxis||'Y'); startParts(s, G, 'official', om); }
   catch(e){ console.warn('[rassvet] модель не загрузилась, показываю схему', e); openModel(s, true); }
 }
+/* размер, в который вписывается модель: окно часто широкое, а большинство аппаратов шире, чем выше — берём ширину,
+   но не больше 1,35 высоты, чтобы вытянутые вверх (Hubble) не обрезались */
+const fitSize = view => Math.max(120, Math.min(view.clientWidth, view.clientHeight*1.35));
 const M3D_PENDING = s => !!$('#m3d') && $('#m3dTitle').textContent===s.name;
 function startParts(s, G, kind, om){
-  const view=$('#m3dView'), vmin=Math.max(120, Math.min(view.clientWidth, view.clientHeight));
+  const view=$('#m3dView'), vmin=fitSize(view);
   const M={ kind, om, parts:G.parts, up:G.up, e:0, sel:null, touched:0, raf:0, wrap:$('#m3d') };
   M.layers=()=>partLayers(M); M3D=M;
   const vs={ target:G.center, rotationOrbit:35, rotationX:G.up==='Z'?30:20, zoom:Math.log2(vmin/(2.2*G.radius*1.1)), minZoom:-8, maxZoom:12 };
-  M.zoom0=vs.zoom; M.target0=G.center;
+  M.zoom0=vs.zoom; M.target0=G.center; M.fit=vmin;
   m3dDeck(M, view, vs, M.layers(), kind==='official' ? [new deck.LightingEffect({ amb:new deck.AmbientLight({intensity:0.75}), sun:new deck.DirectionalLight({direction:[-1,-2,-1.5], intensity:1.25}), fill:new deck.DirectionalLight({direction:[1,1,1], intensity:0.45}) })] : []);
   renderPartChips(M); $('#m3dEx').onclick=toggleExplode; $('#m3dEx').hidden = G.parts.length<2;   // одну часть разбирать нечего
   $('#m3dClose').focus();
@@ -2286,9 +2304,10 @@ function startParts(s, G, kind, om){
 /* цельная модель (Hubble): ScenegraphLayer и метки на крупных частях — сами части в файле NASA не разделены */
 function openPinnedModel(s, om){
   m3dShell(s, `<span class="tag official">${esc(t('m3d.official'))}</span>${esc(t('m3d.credit', om.credit, cfgT(om,'processing')))} <a href="${esc(om.source_url)}" target="_blank" rel="noopener">${esc(t('m3d.source'))}</a>`, false);
-  const view=$('#m3dView'), vmin=Math.max(120, Math.min(view.clientWidth, view.clientHeight));
+  const view=$('#m3dView'), vmin=fitSize(view);
   const M={ kind:'official', om, parts:null, up:om.upAxis||'Y', sel:null, touched:0, raf:0, wrap:$('#m3d') }; M3D=M;
   const vs={ target:om.center, rotationOrbit:35, rotationX:20, zoom:Math.log2(vmin/(2.2*om.radius)), minZoom:-6, maxZoom:10 };
+  M.zoom0=vs.zoom; M.fit=vmin;
   const layer=new deck.ScenegraphLayer({ id:'model', data:[0], scenegraph:modelUrl(om), getPosition:()=>[0,0,0], getColor:[255,255,255], sizeScale:1, _lighting:'pbr',
     coordinateSystem:deck.COORDINATE_SYSTEM.CARTESIAN, loadOptions:{worker:false},
     onError:(e)=>{ console.warn('[rassvet] модель не загрузилась, показываю схему', e); setTimeout(()=>openModel(s, true), 0); return true; } });
@@ -3410,7 +3429,10 @@ function earthLayers(tm){
       elevationDecoder:TERRARIUM,
       tileSize:256, minZoom:3, maxZoom:13, material:false, opacity:fade, pickable:false,
       zoomOffset: lite?0:zo, maxCacheSize: (mobile||lite)?96:128,   // ≈0,5 / 1,3 МБ видеопамяти на тайл
-      grid: (mobile||lite) ? 32 : (zo ? 64 : 128), drape:drapeOn() }));
+      // одновременно грузящихся тайлов (по 3 запроса на тайл): по умолчанию в deck.gl 6 — вид собирался волнами по 18
+      // запросов, ~12 волн на экран. Тайлы отдаются по HTTP/2, так что больше одновременных запросов не тормозят
+      maxRequests: (mobile||lite) ? 12 : 24,
+      grid: (mobile||lite) ? 32 : 64, drape:drapeOn() }));   // сетка рельефа на тайл: 64 вместо 128 — вид собирается ~на четверть быстрее, разницы в горах на глаз нет
   }
   return out;
 }

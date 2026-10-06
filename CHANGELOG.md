@@ -3,6 +3,20 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.6.0 — 2026-10-06
+
+### Русский
+- **Ближний вид быстрее в 2–3 раза:** тайлы рельефа и снимков грузятся по 24 одновременно вместо 6 (на телефоне 12),
+  сетка рельефа легче. Нужен сервер, который отдаёт тайлы по HTTP/2.
+- **Окно 3D по размеру экрана:** больше на мониторах, почти на весь экран на планшетах, кнопка «Во весь экран»;
+  модель вписывается по ширине окна, по мелким частям легче попасть.
+
+### English
+- **Close-up view 2–3× faster:** terrain and imagery tiles load 24 at a time instead of 6 (12 on phones), with a lighter
+  terrain mesh. Needs a server that serves tiles over HTTP/2.
+- **3D window sized to the screen:** larger on monitors, almost full screen on tablets, a “Full screen” button; the model
+  fits the window width, so small parts are easier to hit.
+
 ## v1.5.4 — 2026-10-06
 
 ### Русский
