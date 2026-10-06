@@ -3,6 +3,18 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.5.4 — 2026-10-06
+
+### Русский
+- **Карточка аппарата на ПК** шире и не вылезает за край: длинные строки переносятся, прокрутки вбок нет.
+- **Тренд высоких орбит:** выше 2000 км вместо неверного «быстро снижается, сход близок» — «орбита меняется: манёвр
+  или притяжение Луны и Солнца».
+
+### English
+- **The satellite card on desktop** is wider and no longer spills over: long lines wrap, no sideways scrolling.
+- **High-orbit trend:** above 2,000 km the wrong “decaying fast, reentry near” is replaced by “orbit changing: a manoeuvre
+  or the pull of the Moon and Sun”.
+
 ## v1.5.3 — 2026-10-06
 
 ### Русский

@@ -127,7 +127,7 @@ input[type=range]{accent-color:var(--accent)}
 .sep{height:1px;background:var(--line);margin:8px 16px}
 
 /* card */
-.card{position:absolute;top:64px;right:12px;width:410px;max-width:calc(100vw - 316px);max-height:calc(100% - 64px - var(--tb,118px) - 4px);overflow:auto;z-index:4}
+.card{position:absolute;top:64px;right:12px;width:clamp(380px,32vw,460px);max-width:calc(100vw - 376px);overflow-x:hidden;max-height:calc(100% - 64px - var(--tb,118px) - 4px);overflow:auto;z-index:4}
 
 .card[hidden],.side[hidden]{display:none}
 
@@ -145,11 +145,11 @@ input[type=range]{accent-color:var(--accent)}
 
 .card h4{margin:6px 0 6px;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.02em}
 
-dl.kv{display:grid;grid-template-columns:124px 1fr;gap:5px 12px;margin:0}
+dl.kv{display:grid;grid-template-columns:minmax(92px,118px) minmax(0,1fr);gap:6px 12px;margin:0}   /* значение не шире карточки — длинное переносится */
 
 dl.kv dt{color:var(--muted);font-size:12.5px}
 
-dl.kv dd{margin:0;font-size:13px;word-break:break-word}
+dl.kv dd{margin:0;font-size:13px;line-height:1.45;min-width:0;overflow-wrap:anywhere}
 
 .tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:6px;margin-left:4px;vertical-align:1px;border:1px solid currentColor;line-height:16px;white-space:nowrap}
 
@@ -504,7 +504,7 @@ dialog .acts .grow{flex:1}
 
 
 
-.wiki a{white-space:nowrap}
+.wiki a{overflow-wrap:anywhere}   /* длинное название статьи переносится, а не раздвигает карточку */
 
 
 /* ===== космос: звёзды на #app, свечение атмосферы под картой ===== */
@@ -658,7 +658,8 @@ dialog .acts .grow{flex:1}
 }
 .spark{vertical-align:-4px;margin:0 2px}
 .trend b{font-variant-numeric:tabular-nums}
-.trend{white-space:nowrap}
+.trend{white-space:normal}
+.trend b{white-space:nowrap}
 .newslist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
 .newslist a{display:block;text-decoration:none;color:var(--text);padding:9px 8px;border-radius:9px}
 .newslist a:hover{background:var(--bg-raise)}
@@ -966,7 +967,7 @@ ru:{
   'k.nextPass':'Пролёт над вами', 'pass.none':'в ближайшие сутки не поднимется выше 15°', 'pass.always':(e,d)=>`всегда над горизонтом: ${e}° над горизонтом, направление ${d}`, 'pass.never':'не виден из вашей точки',
   'pass.fmt':(when,max,from,to)=>`${when}, до ${max}° над горизонтом, с ${from} на ${to}`, 'pass.calc':'считаю…', 'pass.setLoc':'укажите своё место в панели «Надо мной»',
   'u.km':'км', 'u.kms':'км/с', 'u.days':'сут', 'u.min':'мин',
-  'u.kmday':'км/сутки', 'k.orbitTrend':'Изменение орбиты', 'trend.raising':'поднимает орбиту', 'trend.decaying':'снижается', 'trend.fastdecay':'быстро снижается, сход близок', 'trend.stable':'орбита стабильна', 'trend.span':(d,x)=>`за ${d} дн: ${x} км`,
+  'u.kmday':'км/сутки', 'k.orbitTrend':'Изменение орбиты', 'trend.raising':'поднимает орбиту', 'trend.decaying':'снижается', 'trend.fastdecay':'быстро снижается, сход близок', 'trend.changing':'орбита меняется: манёвр или притяжение Луны и Солнца', 'trend.stable':'орбита стабильна', 'trend.span':(d,x)=>`за ${d} дн: ${x} км`,
   'st.operational-orbit':'На рабочей орбите', 'st.raising':'Подъём орбиты', 'st.decaying':'Снижается', 'st.in-orbit':'На орбите', 'st.failed':'Отказ', 'st.decayed':'Сошёл с орбиты', 'st.unknown':'Нет данных', 'st.active':'действующий',
   'tier.1':'официальный', 'tier.2':'каталог', 'tier.3':'СМИ / энциклопедия', 'tier.4':'энтузиасты / агрегатор',
   'ops':{'+':'действующий','-':'не действующий','P':'частично действующий','B':'резервный','S':'запасной','X':'эпизодически действующий','D':'сошёл с орбиты','?':'неизвестно'},
@@ -1103,7 +1104,7 @@ en:{
   'k.nextPass':'Pass over you', 'pass.none':'will not rise above 15° in the next 24 hours', 'pass.always':(e,d)=>`always above the horizon: ${e}° high, towards ${d}`, 'pass.never':'not visible from your location',
   'pass.fmt':(when,max,from,to)=>`${when}, up to ${max}° high, from ${from} to ${to}`, 'pass.calc':'calculating…', 'pass.setLoc':'set your location in the “Overhead” panel',
   'u.km':'km', 'u.kms':'km/s', 'u.days':'days', 'u.min':'min',
-  'u.kmday':'km/day', 'k.orbitTrend':'Orbit change', 'trend.raising':'raising orbit', 'trend.decaying':'decaying', 'trend.fastdecay':'decaying fast, reentry near', 'trend.stable':'orbit stable', 'trend.span':(d,x)=>`${x} km over ${d} d`,
+  'u.kmday':'km/day', 'k.orbitTrend':'Orbit change', 'trend.raising':'raising orbit', 'trend.decaying':'decaying', 'trend.fastdecay':'decaying fast, reentry near', 'trend.changing':'orbit changing: a manoeuvre or the pull of the Moon and Sun', 'trend.stable':'orbit stable', 'trend.span':(d,x)=>`${x} km over ${d} d`,
   'st.operational-orbit':'In operational orbit', 'st.raising':'Raising orbit', 'st.decaying':'Decaying', 'st.in-orbit':'In orbit', 'st.failed':'Failed', 'st.decayed':'Decayed', 'st.unknown':'No data', 'st.active':'active',
   'tier.1':'official', 'tier.2':'catalogue', 'tier.3':'media / encyclopedia', 'tier.4':'enthusiasts / aggregator',
   'ops':{'+':'operational','-':'non-operational','P':'partially operational','B':'backup','S':'spare','X':'extended mission','D':'decayed','?':'unknown'},
@@ -2497,7 +2498,10 @@ function orbitTrend(norad){
   for(const [x,y] of pts){ const dx=x-x0; sx+=dx; sy+=y; sxx+=dx*dx; sxy+=dx*y; }
   const den=n*sxx-sx*sx, rate=den?(n*sxy-sx*sy)/den:0, span=pts[n-1][0]-x0, delta=pts[n-1][1]-pts[0][1];
   let key, tone;
-  if(rate>0.15){ key='trend.raising'; tone='accent'; }
+  const alt=pts[n-1][1];
+  // выше 2000 км атмосферы нет: «снижается, сход близок» там неверно — орбита меняется от манёвров и притяжения Луны и Солнца
+  if(alt>2000){ if(Math.abs(rate)>Math.max(0.15, alt*2e-5)){ key='trend.changing'; tone='muted'; } else { key='trend.stable'; tone='muted'; } }
+  else if(rate>0.15){ key='trend.raising'; tone='accent'; }
   else if(rate<-0.15){ if(pts[n-1][1]<300 || rate<-1.5){ key='trend.fastdecay'; tone='bad'; } else { key='trend.decaying'; tone='warn'; } }
   else { key='trend.stable'; tone='muted'; }
   const col='--'+tone, aR=Math.abs(rate);
