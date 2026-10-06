@@ -3,6 +3,18 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.6.1 — 2026-10-06
+
+### Русский
+- **Ближний вид без дыр:** при быстром приближении часть тайлов не загружалась и оставалась пустой. Теперь запрос
+  уходит после короткой паузы, при отказе сервера повторяется, тайлы ночных огней не запрашиваются повторно.
+- **Рельеф снова гладкий:** возвращена прежняя детальность сетки, склоны вблизи больше не идут полосами.
+
+### English
+- **Close-up view without holes:** with fast zooming some tiles failed and stayed empty. Requests now go out after a
+  short pause, are retried when the server refuses, and night-light tiles are no longer requested again and again.
+- **Smooth relief again:** the previous mesh detail is back, so close-up slopes no longer show stripes.
+
 ## v1.6.0 — 2026-10-06
 
 ### Русский

@@ -3387,21 +3387,48 @@ function terrainMesh(px, size, idx, G){
     indices:{ value:new Uint32Array(ix), size:1 },
     attributes:{ POSITION:{ value:pos.subarray(0,s*3), size:3 }, TEXCOORD_0:{ value:uv.subarray(0,s*2), size:2 }, COLOR_0:{ value:nrm.subarray(0,s*3), size:3 } } };
 }
+/* Загрузка тайлов ближнего вида. Сервер ограничивает частоту запросов (лишние получают 429), и при быстром приближении
+   лимит кончался: тайл без данных оставался дырой. Поэтому: короткая пауза перед запросом (тайлы, мимо которых
+   пролистали, отменяются, не дойдя до сети), повторы с паузой при 429, 5xx и сбое сети, общий кэш тайлов огней
+   (один тайл огней делят до 16–64 ближних тайлов). */
+const TILE_WAIT=110, TILE_RETRY=[700,1600,3200,6000];
+function waitAbortable(ms, signal){
+  return new Promise((res,rej)=>{ const ab=()=>rej(new DOMException('Aborted','AbortError'));
+    if(signal && signal.aborted) return ab(); const t=setTimeout(res,ms); if(signal) signal.addEventListener('abort',()=>{ clearTimeout(t); ab(); },{once:true}); });
+}
+async function tileBitmap(u, signal, opts){
+  for(let k=0;;k++){
+    let r=null;
+    try{ r=await fetch(u,{signal}); }catch(e){ if(signal && signal.aborted) throw e; }
+    if(r && r.ok) return createImageBitmap(await r.blob(), opts);
+    if(r && r.status===404) return null;                              // такого тайла нет — повторять нечего
+    if(k>=TILE_RETRY.length) return null;
+    await waitAbortable(TILE_RETRY[k]*(0.8+0.4*Math.random()), signal);
+  }
+}
+const NIGHT_TILES=new Map();
+function nightBitmap(u){
+  let p=NIGHT_TILES.get(u);
+  if(!p){ p=tileBitmap(u,null,{premultiplyAlpha:'none'}).catch(()=>null).then(b=>{ if(!b) NIGHT_TILES.delete(u); return b; });
+    NIGHT_TILES.set(u,p); if(NIGHT_TILES.size>64) NIGHT_TILES.delete(NIGHT_TILES.keys().next().value); }
+  return p;
+}
 class NearTerrainLayer extends deck.TerrainLayer {
-  getTiledTerrainData(tile){
+  async getTiledTerrainData(tile){
     const {elevationData, texture, grid}=this.props, idx=tile.index, signal=tile.signal;
     const url=t=>t.replace('{z}',idx.z).replace('{x}',idx.x).replace('{y}',idx.y);
-    const bitmap=(u,opts)=>fetch(u,{signal}).then(r=>r.ok?r.blob():null).then(b=>b&&createImageBitmap(b,opts));
-    const dem=bitmap(url(elevationData),{colorSpaceConversion:'none', premultiplyAlpha:'none'})
+    await waitAbortable(TILE_WAIT, signal);
+    const dem=tileBitmap(url(elevationData), signal, {colorSpaceConversion:'none', premultiplyAlpha:'none'})
       .then(b=>{ if(!b) return null; const m=terrainMesh(demPixels(b), b.width, idx, grid); b.close(); return m; });
-    // снимок: один повтор через 1,5 с; без снимка тайл не рисуется (под ним остаётся сфера), иначе в цвет попала бы нормаль из COLOR_0
-    const img=bitmap(url(texture)).catch(()=>null)
-      .then(t=>t || new Promise(r=>setTimeout(r,1500)).then(()=>bitmap(url(texture))).catch(()=>null));
+    // без снимка тайл не рисуется (под ним остаётся сфера), иначе в цвет попала бы нормаль из COLOR_0
+    const img=tileBitmap(url(texture), signal);
     // огни городов ~500 м: тайл Black Marble уровня не выше 8 и прямоугольник этого тайла в нём
     const k=Math.max(0,idx.z-8), nz=idx.z-k, nx=idx.x>>k, ny=idx.y>>k, f=1/(1<<k);
     const rect=[(idx.x-(nx<<k))*f, (idx.y-(ny<<k))*f, f];
-    const night=bitmap(`tiles/night/${nz}/${nx}/${ny}.png`,{premultiplyAlpha:'none'}).catch(()=>null);
-    return Promise.all([dem, img, night]).then(([m,t,n])=>m && t ? [m,t,n,rect] : null);
+    const night=nightBitmap(`tiles/night/${nz}/${nx}/${ny}.png`);
+    const [m,t,n]=await Promise.all([dem, img, night]);
+    if(!(m && t)){ if(t) t.close(); throw new Error('тайл не загрузился: '+url('{z}/{x}/{y}')); }   // ошибка, а не пустой тайл: deck.gl покажет родительский
+    return [m,t,n,rect];
   }
   renderSubLayers(props){
     const l=super.renderSubLayers(props);
@@ -3429,10 +3456,11 @@ function earthLayers(tm){
       elevationDecoder:TERRARIUM,
       tileSize:256, minZoom:3, maxZoom:13, material:false, opacity:fade, pickable:false,
       zoomOffset: lite?0:zo, maxCacheSize: (mobile||lite)?96:128,   // ≈0,5 / 1,3 МБ видеопамяти на тайл
-      // одновременно грузящихся тайлов (по 3 запроса на тайл): по умолчанию в deck.gl 6 — вид собирался волнами по 18
+      // одновременно грузящихся тайлов (по 2 запроса на тайл): по умолчанию в deck.gl 6 — вид собирался волнами;
+      // 20 — быстро и без ответов 429 даже при быстром приближении (проверено с тем же лимитом частоты, что на сервере)
       // запросов, ~12 волн на экран. Тайлы отдаются по HTTP/2, так что больше одновременных запросов не тормозят
-      maxRequests: (mobile||lite) ? 12 : 24,
-      grid: (mobile||lite) ? 32 : 64, drape:drapeOn() }));   // сетка рельефа на тайл: 64 вместо 128 — вид собирается ~на четверть быстрее, разницы в горах на глаз нет
+      maxRequests: (mobile||lite) ? 10 : 20,
+      grid: (mobile||lite) ? 32 : (zo ? 64 : 128), drape:drapeOn() }));   // сетка рельефа на тайл: при 64 на ПК склоны вблизи шли «гребёнкой»
   }
   return out;
 }
