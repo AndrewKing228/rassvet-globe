@@ -645,7 +645,8 @@ For every model the registry (`registry` → `models`) records the source, the S
 licence, what was changed, and the centre and radius the camera uses to frame it; part descriptions (`parts`;
 for the ISS with a group and a detailed version in `detailDir`), Hubble's markers (`markers`), schematics'
 generic parts (`schematicParts`); one model may serve several satellites (`norads`). Every part has sources
-and a Wikipedia article. If the file is missing or fails to load,
+and a Wikipedia article. The `rev` field — the start of the file's SHA-256 — goes into the model address (`?v=`) so
+that after a rebuild browsers do not show an old cached copy. If the file is missing or fails to load,
 the schematic is shown instead.
 
 ### 📦 Libraries — `vendor/`

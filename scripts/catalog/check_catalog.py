@@ -18,7 +18,7 @@
 - 3D-модель (registry.models): аппарат есть в каталоге, у official/open — лицензия, автор и https-источник,
   файл models/<имя>.glb ≤ 1,5 МБ и ≤ 50 000 треугольников, все вместе ≤ 25 МБ, без расширений, требующих WebAssembly.
 """
-import json, os, re, struct, sys, urllib.parse
+import hashlib, json, os, re, struct, sys, urllib.parse
 
 CATALOG_FIELDS = ["norad", "name", "cospar", "launchDate", "gcatProgram", "gcatCategory", "subtype",
                   "satcat[perigee,apogee,inc,period,ops,owner]", "elementsSource", "epoch", "elements"]
@@ -140,6 +140,10 @@ def check_models(reg, seen, root):
             if not all(isinstance(q, list) and len(q) == 3 for q in pts):
                 E(f"метка {x.get('id')}: pos — [x,y,z] или список таких точек")
         total += st["bytes"]
+        with open(path, "rb") as fh:
+            rev = hashlib.sha256(fh.read()).hexdigest()[:10]
+        if m.get("rev") != rev:
+            E(f"rev {m.get('rev')!r} не совпадает с файлом ({rev}) — пересобрали модель, обновите rev, иначе браузеры покажут старую из кэша")
         if st["bytes"] > MODEL_MAX_BYTES:
             E(f"{st['bytes']} байт > {MODEL_MAX_BYTES}")
         if st["triangles"] > MODEL_MAX_TRI:

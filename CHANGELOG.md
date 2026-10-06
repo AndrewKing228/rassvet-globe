@@ -3,6 +3,16 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.5.2 — 2026-10-06
+
+### Русский
+- **Обновлённые 3D-модели видны сразу:** к адресу модели добавляется её версия, поэтому браузер не показывает старую
+  копию из кэша.
+
+### English
+- **Updated 3D models show up right away:** the model address now carries its version, so browsers no longer show
+  an old cached copy.
+
 ## v1.5.1 — 2026-10-06
 
 ### Русский
