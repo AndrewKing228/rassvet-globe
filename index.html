@@ -427,6 +427,9 @@ dialog .acts .grow{flex:1}
 .filters .fhead{display:flex;align-items:center;gap:8px;margin:12px 16px 2px}
 .filters .fhead h3{margin:0;flex:1}
 .filters .fcount{flex:1;font-size:12.5px;color:var(--muted)}
+.fempty{margin:8px 16px 4px;padding:10px 12px;border-radius:10px;border:1px dashed var(--line);font-size:12.5px;color:var(--muted)}
+.fempty p{margin:0 0 8px}
+.fempty .btn{font-size:12.5px;padding:6px 12px;color:var(--accent);border:1px solid var(--accent);background:transparent}
 .filters .chips{padding:4px 16px 4px}
 .filters select,.filters input[type=number]{background:var(--bg-raise);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font:inherit;font-size:12.5px}
 .filters select{display:block;margin:4px 16px 2px;width:calc(100% - 32px);color-scheme:dark}
@@ -989,7 +992,7 @@ ru:{
   'bus.leo-flat':'плоский спутник широкополосной низкоорбитальной группировки', 'bus.gnss':'навигационный спутник', 'bus.geo-comm':'геостационарный спутник связи',
   'bus.leo-small':'спутник низкой орбиты', 'bus.station':'орбитальная станция',
   'h.filters':'Фильтры', 'tip.filters':'Сужают показ внутри включённых систем: по типу орбиты, владельцу по каталогу SATCAT и году запуска. Число рядом — сколько аппаратов останется.',
-  'f.reset':'сбросить', 'f.active':'Сейчас', 'f.remove':x=>`Снять фильтр «${x}»`, 'f.resetAll':'сбросить всё', 'f.ownerShort':'Владелец', 'f.yearShort':'Годы', 'f.count':(a,b)=>`Показано ${a} из ${b}`, 'f.of':'из', 'f.orbit':'Тип орбиты', 'f.owner':'Владелец (по SATCAT)', 'f.ownerAll':'Все владельцы',
+  'f.reset':'сбросить', 'f.noSystems':'Не включено ни одной системы — фильтровать нечего. Включите системы на вкладке «Системы» или верните набор по умолчанию.', 'f.noSats':'У включённых систем нет аппаратов для показа: возможно, у них не отмечено ни одного поколения.', 'f.nothingLeft':'Фильтры не оставили ни одного аппарата.', 'f.enableDefaults':'Включить системы по умолчанию', 'f.active':'Сейчас', 'f.remove':x=>`Снять фильтр «${x}»`, 'f.resetAll':'сбросить всё', 'f.ownerShort':'Владелец', 'f.yearShort':'Годы', 'f.count':(a,b)=>`Показано ${a} из ${b}`, 'f.of':'из', 'f.orbit':'Тип орбиты', 'f.owner':'Владелец (по SATCAT)', 'f.ownerAll':'Все владельцы',
   'f.year':'Год запуска', 'f.from':'с', 'f.to':'по',
   'orb.LEO':'Низкая', 'orb.MEO':'Средняя', 'orb.GEO':'Геосинхронная', 'orb.HEO':'Высокоэллиптическая',
   'tip.orb.LEO':'Апогей ниже 2000 км: МКС, «Рассвет», Starlink, большинство спутников наблюдения Земли.',
@@ -1126,7 +1129,7 @@ en:{
   'bus.leo-flat':'flat satellite of a low-orbit broadband constellation', 'bus.gnss':'navigation satellite', 'bus.geo-comm':'geostationary communications satellite',
   'bus.leo-small':'low-orbit satellite', 'bus.station':'orbital station',
   'h.filters':'Filters', 'tip.filters':'Narrow the view inside the enabled systems by orbit type, owner in the SATCAT catalogue and launch year. The number shows how many satellites remain.',
-  'f.reset':'reset', 'f.active':'Now', 'f.remove':x=>`Remove filter “${x}”`, 'f.resetAll':'reset all', 'f.ownerShort':'Owner', 'f.yearShort':'Years', 'f.count':(a,b)=>`Showing ${a} of ${b}`, 'f.of':'of', 'f.orbit':'Orbit type', 'f.owner':'Owner (per SATCAT)', 'f.ownerAll':'All owners',
+  'f.reset':'reset', 'f.noSystems':'No systems are turned on, so there is nothing to filter. Turn systems on in the Systems tab or restore the defaults.', 'f.noSats':'The systems turned on have nothing to show — perhaps none of their generations is ticked.', 'f.nothingLeft':'The filters left no satellites.', 'f.enableDefaults':'Turn on default systems', 'f.active':'Now', 'f.remove':x=>`Remove filter “${x}”`, 'f.resetAll':'reset all', 'f.ownerShort':'Owner', 'f.yearShort':'Years', 'f.count':(a,b)=>`Showing ${a} of ${b}`, 'f.of':'of', 'f.orbit':'Orbit type', 'f.owner':'Owner (per SATCAT)', 'f.ownerAll':'All owners',
   'f.year':'Launch year', 'f.from':'from', 'f.to':'to',
   'orb.LEO':'Low', 'orb.MEO':'Medium', 'orb.GEO':'Geosynchronous', 'orb.HEO':'Highly elliptical',
   'tip.orb.LEO':'Apogee below 2,000 km: the ISS, Rassvet, Starlink, most Earth-observation satellites.',
@@ -2669,6 +2672,18 @@ function renderFilters(){
   $('#fY1').onchange=e=>{ F.y1=yr(e.target.value); filtersChanged(); };
   const r=$('#fReset'); if(r) r.onclick=()=>resetSatFilters();
   bindSummary(box);
+  // пустое состояние: объяснить, почему «0», и дать одну кнопку, которая это чинит
+  const on=systems.filter(x=>x.enabled).length;
+  const why = !on ? ['f.noSystems','f.enableDefaults'] : !base.length ? ['f.noSats','f.enableDefaults'] : !shown ? ['f.nothingLeft','f.resetAll'] : null;
+  if(why){ const d=document.createElement('div'); d.className='fempty';
+    d.innerHTML=`<p>${esc(t(why[0]))}</p><button type="button" class="btn" id="fFix">${esc(t(why[1]))}</button>`;
+    box.querySelector('.fhead').after(d);
+    $('#fFix').onclick=()=> why[1]==='f.resetAll' ? resetFilters() : enableDefaults(); }
+}
+/* системы и поколения — как при первом открытии страницы */
+function enableDefaults(){
+  for(const x of systems){ x.enabled = x.cfg.enabledByDefault!==false; if(x.subtypes) x.subtypeOn=new Set(x.subtypes.map(st=>st.id)); }
+  resetFilters();
 }
 function filtersChanged(){
   rebuildVisible(); trackStamp++; trackCache.t=null; labelsDirty=true; renderSystems(); renderFilters(); renderLegend(); updateBanner();

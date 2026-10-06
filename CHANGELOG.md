@@ -3,6 +3,16 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.5.3 — 2026-10-06
+
+### Русский
+- **Понятные пустые фильтры:** если выключены все системы, вкладка «Фильтры» объясняет, почему «0 из 0», и предлагает
+  включить системы по умолчанию; если ничего не оставили сами фильтры — сбросить их.
+
+### English
+- **Clear empty filters:** if every system is off, the Filters tab explains why it shows “0 of 0” and offers to turn the
+  default systems back on; if the filters themselves left nothing, it offers to reset them.
+
 ## v1.5.2 — 2026-10-06
 
 ### Русский
