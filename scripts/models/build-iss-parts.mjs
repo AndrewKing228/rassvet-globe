@@ -15,7 +15,7 @@ import path from 'path';
 
 const [, , input, output, detailDir] = process.argv;
 if (!input || !output) { console.error('Использование: node build-iss-parts.mjs <исходник.glb> <выход.glb> [<каталог подробных частей>]'); process.exit(2); }
-const BUDGET = 48000;          // треугольников на всю станцию (лимит проверки каталога — 50 000)
+const BUDGET = +process.env.BUDGET || 48000;          // треугольников на всю станцию (лимит проверки каталога — 50 000)
 const DETAIL_BUDGET = 7000;    // на подробную часть
 // Мелкие детали (поручни, разъёмы, наклейки…) — тысячи отдельных кусочков; в общем виде их нет, в подробных частях есть.
 const DETAIL = /_Details|Handrail|Handhold|Decal|Sticker|Connector|APFR|APRF|Logo|Struts|Trunnion/;
@@ -43,6 +43,8 @@ const PARTS = [
   ['columbus', /^Columbus$/, MOD], ['kibo-pm', /^JEM_PM$/, MOD], ['kibo-elm', /^JEM_PS$/, MOD], ['kibo-ef', /^JEM_EF$/, [0.75, 0.76, 0.78]],
 ];
 const NO_DETAIL = new Set(['solar-p6', 'solar-p4', 'solar-s4', 'solar-s6', 'radiators']);   // простые формы — подробная версия не нужна
+const FLAT = NO_DETAIL;   // плоские панели: упрощаются только с закреплёнными краями
+const SNAP = 0.002;       // привязка вершин при сшивке — доля размера части (у панели батарей ≈ 7 см)
 
 await MeshoptSimplifier.ready;
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'draco3d.decoder': await draco3d.createDecoderModule() });
@@ -87,13 +89,29 @@ async function variant(ids, withDetails, budget, out) {
   }
   for (const m of root.listMaterials()) if (![...mats.values()].includes(m)) m.dispose();
   await doc.transform(prune(), dedup(), join({ keepNamed: false }), weld());
+  // Сшивка: модель собрана из отдельных ячеек (у панелей батарей и радиаторов — сотни кусочков), и упрощение «съедало»
+  // их края, оставляя дыры. Вершины каждой части привязываются к сетке SNAP от её размера и снова свариваются —
+  // соседние ячейки становятся одной поверхностью.
+  for (const m of root.listMeshes()) for (const p of m.listPrimitives()) {
+    const pos = p.getAttribute('POSITION'), arr = pos.getArray().slice(), lo = [1e30, 1e30, 1e30], hi = [-1e30, -1e30, -1e30];
+    for (let i = 0; i < arr.length; i++) { const k = i % 3; if (arr[i] < lo[k]) lo[k] = arr[i]; if (arr[i] > hi[k]) hi[k] = arr[i]; }
+    const step = Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) * SNAP;
+    if (step > 0) { for (let i = 0; i < arr.length; i++) arr[i] = Math.round(arr[i] / step) * step; pos.setArray(arr); }
+  }
+  await doc.transform(weld());
   const prims = root.listMeshes().flatMap(m => m.listPrimitives());
-  const tris = () => prims.reduce((s, p) => s + (p.getIndices() ? p.getIndices().getCount() : p.getAttribute('POSITION').getCount()) / 3, 0);
+  const count = p => (p.getIndices() ? p.getIndices().getCount() : p.getAttribute('POSITION').getCount()) / 3;
+  const tris = () => prims.reduce((s, p) => s + count(p), 0);
   const before = tris();
-  let ratio = Math.min(1, budget / Math.max(1, before));
+  // 1) бережно: края закреплены — плоские панели остаются цельными, без дыр
+  for (const p of prims) simplifyPrimitive(p, { simplifier: MeshoptSimplifier, ratio: 0, error: 0.01, lockBorder: true });
+  // 2) если не уложились — дожимаем только объёмные части (модули, ферма), плоские не трогаем
+  const flatName = p => FLAT.has((p.getMaterial() && p.getMaterial().getName()) || '');
+  const bulky = prims.filter(p => !flatName(p));
   for (let k = 0; k < 6 && tris() > budget; k++) {
-    for (const p of prims) simplifyPrimitive(p, { simplifier: MeshoptSimplifier, ratio, error: 0.01 * 2 ** k, lockBorder: false });
-    ratio = Math.min(1, budget / tris()) * 0.95;
+    const fixed = tris() - bulky.reduce((s, p) => s + count(p), 0), room = Math.max(budget - fixed, budget * 0.3);
+    const ratio = Math.min(1, room / Math.max(1, bulky.reduce((s, p) => s + count(p), 0))) * 0.95;
+    for (const p of bulky) simplifyPrimitive(p, { simplifier: MeshoptSimplifier, ratio, error: 0.01 * 2 ** k, lockBorder: false });
   }
   await doc.transform(prune(), weld(), quantize());
   // расширения исходника (Draco, WebP-текстуры) в результате не нужны

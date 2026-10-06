@@ -3,6 +3,22 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.5.1 — 2026-10-06
+
+### Русский
+- **3D-модели без дыр:** радиаторы МКС были «кусками», а крылья батарей S4 и S6 почти пропадали — упрощение сетки
+  съедало края панелей, собранных из отдельных ячеек. Теперь панели перед упрощением сшиваются. Пересобраны МКС,
+  Terra, Swift, OCO-2, Hinode и MMS; модели стали легче — 4,7 МБ вместо 7,2.
+- В описании МКС отмечено: пристыкованных кораблей в модели NASA нет, крылья батарей повёрнуты так, как их
+  поставили авторы модели.
+
+### English
+- **3D models without holes:** the ISS radiators looked broken and the S4 and S6 solar wings nearly vanished — mesh
+  simplification ate the edges of panels made of separate cells. Panels are now stitched before simplification. The ISS,
+  Terra, Swift, OCO-2, Hinode and MMS were rebuilt; the models got lighter — 4.7 MB instead of 7.2.
+- The ISS description notes that the NASA model has no docked spacecraft and its solar wings are posed as the model
+  authors set them.
+
 ## v1.5.0 — 2026-10-05
 
 ### Русский

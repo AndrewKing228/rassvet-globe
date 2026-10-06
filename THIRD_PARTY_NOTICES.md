@@ -71,19 +71,19 @@ this project.
 
 | Файл / File | Источник / Source | SHA-256 исходника / of the original | SHA-256 файла / of the file | Лицензия / License | Атрибуция / Attribution |
 |---|---|---|---|---|---|
-| `models/iss.glb`, `models/iss/*.glb` | [NASA 3D Resources — International Space Station (ISS) (D) (IGOAL)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/International%20Space%20Station%20(ISS)%20(D)%20(IGOAL)), `International Space Station (ISS).glb` | `57cecfaf332efb2127d07796c4b65ca570d95a11516c8e046feb5a12efee491d` | `505941e0b3fb5fc2384c3b44f2ca101c483dab6737419bbee5072945a3052e10` | [NASA Images and Media Usage Guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/): работа правительства США, в США не охраняется авторским правом / US Government work, not subject to copyright in the US | NASA |
+| `models/iss.glb`, `models/iss/*.glb` | [NASA 3D Resources — International Space Station (ISS) (D) (IGOAL)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/International%20Space%20Station%20(ISS)%20(D)%20(IGOAL)), `International Space Station (ISS).glb` | `57cecfaf332efb2127d07796c4b65ca570d95a11516c8e046feb5a12efee491d` | `a66083a8e66dfd35ad334a00af50055d2d17ea79ef3c5d07652d58cd7193acfc` | [NASA Images and Media Usage Guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/): работа правительства США, в США не охраняется авторским правом / US Government work, not subject to copyright in the US | NASA |
 | `models/hubble.glb` | [NASA 3D Resources — Hubble Space Telescope (A)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Hubble%20Space%20Telescope%20(A)), `Hubble_Space_Telescope__A_.glb` | `e5ba4de15c7d359ac8fa1ab7e286aff42dec09c0fadae3db99252587f39fa384` | `0b0ef5a20ac6a852edee2223121884da1bceb0a0ecd7b22cabc3c3e29766e491` | то же / same | NASA |
-| `models/terra.glb` | [NASA 3D Resources — Terra](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Terra) | `8794857595f7a7d416184fe926ecb50e11bf267dbe471d1cf2728a85e8d017fa` | `a202ff44d9ed49320ce60ddcff52fedcfdbb3bd99fc7983e7ca71965f2784f30` | то же / same | NASA |
-| `models/swift.glb` | [NASA 3D Resources — Swift](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Swift) | `e7074fe1590550747fbcd6803b0c6086b4f57cafd8e3d93789f0b0b7e59b0372` | `6f9228ba23dc9380cc3a700015c1346ecdc466cb74867ae5bc8811e37e21cefc` | то же / same | NASA |
-| `models/oco2.glb` | [NASA 3D Resources — Orbiting Carbon Observatory (OCO) 2](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Orbiting%20Carbon%20Observatory%20(OCO)%202) | `5aba302aaf91fe1a915f1121683aca6ef7ad65d7a82dad65f363361e5009b1ef` | `b5e31395039950b62c38e9534ee1e49b9125f1191e359f93b430402f22495e19` | то же / same | NASA |
-| `models/hinode.glb` | [NASA 3D Resources — Hinode (Solar-B)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Hinode%20(Solar-B)) | `104f23212d379541990c28b26999db3bcfb2ef0731285f2366219e5438e125e6` | `aaff4e99f7695f7ae9a1597c0abf65ba8fa0d5e59a44deb226fd100cedac73db` | то же / same | NASA |
-| `models/mms.glb` | [NASA 3D Resources — Magnetospheric Multiscale (MMS) (A)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Magnetospheric%20Multiscale%20(MMS)%20(A)) | `e3688a8db82f1918c3b4525f4ceed08b614a3a2c5be09ade5711baba30262eef` | `956aa139b90b79318964337b599aafb209298ef137b4eeac5b29afbfb8a1ac48` | то же / same | NASA |
+| `models/terra.glb` | [NASA 3D Resources — Terra](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Terra) | `8794857595f7a7d416184fe926ecb50e11bf267dbe471d1cf2728a85e8d017fa` | `bfd709157e82f93c1cd1ab8bca8e94e51240c3d9f475275adfbecdb57b27187e` | то же / same | NASA |
+| `models/swift.glb` | [NASA 3D Resources — Swift](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Swift) | `e7074fe1590550747fbcd6803b0c6086b4f57cafd8e3d93789f0b0b7e59b0372` | `b278afd74296f42ad10e3feb80dc0ad62338ad4af7f42aadc0b444690d9c756f` | то же / same | NASA |
+| `models/oco2.glb` | [NASA 3D Resources — Orbiting Carbon Observatory (OCO) 2](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Orbiting%20Carbon%20Observatory%20(OCO)%202) | `5aba302aaf91fe1a915f1121683aca6ef7ad65d7a82dad65f363361e5009b1ef` | `b02f2e3339cadc40df0967ded03ba5cf4ad7876b6e76a7eae459b20f745dc67f` | то же / same | NASA |
+| `models/hinode.glb` | [NASA 3D Resources — Hinode (Solar-B)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Hinode%20(Solar-B)) | `104f23212d379541990c28b26999db3bcfb2ef0731285f2366219e5438e125e6` | `b1682ffdac877dc80cdb0862687795997228efd361c203f7a34b19ec499350fc` | то же / same | NASA |
+| `models/mms.glb` | [NASA 3D Resources — Magnetospheric Multiscale (MMS) (A)](https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Magnetospheric%20Multiscale%20(MMS)%20(A)) | `e3688a8db82f1918c3b4525f4ceed08b614a3a2c5be09ade5711baba30262eef` | `a185615bc5815acbcb2dd10959ace9cd7f9b9f6a74d267be6630bb5c4e75194e` | то же / same | NASA |
 
 Изменения: модель МКС разделена на 53 части по узлам исходника; в общем виде мелкие детали (поручни, разъёмы,
-наклейки) и текстуры убраны, части окрашены однотонно, нормали убраны, сетка упрощена с 2,7 млн до 45 363
+наклейки) и текстуры убраны, части окрашены однотонно, нормали убраны, сетка упрощена с 2,7 млн до 45 772
 треугольников; подробные версии 48 частей (`models/iss/`) — с деталями, до 7000 треугольников каждая
 (`scripts/models/build-iss-parts.mjs`). Terra, Swift, OCO-2, Hinode и MMS разделены на части по названиям
-материалов исходника, текстуры, нормали и сжатие Draco убраны, сетка упрощена до 40 000 треугольников
+материалов исходника, текстуры, нормали и сжатие Draco убраны, сетка упрощена до 10–29 тыс. треугольников, панели перед упрощением сшиты
 (`scripts/models/parts-by-material.mjs`). Hubble: текстуры уменьшены до 1024 px и пересжаты в WebP.
 Везде применено квантование. Инструмент — [gltf-transform](https://gltf-transform.dev/) 4.5.1 (MIT), команды —
 в README, раздел про `scripts/models/`. Исходники скачаны 2026-10-05 и 2026-10-06. Описания частей написаны
@@ -92,10 +92,10 @@ NASA не одобряет и не поддерживает этот проек�
 
 Changes: the ISS model was split into 53 parts along the original's nodes; the overview drops small details
 (handrails, connectors, decals) and textures, uses flat colours, has no normals and is simplified from 2.7 million
-to 45,363 triangles; detailed versions of 48 parts (`models/iss/`) keep the details, up to 7,000 triangles each
+to 45,772 triangles; detailed versions of 48 parts (`models/iss/`) keep the details, up to 7,000 triangles each
 (`scripts/models/build-iss-parts.mjs`). Terra, Swift, OCO-2, Hinode and MMS were split into parts by the
 original's material names, with textures, normals and Draco compression removed and meshes simplified to
-40,000 triangles (`scripts/models/parts-by-material.mjs`). Hubble: textures reduced to 1024 px and re-encoded
+10,000–29,000 triangles after stitching the panels (`scripts/models/parts-by-material.mjs`). Hubble: textures reduced to 1024 px and re-encoded
 as WebP. Everything is quantised. Tool: gltf-transform 4.5.1 (MIT); the commands are in the README section on
 `scripts/models/`. Originals downloaded on 2026-10-05 and 2026-10-06. Part descriptions are based on NASA,
 JAXA and ESA pages, linked in the registry and the viewer.

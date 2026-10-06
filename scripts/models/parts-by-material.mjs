@@ -48,13 +48,33 @@ for (const [id, pn] of parts) {
 for (const t of root.listTextures()) t.dispose();
 for (const a of root.listAnimations()) a.dispose();
 await doc.transform(prune(), dedup(), join({ keepNamed: false }), weld());
+// Сшивка, как в build-iss-parts.mjs: вершины привязываются к сетке (доля размера части) и свариваются, чтобы
+// упрощение не прорывало дыры в панелях, собранных из отдельных ячеек.
+const SNAP = 0.002, FLAT = new Set(['solar', 'dish', 'radiator']);
+for (const m of root.listMeshes()) for (const p of m.listPrimitives()) {
+  const pos = p.getAttribute('POSITION'), arr = pos.getArray().slice(), lo = [1e30, 1e30, 1e30], hi = [-1e30, -1e30, -1e30];
+  for (let i = 0; i < arr.length; i++) { const k = i % 3; if (arr[i] < lo[k]) lo[k] = arr[i]; if (arr[i] > hi[k]) hi[k] = arr[i]; }
+  const step = Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) * SNAP;
+  if (step > 0) { for (let i = 0; i < arr.length; i++) arr[i] = Math.round(arr[i] / step) * step; pos.setArray(arr); }
+}
+await doc.transform(weld());
 const prims = root.listMeshes().flatMap(m => m.listPrimitives());
-const tris = () => prims.reduce((s, p) => s + (p.getIndices() ? p.getIndices().getCount() : p.getAttribute('POSITION').getCount()) / 3, 0);
+const count = p => (p.getIndices() ? p.getIndices().getCount() : p.getAttribute('POSITION').getCount()) / 3;
+const tris = () => prims.reduce((s, p) => s + count(p), 0);
 const before = tris();
-let ratio = Math.min(1, BUDGET / before);
+// 1) бережно, края закреплены: допуск от 0,1 % размера и грубее, только пока не уложимся в бюджет;
+// 2) если и при 1 % не уложились — дожимаем только объёмные части
+const orig = prims.map(p => [p.getIndices() && p.getIndices().clone(), p]);
+for (let err = 0.001; ; err *= 2) {
+  for (const [ix, p] of orig) if (ix) p.setIndices(ix.clone());
+  for (const p of prims) simplifyPrimitive(p, { simplifier: MeshoptSimplifier, ratio: 0, error: err, lockBorder: true });
+  if (tris() <= BUDGET || err >= 0.01) break;
+}
+const bulky = prims.filter(p => !FLAT.has((p.getMaterial() && p.getMaterial().getName()) || ''));
 for (let k = 0; k < 6 && tris() > BUDGET; k++) {
-  for (const p of prims) simplifyPrimitive(p, { simplifier: MeshoptSimplifier, ratio, error: 0.01 * 2 ** k, lockBorder: false });
-  ratio = Math.min(1, BUDGET / tris()) * 0.95;
+  const rest = bulky.reduce((s, p) => s + count(p), 0), room = Math.max(BUDGET - (tris() - rest), BUDGET * 0.3);
+  const ratio = Math.min(1, room / Math.max(1, rest)) * 0.95;
+  for (const p of bulky) simplifyPrimitive(p, { simplifier: MeshoptSimplifier, ratio, error: 0.01 * 2 ** k, lockBorder: false });
 }
 await doc.transform(prune(), weld(), quantize());
 for (const e of root.listExtensionsUsed()) if (e.extensionName !== 'KHR_mesh_quantization') e.dispose();

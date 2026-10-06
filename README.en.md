@@ -42,7 +42,7 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 <table>
   <tr>
     <td width="38%"><img src="docs/screenshots/mobile.png" alt="Mobile layout"></td>
-    <td width="62%"><img src="docs/screenshots/parts-ru.png" alt="The ISS taken apart, with the GEDI experiment selected"></td>
+    <td width="62%"><img src="docs/screenshots/parts-ru.png" alt="The ISS in parts with the radiators selected"></td>
   </tr>
   <tr>
     <td align="center"><sub>Phone: systems by country and type, the ISS part by part</sub></td>
@@ -622,22 +622,25 @@ the large one when the GPU allows. File names contain a content hash, so browser
 ### 🛰 3D models — `models/`
 
 Official NASA models from [NASA 3D Resources](https://github.com/nasa/NASA-3D-Resources), prepared for the
-browser: 7 models for 11 satellites, 7.2 MB in total. They open from the cube button in the satellite card and
+browser: 7 models for 11 satellites, 4.7 MB in total. They open from the cube button in the satellite card and
 are loaded only at that moment.
 
 | File | Satellite | Size | Triangles | What was changed |
 |---|---|---|---|---|
-| `iss.glb` | ISS, NORAD 25544 | 603 KB | 45,363 | NASA IGOAL lab model split into 53 parts (`part:<id>`) in six groups, small details and textures removed, flat colours, mesh simplified from 2.7 million triangles, quantised |
-| `iss/<id>.glb` | ISS parts | 48 files, 3.8 MB | up to 7,000 each | a detailed version of a part with handrails, connectors and other details — loaded when the part is selected |
-| `terra.glb` | Terra, NORAD 25994 | 390 KB | 37,996 | parts by the original's materials: body, solar array, antenna; textures removed, simplified, quantised |
-| `swift.glb` | Swift, NORAD 28485 | 652 KB | 38,032 | parts by materials: body, solar arrays, radiator, telescopes; Draco removed, quantised |
-| `oco2.glb` | OCO-2, NORAD 40059 | 679 KB | 39,998 | parts by materials: body with the instrument, solar arrays; Draco removed, simplified, quantised |
-| `hinode.glb` | Hinode, NORAD 29479 | 465 KB | 39,997 | parts by materials: body with the telescopes, solar arrays; Draco removed, simplified, quantised |
-| `mms.glb` | MMS 1–4, NORAD 40482–40485 | 501 KB | 39,986 | a single part (the original has no materials); Draco removed, simplified from 139,502 triangles, quantised |
+| `iss.glb` | ISS, NORAD 25544 | 557 KB | 45,772 | NASA IGOAL lab model split into 53 parts (`part:<id>`) in six groups, small details and textures removed, flat colours, panels stitched, mesh simplified from 2.7 million triangles, quantised |
+| `iss/<id>.glb` | ISS parts | 48 files, 2.9 MB | up to 7,000 each | a detailed version of a part with handrails, connectors and other details — loaded when the part is selected |
+| `terra.glb` | Terra, NORAD 25994 | 297 KB | 28,821 | parts by the original's materials: body, solar array, antenna; textures removed, simplified, quantised |
+| `swift.glb` | Swift, NORAD 28485 | 255 KB | 19,440 | parts by materials: body, solar arrays, radiator, telescopes; Draco removed, simplified, quantised |
+| `oco2.glb` | OCO-2, NORAD 40059 | 252 KB | 17,516 | parts by materials: body with the instrument, solar arrays; Draco removed, simplified, quantised |
+| `hinode.glb` | Hinode, NORAD 29479 | 130 KB | 10,901 | parts by materials: body with the telescopes, solar arrays; Draco removed, simplified, quantised |
+| `mms.glb` | MMS 1–4, NORAD 40482–40485 | 91 KB | 9,664 | a single part (the original has no materials); Draco removed, simplified from 139,502 triangles, quantised |
 | `hubble.glb` | Hubble, NORAD 20580 | 333 KB | 7,672 | textures reduced to 1024 px and re-encoded as WebP, quantised |
 
 The models are compressed without Draco or meshopt: their decoders need WebAssembly, and the page works
 without it. Part models have no normals — the page shades them per face, which keeps the files several times smaller.
+Before simplification each part is stitched (vertices snapped to a grid of 0.2 % of its size): the solar array and
+radiator panels in the originals are made of hundreds of separate cells, and without stitching simplification left holes.
+The ISS model has no docked spacecraft, and the solar wings are posed as the model authors set them.
 For every model the registry (`registry` → `models`) records the source, the SHA-256 of the original, the
 licence, what was changed, and the centre and radius the camera uses to frame it; part descriptions (`parts`;
 for the ISS with a group and a detailed version in `detailDir`), Hubble's markers (`markers`), schematics'
