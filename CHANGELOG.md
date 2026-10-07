@@ -3,6 +3,16 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.6.3 — 2026-10-07
+
+### Русский
+- **Новые места открываются быстро весь сеанс, а не только первое.** Тайлы больше не проходят через service worker —
+  раньше, когда его кэш заполнялся, каждое новое место ждало по 5–9 с. Теперь 0,5–2 с.
+
+### English
+- **New places open fast for the whole session, not just the first one.** Tiles no longer pass through the service
+  worker — once its cache filled up, every new place used to wait 5–9 s. Now it takes 0.5–2 s.
+
 ## v1.6.2 — 2026-10-07
 
 ### Русский

@@ -598,7 +598,8 @@ The remaining ≈ 4.6 MB is data in 28 `<script type="application/json">` blocks
 
 **`sw.js`** is the service worker. It fetches the page from the network first and falls back to the
 saved copy offline. Libraries, textures and data files with a hash in the name are cached forever (they
-never change); close-up tiles are capped at 600. When the caching strategy changes, the version number
+never change); close-up tiles are left to the browser's regular HTTP cache. When the caching strategy
+changes, the version number
 in the file is bumped and old caches are removed automatically.
 
 **`manifest.webmanifest`** and the icons describe the app for the home screen: name, colours, 192 and

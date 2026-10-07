@@ -3,8 +3,10 @@
    поднять V — старые кэши удалятся при активации.
    Страница — сначала сеть (свежие данные), без сети — сохранённая копия.
    Файлы с версией или хешем в имени (/vendor/, текстуры глобуса, data-*.json, geo-detail.*.json) — из кэша, они не меняются.
-   Тайлы ближнего вида — из кэша, не больше MAX_TILES штук. Остальное — из кэша с обновлением в фоне. */
-const V = 'rassvet-v4', SHELL = V + '-shell', STATIC = V + '-static', TILES = V + '-tiles', MAX_TILES = 600;
+   Тайлы ближнего вида сюда не попадают: их хранит обычный кэш браузера (сервер разрешает 30 дней). Раньше worker сам
+   складывал их в свой кэш и на каждый тайл перебирал до 600 записей — когда кэш заполнялся, новые места грузились по 5–7 с.
+   Остальное — из кэша с обновлением в фоне. */
+const V = 'rassvet-v5', SHELL = V + '-shell', STATIC = V + '-static';   // v5: старый кэш тайлов удаляется при активации
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil((async () => {
@@ -20,7 +22,6 @@ self.addEventListener('fetch', e => {
   const p = u.pathname;
   if (r.mode === 'navigate' || p === '/' || p === '/index.html') return e.respondWith(page(r));
   if (p.startsWith('/vendor/') || /^\/globe\/.+\.(webp|jpg)$/.test(p) || /^\/(data-|geo-detail\.).+\.json$/.test(p)) return e.respondWith(cacheFirst(r, STATIC));
-  if (p.startsWith('/tiles/')) return e.respondWith(cacheFirst(r, TILES, MAX_TILES));
   if (p === '/globe/globe.json' || p.startsWith('/clouds/') || p.startsWith('/models/') || /\.(png|ico|webmanifest)$/.test(p)) return e.respondWith(fresh(r, STATIC));
 });
 
@@ -35,18 +36,20 @@ async function page(r) {
   }
 }
 
-async function cacheFirst(r, name, max) {
+async function cacheFirst(r, name) {
   const c = await caches.open(name);
   const hit = await c.match(r);
   if (hit) return hit;
   const res = await fetch(r);
   if (res.ok) {
-    await c.put(r, res.clone());
-    const keys = await c.keys();
-    const fam = r.url.match(/\/(data-[a-z0-9-]+|geo-detail)\.[^/]+\.json$/);   // вчерашние версии того же файла больше не нужны
-    if (fam)
-      for (const k of keys) if (k.url !== r.url && k.url.includes('/' + fam[1] + '.') && /\.json$/.test(k.url)) await c.delete(k);
-    if (max && keys.length > max) for (const k of keys.slice(0, keys.length - max)) await c.delete(k);
+    // запись в кэш и уборка — после ответа странице, а не до него
+    const copy = res.clone();
+    (async () => {
+      await c.put(r, copy);
+      const fam = r.url.match(/\/(data-[a-z0-9-]+|geo-detail)\.[^/]+\.json$/);   // вчерашние версии того же файла больше не нужны
+      if (fam)
+        for (const k of await c.keys()) if (k.url !== r.url && k.url.includes('/' + fam[1] + '.') && /\.json$/.test(k.url)) await c.delete(k);
+    })().catch(() => {});
   }
   return res;
 }
