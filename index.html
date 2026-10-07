@@ -669,6 +669,35 @@ dialog .acts .grow{flex:1}
 .trend b{font-variant-numeric:tabular-nums}
 .trend{white-space:normal}
 .trend b{white-space:nowrap}
+.nfil{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.nday{font-size:10.5px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;margin:12px 4px 4px}
+.nitem{border-radius:12px;padding:8px;display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:start}
+.nitem:hover{background:var(--bg-raise)}
+.nitem.feat{grid-template-columns:1fr}
+.nitem .nl{display:contents;color:var(--text);text-decoration:none}
+.nthumb{position:relative;width:96px;height:72px;border-radius:9px;overflow:hidden;background:var(--bg-raise);flex:none}
+.nitem.feat .nthumb{width:100%;height:auto;aspect-ratio:16/8}
+.nthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.nthumb .cr{position:absolute;right:4px;bottom:3px;font-size:9.5px;color:#fff;background:rgba(0,0,0,.55);padding:1px 5px;border-radius:5px}
+.ncov{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff}
+.ncov svg{width:34px;height:34px;opacity:.9}
+.nitem.feat .ncov svg{width:52px;height:52px}
+.nbody{min-width:0}
+.nmeta{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:11px;color:var(--muted);margin-bottom:3px}
+.ntag{font-weight:600;padding:1px 7px;border-radius:999px;color:#0b1020}
+.nmeta .src{color:var(--muted);font-weight:600}
+.nmeta .lng{border:1px solid var(--line);border-radius:5px;padding:0 4px;font-size:10px;color:var(--faint)}
+.nmeta .fresh{color:var(--accent);font-weight:700}
+.nmeta time{margin-left:auto;font-family:var(--mono);font-size:10.5px}
+.nitem .nt{font-weight:600;line-height:1.3;font-size:13.5px}
+.nitem.feat .nt{font-size:15px}
+.nitem .nl:hover .nt{color:var(--accent)}
+.nitem p{margin:3px 0 0;font-size:12.5px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.nmap{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11.5px;color:var(--faint);margin-top:-2px}
+.nitem:not(.feat) .nmap{grid-column:2}
+.nmap .chip{font-size:11.5px;padding:2px 9px}
+.has-new{position:relative}
+.has-new::after{content:"";position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg-panel)}
 .newslist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px}
 .newslist a{display:block;text-decoration:none;color:var(--text);padding:9px 8px;border-radius:9px}
 .newslist a:hover{background:var(--bg-raise)}
@@ -920,7 +949,11 @@ ru:{
   'btn.table':'Таблица', 'tip.table':'Список аппаратов выбранных систем с текущими параметрами орбиты. Клик по заголовку сортирует, клик по строке показывает аппарат на карте.',
   'btn.tle.long':'Обновить ', 'tip.tle':'Вставить свои TLE или OMM JSON либо загрузить файл: положения пересчитаются сразу. Загруженное хранится только в этой вкладке.',
   'btn.lang':'EN', 'aria.lang':'English version', 'tip.lang':'Switch the site to English.',
-  'btn.sky':'Надо мной', 'btn.news':'Новости', 'aria.news':'Космические новости', 'tip.news':'Космические новости: запуски, разработки, события. Обновляются раз в сутки.', 'news.h':'Космические новости', 'news.close':'Закрыть', 'news.empty':'Новостей пока нет — зайдите позже.', 'news.open':'Читать на источнике', 'news.foot':'Коротко из открытых источников, обновляется раз в сутки. Полный текст — по ссылке.', 'tip.sky':'Какие спутники сейчас над вами и когда пролетят «Рассветы». Местоположение остаётся в вашем браузере.',
+  'btn.sky':'Надо мной', 'btn.news':'Новости', 'aria.news':'Космические новости', 'tip.news':'Космические новости: запуски, разработки, события. Обновляются раз в сутки.', 'news.h':'Космические новости', 'news.close':'Закрыть', 'news.empty':'Новостей пока нет — зайдите позже.', 'news.open':'Читать на источнике', 'news.foot':'Коротко из открытых источников, обновляется раз в сутки. Полный текст — по ссылке. Фото — только из ленты NASA (работы NASA не охраняются авторским правом в США); у остальных — обложка по теме.',
+  'news.all':'Все', 'news.new':'новое', 'news.map':'На карте:', 'news.photo':'Фото: NASA', 'news.today':'Сегодня', 'news.yday':'Вчера',
+  'news.min':n=>`${n} мин назад`, 'news.hr':n=>`${n} ч назад`, 'news.langEn':'на английском', 'news.langRu':'на русском', 'news.none':'По этой теме новостей нет.',
+  'ntop.rassvet':'Рассвет', 'ntop.launch':'Запуски', 'ntop.station':'Станции', 'ntop.moon':'Луна', 'ntop.mars':'Марс', 'ntop.earth':'Земля',
+  'ntop.astro':'Телескопы', 'ntop.sats':'Спутники', 'ntop.industry':'Индустрия', 'ntop.other':'Разное', 'tip.sky':'Какие спутники сейчас над вами и когда пролетят «Рассветы». Местоположение остаётся в вашем браузере.',
   'aria.more':'Ещё', 'aria.search':'Поиск спутника', 'search.ph':'МКС, Хаббл, ГЛОНАСС, NORAD…', 'search.none':'Ничего не найдено', 'search.sys':(n,on)=>`Система · ${n} ${ruPl(n,'аппарат','аппарата','аппаратов')}${on?'':' · включить'}`, 'search.sysOn':n=>`Система «${n}» включена`, 'search.src':'Источник',
   'search.hidden':'система скрыта — включится', 'search.hint':'Название, NORAD или COSPAR',
   'banner.tip':'Орбитальные данные по каждому спутнику публикуются отдельно и с разной частотой. Сайт обновляет их ежедневно, но для некоторых спутников свежих данных в открытом доступе нет: такие спутники рисуются по последним известным данным, и чем они старше, тем больше ошибка положения.',
@@ -1062,7 +1095,11 @@ en:{
   'btn.table':'Table', 'tip.table':'List of satellites in the selected systems with current orbit parameters. Click a header to sort, click a row to show the satellite on the map.',
   'btn.tle.long':'Update ', 'tip.tle':'Paste your own TLE or OMM JSON or load a file: positions are recomputed immediately. Loaded data stays only in this tab.',
   'btn.lang':'RU', 'aria.lang':'Русская версия', 'tip.lang':'Переключить сайт на русский.',
-  'btn.sky':'Overhead', 'btn.news':'News', 'aria.news':'Space news', 'tip.news':'Space news: launches, developments, events. Updated once a day.', 'news.h':'Space news', 'news.close':'Close', 'news.empty':'No news yet — check back later.', 'news.open':'Read at source', 'news.foot':'Short items from public sources, updated once a day. Full text at the link.', 'tip.sky':'Which satellites are above you now and when the Rassvets will pass over. Your location stays in your browser.',
+  'btn.sky':'Overhead', 'btn.news':'News', 'aria.news':'Space news', 'tip.news':'Space news: launches, developments, events. Updated once a day.', 'news.h':'Space news', 'news.close':'Close', 'news.empty':'No news yet — check back later.', 'news.open':'Read at source', 'news.foot':'Short items from public sources, updated once a day. Full text at the link. Photos come only from the NASA feed (NASA works are not copyrighted in the US); other items get a topic cover.',
+  'news.all':'All', 'news.new':'new', 'news.map':'On the map:', 'news.photo':'Photo: NASA', 'news.today':'Today', 'news.yday':'Yesterday',
+  'news.min':n=>`${n} min ago`, 'news.hr':n=>`${n} h ago`, 'news.langEn':'in English', 'news.langRu':'in Russian', 'news.none':'No news on this topic.',
+  'ntop.rassvet':'Rassvet', 'ntop.launch':'Launches', 'ntop.station':'Stations', 'ntop.moon':'Moon', 'ntop.mars':'Mars', 'ntop.earth':'Earth',
+  'ntop.astro':'Telescopes', 'ntop.sats':'Satellites', 'ntop.industry':'Industry', 'ntop.other':'Other', 'tip.sky':'Which satellites are above you now and when the Rassvets will pass over. Your location stays in your browser.',
   'aria.more':'More', 'aria.search':'Find a satellite', 'search.ph':'ISS, Hubble, GLONASS, NORAD…', 'search.none':'Nothing found', 'search.sys':(n,on)=>`System · ${n} ${enPl(n,'satellite','satellites')}${on?'':' · turn on'}`, 'search.sysOn':n=>`System “${n}” turned on`, 'search.src':'Source',
   'search.hidden':'system hidden — will be shown', 'search.hint':'Name, NORAD or COSPAR ID',
   'banner.tip':'Orbital data is published separately for each satellite and at different rates. The site updates it daily, but for some satellites no fresh public data exists: they are drawn from the last known data, and the older it is, the larger the position error.',
@@ -1782,10 +1819,10 @@ function geoLayers(){
     new deck.PathLayer({ id:'borders', data: G?geo.borders3:geo.borders, getPath:d=>d, getColor:[...colors.border,235], getWidth:1.1, widthUnits:'pixels', extensions:drape }),
     new deck.ScatterplotLayer({ id:'city-dots', data:placed.city, getPosition:d=>[d.lon,d.lat], getRadius:d=>d.cap?3:2.2, radiusUnits:'pixels', getFillColor:[...colors.dot,230],
       stroked:true, getLineColor:[...colors.halo,255], lineWidthUnits:'pixels', getLineWidth:1, parameters:{depthCompare:'always'} }),
-    new deck.TextLayer({ ...textCommon, id:'lbl-region', data:placed.region, getPosition:d=>[d.lon,d.lat], getText:d=>d.t, getSize:11, getColor:[...colors.lr,255], fontWeight:400 }),
-    new deck.TextLayer({ ...textCommon, id:'lbl-city', data:placed.city, getPosition:d=>[d.lon,d.lat], getText:d=>d.t, getSize:d=>d.cap?12.5:11.5, getColor:[...colors.lci,255],
+    new deck.TextLayer({ ...textCommon, id:'lbl-region', data:placed.region, getPosition:d=>[d.lon,d.lat], getText:d=>d.t, getSize:11, getColor:d=>[...colors.lr,d.dim?80:255], fontWeight:400 }),
+    new deck.TextLayer({ ...textCommon, id:'lbl-city', data:placed.city, getPosition:d=>[d.lon,d.lat], getText:d=>d.t, getSize:d=>d.cap?12.5:11.5, getColor:d=>[...colors.lci,d.dim?80:255],
       getTextAnchor:'start', getPixelOffset:[7,0], fontWeight:500 }),
-    new deck.TextLayer({ ...textCommon, id:'lbl-country', data:placed.country, getPosition:d=>[d.lon,d.lat], getText:d=>d.t, getSize:d=>d.size, getColor:[...colors.lc,255], fontWeight:600 }),
+    new deck.TextLayer({ ...textCommon, id:'lbl-country', data:placed.country, getPosition:d=>[d.lon,d.lat], getText:d=>d.t, getSize:d=>d.size, getColor:d=>[...colors.lc,d.dim?80:255], fontWeight:600 }),
   ];
 }
 
@@ -1888,9 +1925,14 @@ function computeGeoLabels(){
   const vp=currentViewport(); if(!vp) return false;
   const z=S.vs.zoom, G=S.view==='globe', W=vp.width, H=vp.height;
   const cLon=S.vs.longitude, cLat=S.vs.latitude, maxAng = G ? 74 : 999, tilt = G && (S.vs.pitch||0)>0.5;
+  // «липкая» раскладка: кто был подписан в прошлый раз, ставится первым в своей группе и держит место, пока
+  // действительно не столкнётся с другой подписью или не уйдёт за край, — иначе при вращении соседи меняются местами и мигают
+  const prev=new Set([...placed.country,...placed.region,...placed.city].map(l=>l.src||l));
   const grid=makeGrid(); placed={country:[],region:[],city:[]};
-  // зарезервировать места подписей спутников
-  for(const l of satLabelData) if(l.box) grid.add(l.box);
+  const sticky=(list,fn)=>{ for(const l of list) if(prev.has(l)) fn(l); for(const l of list) if(!prev.has(l)) fn(l); };
+  // подписи спутников — в своей сетке: новая подпись места их обходит, а стоящая не исчезает, когда спутник пролетает
+  // мимо, а приглушается (dim) — иначе при вращении и полёте спутников места мигали
+  const satGrid=makeGrid(); for(const l of satLabelData) if(l.box) satGrid.add(l.box);
   const tryPlace=(l,size,anchor,list,extra,pad=0)=>{
     if(G && angDist(l.lon,l.lat,cLon,cLat)>maxAng) return;
     if(tilt && hiddenByEarth(vp,l.lon,l.lat,0)) return;
@@ -1900,14 +1942,18 @@ function computeGeoLabels(){
     if(anchor==='start') b=[x-4,y-h/2,x+7+w,y+h/2]; else b=[x-w/2,y-h/2,x+w/2,y+h/2];
     if(b[0]<0||b[1]<0||b[2]>W||b[3]>H) return;   // обрезанная краем экрана подпись не ставится (как у спутников)
     if(pad) b=[b[0]-pad,b[1]-pad,b[2]+pad,b[3]+pad];
-    if(!grid.fits(b)) return; grid.add(b); list.push(Object.assign({},l,extra||{}));
+    // стоящей подписи прощается перекрытие до четверти ширины: у края глобуса подписи сжимаются и иначе переключаются туда-обратно
+    const was=prev.has(l), q=was ? (b[2]-b[0])*0.125 : 0, fb=was ? [b[0]+q,b[1]+2,b[2]-q,b[3]-2] : b;
+    if(!grid.fits(fb)) return;
+    let dim=false; if(!satGrid.fits(fb)){ if(!was) return; dim=true; }
+    grid.add(b); list.push(Object.assign({},l,extra||{},{src:l, dim}));
   };
   const zc=z+1.0;
-  for(const l of geo.countryLabels){ if(l.min>zc-0.2) continue; const size = l.pop>5e7 ? 13 : 12; tryPlace(l,size,'middle',placed.country,{size}); }
-  for(const l of geo.cityLabels){ if(!(l.cap||l.pop>=2e6)) continue; if(l.min>zc+0.6) continue; tryPlace(l,l.cap?12.5:11.5,'start',placed.city); }
+  sticky(geo.countryLabels, l=>{ if(l.min>zc-0.2) return; const size = l.pop>5e7 ? 13 : 12; tryPlace(l,size,'middle',placed.country,{size}); });
+  sticky(geo.cityLabels, l=>{ if(!(l.cap||l.pop>=2e6)) return; if(l.min>zc+0.6) return; tryPlace(l,l.cap?12.5:11.5,'start',placed.city); });
   // регионы — на полшага позже и с запасом 6 px вокруг: на масштабе 4 подписи шли сплошным ковром
-  if(z>=2.8) for(const l of geo.regionLabels){ if(l.min>zc+1.1) continue; tryPlace(l,11,'middle',placed.region,null,6); }
-  for(const l of geo.cityLabels){ if(l.cap||l.pop>=2e6) continue; if(l.min>zc+0.6) continue; tryPlace(l,11.5,'start',placed.city); if(placed.city.length>420) break; }
+  if(z>=2.8) sticky(geo.regionLabels, l=>{ if(l.min>zc+1.1) return; tryPlace(l,11,'middle',placed.region,null,6); });
+  sticky(geo.cityLabels, l=>{ if(l.cap||l.pop>=2e6) return; if(l.min>zc+0.6) return; if(placed.city.length>420) return; tryPlace(l,11.5,'start',placed.city); });
   return true;
 }
 let labelCand={src:null, sel:-2, list:[]};
@@ -1923,6 +1969,7 @@ function computeSatLabels(){
     for(const d of satLabelData){ const i=d.i; d.p=[pos[i*3],pos[i*3+1],G?dispAltKm(pos[i*3+2])*1000:0]; }
     satLabelPosV++; return;
   }
+  const prevSat=new Set(satLabelData.map(d=>d.i));   // «липкие» подписи, как у мест: прежние — первыми
   satLabelKey=key; satLabelT=now; satLabelData=[];
   // кандидаты: выбранный первым, затем все, кроме массовых систем (Starlink не подписывается); список — один раз на состав видимых
   if(labelCand.src!==SATBUF.idx || labelCand.sel!==S.selected){
@@ -1930,7 +1977,8 @@ function computeSatLabels(){
     for(const i of src) if(i!==S.selected && sats[i].sys.cfg.renderHint!=='bulk') list.push(i);
     labelCand={src:SATBUF.idx, sel:S.selected, list};
   }
-  for(const i of labelCand.list){
+  const order=[...labelCand.list.filter(i=>i===S.selected||prevSat.has(i)), ...labelCand.list.filter(i=>i!==S.selected&&!prevSat.has(i))];
+  for(const i of order){
     const hint=sats[i].sys.cfg.renderHint;
     if(i!==S.selected && ((hint==='standard' && S.vs.zoom<2.6) || (S.focusLaunch && sats[i].launchId!==S.focusLaunch))) continue;
     const s=sats[i], p=[pos[i*3],pos[i*3+1],G?dispAltKm(pos[i*3+2])*1000:0];
@@ -1940,7 +1988,8 @@ function computeSatLabels(){
     const w=textW(s.name,11.5,true), b=[q[0]-6,q[1]-8,q[0]+10+w,q[1]+8];
     // подпись целиком в экране: обрезанные у края («assvet-3 No. 15») только мешают; выбранный подписывается всегда
     if(i!==S.selected && (b[0]<0||b[1]<0||b[2]>W||b[3]>H)) continue;
-    if(!grid.fits(b) && i!==S.selected) continue; grid.add(b);
+    const sq=prevSat.has(i) ? (b[2]-b[0])*0.125 : 0;   // стоящей подписи прощается небольшое перекрытие — как у мест
+    if(!grid.fits(sq ? [b[0]+sq,b[1]+2,b[2]-sq,b[3]-2] : b) && i!==S.selected) continue; grid.add(b);
     satLabelData.push({i, p, t:s.name, c:colorOf(s), box:b});
     if(satLabelData.length>250) break;
   }
@@ -3905,17 +3954,101 @@ function openNews(v){
   $('#app').classList.toggle('news-open', v);
   if(v){ if(S.selected>=0) select(-1); if(SKY.open) openSky(false); $('#tools').classList.remove('open'); renderNews(); }
 }
+/* Новости: тема, свежесть, язык, аппараты с карты, о которых речь; фото — только своё (превью из ленты NASA), иначе обложка темы */
+const NEWS_TOPICS=[
+  ['rassvet', '#ff8a3d', /рассвет|бюро\s?1440|bureau\s?1440/i, 'sat'],
+  ['launch',  '#ff6b6b', /запуск|стартов|launch|liftoff|falcon|starship|союз|ангар|протон|electron|ariane|vulcan|new glenn|\bракет|rocket/i, 'rocket'],
+  ['moon',    '#c9d1e3', /\bлун|\bmoon|lunar|artemis|артемид/i, 'moon'],
+  ['mars',    '#ff9e6d', /\bмарс|\bmars\b|curiosity|perseverance/i, 'planet'],
+  ['station', '#7cc4ff', /\bМКС\b|\bISS\b|space station|орбитальн\S* станци|tiangong|тяньгун/i, 'station'],
+  ['earth',   '#5fd39a', /земл|\bearth\b|climate|климат|sea ice|ocean|океан|hurricane|ураган|наблюдени|wildfire|пожар/i, 'earth'],
+  ['astro',   '#c39bff', /телескоп|telescope|webb|hubble|хаббл|галакт|galax|звезд|nebula|туманн|сверхнов|supernova|black hole|чёрн\S* дыр|экзопланет|exoplanet|apod/i, 'scope'],
+  ['sats',    '#ffd166', /спутник|satellite|starlink|oneweb|constellation|группировк/i, 'sat'],
+  ['industry','#9fb3d1', /contract|контракт|funding|инвест|award|премия|market|рынок|budget|бюджет|startup|стартап|acquisi|сделк/i, 'case'],
+];
+const NEWS_ICONS={
+  sat:'<path d="M9 9l6 6M4 9l5-5 3 3-5 5zM12 17l5-5 3 3-5 5zM14 6l4 4"/>',
+  rocket:'<path d="M12 3c3 2 5 6 5 10l-2 3H9l-2-3c0-4 2-8 5-10zM9 16l-3 4M15 16l3 4M12 9v2"/>',
+  station:'<path d="M3 8v8M21 8v8M3 12h18M10 9h4v6h-4z"/>',
+  moon:'<path d="M15 4a8 8 0 1 0 5 13A7 7 0 0 1 15 4z"/>',
+  planet:'<circle cx="12" cy="12" r="6"/><path d="M3 15c3-2 15-8 18-6"/>',
+  earth:'<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c3 3 3 13 0 16M12 4c-3 3-3 13 0 16"/>',
+  scope:'<path d="M4 14l12-6 2 4-12 6zM10 15l-3 6M12 14l3 7"/>',
+  case:'<rect x="4" y="8" width="16" height="11" rx="2"/><path d="M9 8V5h6v3M4 13h16"/>',
+  star:'<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>'
+};
+// аппараты и системы с карты, о которых новость: только то, что есть в данных страницы
+const NEWS_LINKS=[
+  [/\bISS\b|\bМКС\b|International Space Station|Международн\S* космическ\S* станци/i, {norad:25544}, ['МКС','ISS']],
+  [/tiangong|тяньгун/i, {norad:48274}, ['Тяньгун','Tiangong']],
+  [/hubble|хаббл/i, {norad:20580}, ['Хаббл','Hubble']],
+  [/chandra|чандр/i, {norad:25867}, ['Чандра','Chandra']],
+  [/рассвет|бюро\s?1440|bureau\s?1440/i, {sys:'rassvet'}],
+  [/starlink|старлинк/i, {sys:'starlink'}], [/oneweb|уанвеб/i, {sys:'oneweb'}], [/glonass|глонасс/i, {sys:'glonass'}],
+  [/\bGPS\b/, {sys:'gps'}], [/iridium|иридиум/i, {sys:'iridium'}],
+];
+let NEWS_F='';
+const newsSeen = () => { try{ return localStorage.getItem('rassvet.newsSeen')||''; }catch(e){ return ''; } };
+function newsTopic(n){ const x=n.t+' '+(n.s||''); return NEWS_TOPICS.find(tp=>tp[2].test(x)) || ['other','#9fb3d1',null,'star']; }
+function newsLinks(n){
+  const x=n.t+' '+(n.s||''), out=[];
+  for(const [re,tg,lb] of NEWS_LINKS){ if(!re.test(x)) continue;
+    if(tg.norad){ const s=satByNorad(tg.norad); if(s && !s.decayed) out.push({kind:'sat', s, label:lb?lb[LANG==='en'?1:0]:s.name}); }
+    else { const sy=systems.find(y=>y.cfg.id===tg.sys); if(sy) out.push({kind:'sys', sys:sy, label:L(sy.cfg.name)}); } }
+  return out.slice(0,3);
+}
+function newsWhen(d){
+  if(!d) return ''; const ms=Date.now()-new Date(d).getTime();
+  if(ms>=0 && ms<3600e3) return t('news.min', Math.max(1,Math.round(ms/60e3)));
+  if(ms>=0 && ms<12*3600e3) return t('news.hr', Math.round(ms/3600e3));
+  return new Date(d).toLocaleTimeString(LOC(),{hour:'2-digit',minute:'2-digit'});
+}
+function newsDay(d){
+  if(!d) return ''; const x=new Date(d), a=new Date(); a.setHours(0,0,0,0); const b=new Date(x); b.setHours(0,0,0,0);
+  const k=Math.round((a-b)/864e5); return k===0 ? t('news.today') : k===1 ? t('news.yday') : x.toLocaleDateString(LOC(),{day:'numeric',month:'long'});
+}
+function updateNewsDot(){ const s=newsSeen(), on=NEWS.some(n=>n.d && n.d>s); $('#btnNews').classList.toggle('has-new', on); const m=$('#btnMore'); if(m) m.classList.toggle('has-new', on && mqMobile.matches); }
 function renderNews(){
-  const el=$('#news');
+  const el=$('#news'), seen=el._seen ?? newsSeen();
+  el._seen=seen;   // метка «новое» держится, пока панель открыта; прочитанным считается всё, что было на момент открытия
+  try{ localStorage.setItem('rassvet.newsSeen', new Date().toISOString()); }catch(e){}
+  updateNewsDot();
   let h=`<header><h2>${esc(t('news.h'))}</h2><button class="close" id="newsClose" aria-label="${esc(t('news.close'))}">\u00d7</button></header><section>`;
   if(!NEWS.length){ h+=`<p class="lead">${esc(t('news.empty'))}</p>`; }
-  else h+=`<ul class="newslist">`+NEWS.map(n=>{
-      const d=n.d?new Date(n.d).toLocaleDateString(LOC(),{day:'2-digit',month:'short'}):'';
-      return `<li><a href="${esc(n.u)}" target="_blank" rel="noopener"><div class="meta"><span class="src">${esc(n.src)}</span>${d?`<time>${esc(d)}</time>`:''}</div><div class="nt">${esc(n.t)}</div>${n.s?`<p>${esc(n.s)}</p>`:''}<span class="go">${esc(t('news.open'))} \u2197</span></a></li>`;
-    }).join('')+`</ul>`;
+  else{
+    const items=NEWS.map(n=>({n, tp:newsTopic(n)})), cnt=new Map();
+    for(const x of items) cnt.set(x.tp[0],(cnt.get(x.tp[0])||0)+1);
+    const tops=[...NEWS_TOPICS.map(x=>x[0]),'other'].filter(k=>cnt.get(k));
+    if(NEWS_F && !cnt.get(NEWS_F)) NEWS_F='';
+    h+=`<div class="nfil" role="group" aria-label="${esc(t('news.h'))}"><button type="button" class="chip" data-nf="" aria-pressed="${!NEWS_F}">${esc(t('news.all'))} <span class="num">${NEWS.length}</span></button>`
+      +tops.map(k=>`<button type="button" class="chip" data-nf="${k}" aria-pressed="${NEWS_F===k}">${esc(t('ntop.'+k))} <span class="num">${cnt.get(k)}</span></button>`).join('')+`</div>`;
+    const shown=items.filter(x=>!NEWS_F || x.tp[0]===NEWS_F);
+    const fi=shown.findIndex(x=>x.n.i);   // крупно — первая с фото
+    let day=null, k=0; const links=[];
+    h+=`<ul class="newslist">`;
+    shown.forEach((x,j)=>{
+      const n=x.n, tp=x.tp, dl=newsDay(n.d);
+      if(dl!==day){ day=dl; h+=`<li class="nday" aria-hidden="true">${esc(dl)}</li>`; }
+      const ln=newsLinks(n), feat=j===fi;
+      const cover = n.i ? `<img src="${esc(n.i)}" alt="" loading="lazy" decoding="async"><span class="cr">${esc(t('news.photo'))}</span>`
+        : `<div class="ncov" style="background:linear-gradient(135deg,${tp[1]}55,${tp[1]}18 70%)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NEWS_ICONS[tp[3]]}</svg></div>`;
+      const lang = n.lang && n.lang!==LANG ? `<span class="lng" title="${esc(t(n.lang==='en'?'news.langEn':'news.langRu'))}">${esc(n.lang.toUpperCase())}</span>` : '';
+      h+=`<li class="nitem${feat?' feat':''}"><a class="nl" href="${esc(n.u)}" target="_blank" rel="noopener"><div class="nthumb">${cover}</div><div class="nbody">
+        <div class="nmeta"><span class="ntag" style="background:${tp[1]}">${esc(t('ntop.'+tp[0]))}</span><span class="src">${esc(n.src)}</span>${lang}${n.d && seen && n.d>seen?`<span class="fresh">${esc(t('news.new'))}</span>`:''}<time datetime="${esc(n.d||'')}">${esc(newsWhen(n.d))}</time></div>
+        <div class="nt">${esc(n.t)}</div>${n.s?`<p>${esc(n.s)}</p>`:''}</div></a>`
+        + (ln.length ? `<div class="nmap">${esc(t('news.map'))} ${ln.map(o=>{ links.push(o); return `<button type="button" class="chip" data-nl="${links.length-1}">${esc(o.label)}</button>`; }).join('')}</div>` : '')
+        + `</li>`;
+      k++;
+    });
+    h+=`</ul>`+(k?'':`<p class="lead">${esc(t('news.none'))}</p>`);
+    el._links=links;
+  }
   h+=`<p class="note">${esc(t('news.foot'))}</p></section>`;
   el.innerHTML=h;
-  $('#newsClose').onclick=()=>openNews(false);
+  $('#newsClose').onclick=()=>{ el._seen=undefined; openNews(false); };
+  el.querySelectorAll('[data-nf]').forEach(b=>b.onclick=()=>{ NEWS_F=b.dataset.nf; renderNews(); });
+  el.querySelectorAll('[data-nl]').forEach(b=>b.onclick=()=>{ const o=el._links[+b.dataset.nl]; el._seen=undefined; openNews(false);
+    if(o.kind==='sat') goToSat(o.s); else showSystem(o.sys); });
 }
 function openSky(v){
   SKY.open=v; $('#sky').hidden=!v; $('#btnSky').setAttribute('aria-pressed',String(v));
@@ -4266,7 +4399,7 @@ function init(){
       if(info && info.layer && info.layer.id==='sats' && frameData && info.index>=0){ select(frameData.idx[info.index]); } },
     onError:(e)=>{ console.error(e); if(!window.__rassvetFatal){ window.__rassvetFatal=true; window.__showFatal(t('fatal.render'), (e&&e.message)||String(e)); } }
   });
-  initTabs(); renderSystems(); renderFilters(); renderLegend(); renderFoot(); updateBanner(); syncTimeButtons(); updateSpace();
+  initTabs(); renderSystems(); renderFilters(); renderLegend(); renderFoot(); updateBanner(); updateNewsDot(); syncTimeButtons(); updateSpace();
   $('#dlgLinks').innerHTML = systems.filter(s=>s.meta&&s.meta.catalogQueries).flatMap(s=>s.meta.catalogQueries.map(q=>`<a href="${esc(q.url)}" target="_blank" rel="noopener">${esc(q.url.replace('https://',''))}</a>`)).join('<br>');
   // события
   $('#v2d').onclick=()=>setView('map'); $('#v3d').onclick=()=>setView('globe');
@@ -4371,6 +4504,7 @@ window.__rassvet = {
   geoAt(norad, iso){ const s=sats.find(x=>x.norad===norad); if(!s) return null; const d=new Date(iso); return propagateGeo(s,d,satellite.gstime(d)); },
   dbg:()=>({country:placed.country.length, region:placed.region.length, city:placed.city.length, satl:satLabelData.length, charset:charset&&charset.length, vp:!!currentViewport(), layers:deckgl.props.layers.map(l=>l.id+':'+(l.props.data&&(l.props.data.length)))}),
   perf:()=>PERF,
+  labels:()=>({sat:satLabelData.map(d=>d.i), geo:[...placed.country,...placed.region,...placed.city].map(l=>l.t)}),   // для scripts/perf: мерцание подписей
   deck:()=>deckgl,   // для scripts/perf: слои, тайлы, состояние загрузки
   view(vs){ S.vs=clampVS({...S.vs, ...vs}); viewMovedAt=performance.now(); deckgl.setProps({viewState:S.vs}); labelsDirty=true; geoCache=null; updateAtmo(); updateNav(); return S.vs; },
   globe:()=>({tier:GL3.tex?GL3.tex.id:-1, failed:GL3.failed, cloudsLive:GL3.cloudsLive, photo:photoGlobe(), near:nearFade(), drape:drapeOn()}),

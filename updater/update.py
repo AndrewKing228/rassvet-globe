@@ -559,10 +559,31 @@ NEWS_KW = re.compile(r"(косм|ракет|спутник|орбит|\bзапу
                      r"астронавт|космонавт|starlink|байконур|восточн|space|rocket|satellite|orbit|launch|nasa|"
                      r"\besa\b|lunar|mars|moon|spacecraft)", re.I)
 _ATOM = "{http://www.w3.org/2005/Atom}"
+_CONTENT = "{http://purl.org/rss/1.0/modules/content/}"
+_MEDIA = "{http://search.yahoo.com/mrss/}"
+NEWS_IMG_W = 480            # ширина превью: источник отдаёт уменьшенную копию по ?w= (своего ресайза нет — без Pillow)
+NEWS_IMG_MAX = 250_000      # больше — не сохраняем
+NEWS_IMG_DIR = "news"       # каталог превью рядом со страницей; браузер не ходит на чужие сайты (CSP — только свой)
+# хвосты и префиксы лент, которые не несут смысла: «Description …» у NASA, «The post … appeared first on …» у WordPress
+_NEWS_JUNK = re.compile(r"^(Description|Описание)\s+|\s*The post .{0,300}? appeared first on [^.]{1,80}\.?\s*$", re.I)
 
 
 def _news_strip(t):
     return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", t or ""))).strip()
+
+
+def _news_image(it):
+    """Картинка новости: media:content/thumbnail, enclosure с type image/*, иначе первая <img> в тексте записи."""
+    for e in it.findall(_MEDIA + "content") + it.findall(_MEDIA + "thumbnail") + it.findall("enclosure"):
+        u, ty = e.get("url"), e.get("type") or ""
+        if u and (not ty or ty.startswith("image/")):
+            return u
+    for tag in (_CONTENT + "encoded", "description"):
+        e = it.find(tag)
+        m = re.search(r'<img[^>]+src="([^"]+)"', e.text or "") if e is not None else None
+        if m:
+            return html.unescape(m.group(1))
+    return None
 
 
 def _news_text(it, tag):
@@ -599,15 +620,64 @@ def parse_feed(text, feed):
                     link = l.get("href"); break
         if not (title and link and link.startswith("http")):
             continue
-        summary = _news_strip(_news_text(it, "description") or _news_text(it, "summary") or "")
+        summary = _NEWS_JUNK.sub("", _news_strip(_news_text(it, "description") or _news_text(it, "summary") or "")).strip()
         if feed.get("filter") and not NEWS_KW.search(title + " " + summary):
             continue
         if len(summary) > NEWS_SUMMARY:
             summary = summary[:NEWS_SUMMARY].rsplit(" ", 1)[0] + "…"
         when = _news_date(it)
-        out.append({"t": title, "s": summary, "u": link, "d": iso(when) if when else None,
-                    "src": feed["name"], "lang": feed.get("lang", "")})
+        item = {"t": title, "s": summary, "u": link, "d": iso(when) if when else None,
+                "src": feed["name"], "lang": feed.get("lang", "")}
+        # картинки — только у источников, где они в общественном достоянии (sources.yml: images), без исключений images_skip
+        if feed.get("images") and not (feed.get("images_skip") and re.search(feed["images_skip"], title)):
+            img = _news_image(it)
+            # эмблемы и логотипы — не фото: эмблему NASA нельзя ставить так, будто ведомство поддерживает сайт
+            if img and img.startswith("https://") and not re.search(r"meatball|insignia|logo|worm", img, re.I):
+                item["isrc"] = img
+        out.append(item)
     return out
+
+
+def _news_image_url(u):
+    """Уменьшенная копия у источника: ?w=NEWS_IMG_W (NASA: assets.science.nasa.gov, wp-content), у медиатеки NASA — ~small."""
+    p = urllib.parse.urlsplit(u)
+    path = re.sub(r"~(large|orig|medium)\.(jpg|jpeg|png)$", r"~small.\2", p.path)
+    q = "" if path != p.path else urllib.parse.urlencode({"w": NEWS_IMG_W})
+    return urllib.parse.urlunsplit((p.scheme, p.netloc, path, q, ""))
+
+
+def publish_news_images(news, cfg, ua, out_dir):
+    """Превью новостей в <out>/news/<хеш>.<jpg|png|webp>; в записи — путь "i", внешний адрес убирается.
+    Изолирована: сбой одной картинки — новость без фото. Файлы, на которые не ссылается ни одна новость, удаляются."""
+    d = os.path.join(out_dir, NEWS_IMG_DIR)
+    http_cfg = dict(cfg["http"]); http_cfg["retries"] = 0
+    keep, got = set(), 0
+    for it in news or []:
+        src = it.pop("isrc", None)
+        if it.get("i"):
+            keep.add(os.path.basename(it["i"]))
+        if not src or it.get("i"):
+            continue
+        try:
+            url = _news_image_url(src)
+            body = http_get(url, http_cfg, ua, raw=True)
+            ext = ("jpg" if body[:2] == bytes([0xFF, 0xD8]) else "png" if body[:8] == bytes([0x89]) + b"PNG" + bytes([13, 10, 26, 10])
+                   else "webp" if body[:4] == b"RIFF" and body[8:12] == b"WEBP" else None)
+            if not ext or len(body) > NEWS_IMG_MAX:
+                raise ValueError(f"{'не картинка' if not ext else f'{len(body)} байт'}")
+            name = f"{hashlib.sha1(src.encode()).hexdigest()[:12]}.{ext}"
+            os.makedirs(d, exist_ok=True)
+            if not os.path.exists(os.path.join(d, name)):
+                atomic_write(os.path.join(d, name), body)
+            it["i"] = f"{NEWS_IMG_DIR}/{name}"; keep.add(name); got += 1
+        except Exception as e:
+            log.info("  превью новости пропущено (%s): %s", src.split("?")[0][:100], e)
+    if os.path.isdir(d):
+        for n in os.listdir(d):
+            if n not in keep:
+                os.unlink(os.path.join(d, n))
+    log.info("  превью новостей: %d", len(keep))
+    return got
 
 
 def publish_models(src, out):
@@ -989,6 +1059,13 @@ def run_once(args, cfg):
     except Exception as e:
         log.warning("Новости пропущены (на публикацию не влияет): %s", e)
         news = None
+    try:
+        if news and not args.dry_run:
+            publish_news_images(news, cfg, ua, args.out)
+    except Exception as e:
+        log.warning("Превью новостей пропущены (на публикацию не влияет): %s", e)
+    for it in news or []:
+        it.pop("isrc", None)
     groups = {sy["select"]["satcatGroup"] for sy in satcat_systems(template)}
     satcat = collect_satcat(groups, cfg["http"], state_dir, ua, now) if groups else {}
     page, changed = build(template, results, now, domain, stamp=bool(fresh), state_dir=state_dir, news=news, satcat=satcat)

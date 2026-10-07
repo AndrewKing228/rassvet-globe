@@ -3,6 +3,22 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.11.0 — 2026-10-07
+
+### Русский
+- **Новости живее:** фото NASA или обложка по теме, фильтр по темам, «3 ч назад», группы по дням, метка «новое»
+  с прошлого визита и точка на кнопке, пометка языка статьи. Кнопки «На карте:» открывают упомянутые аппараты
+  и системы — МКС, Хаббл, Starlink, ГЛОНАСС и другие. Фото — только из ленты NASA, своей копией на сайте.
+- **Подписи не мигают при вращении глобуса:** раньше соседние подписи и подписи пролетающих спутников вытесняли
+  друг друга — за 8 с вращения подписи мест мигали 94 раза, теперь 7.
+
+### English
+- **Livelier news:** a NASA photo or a topic cover, topic filter, “3 h ago”, grouping by day, a “new” mark since the last
+  visit with a dot on the button, the article language. “On the map:” buttons open the spacecraft and systems mentioned —
+  ISS, Hubble, Starlink, GLONASS and more. Photos come only from the NASA feed, as a copy on the site itself.
+- **Labels no longer flicker while the globe rotates:** neighbouring labels and labels of passing satellites used to
+  push each other out — place labels flickered 94 times in 8 s of rotation, now 7.
+
 ## v1.10.0 — 2026-10-07
 
 ### Русский

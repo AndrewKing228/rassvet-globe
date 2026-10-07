@@ -121,6 +121,9 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 - Search by name, NORAD or COSPAR, by common names (ISS, Hubble, Tiangong, Chandra…), by Russian spelling of
   catalogue names (Meteor, Kosmos, Ekspress) and by system — a picked system is turned on and shown in the panel.
   Well-known spacecraft that are not in Earth orbit get a note with a source (the James Webb telescope at L2).
+- Space news from public feeds: a NASA photo or a topic cover, topic filter (launches, stations, Moon, Mars,
+  Earth, telescopes, satellites), “3 h ago”, a “new” mark since the last visit, the article language and
+  “On the map:” buttons for the spacecraft and systems mentioned (ISS, Hubble, Starlink, GLONASS…).
 - Load your own TLE manually with the "Update TLE" button.
 - Russian and English UI, an "i" hint next to every setting, a short tour on first visit.
 - Installs on a phone as an app (PWA) and opens offline with the latest data.
@@ -356,6 +359,8 @@ Set them as environment variables — in the service, with `Environment=` lines:
 
 Sources are listed in `updater/sources.yml`. The `news` section (a space-news feed from RSS) and the
 `clouds` section (a daily cloud map) are optional: remove them and the script contacts CelesTrak only.
+For a feed with `images: true` (currently NASA only) the script stores previews in `news/` next to the
+page — set the flag only for sources whose images may be republished.
 
 ### No server: GitHub Pages
 

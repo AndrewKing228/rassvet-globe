@@ -45,7 +45,9 @@ sources:
 # filter: true — оставлять только элементы со словами про космос (title+описание). Сбой фида изолирован.
 news:
   - {id: spacenews, name: "SpaceNews", url: "https://spacenews.com/feed/", lang: en, filter: false}
-  - {id: nasa, name: "NASA", url: "https://www.nasa.gov/feed/", lang: en, filter: true}
+  # images: true — превью из ленты (работы NASA не охраняются авторским правом в США, подпись «Фото: NASA»);
+  # images_skip — заголовки, у картинок которых права чужие: APOD показывает снимки разных авторов и обсерваторий
+  - {id: nasa, name: "NASA", url: "https://www.nasa.gov/feed/", lang: en, filter: true, images: true, images_skip: "^APOD"}
   - {id: habr-space, name: "Habr «Космос»", url: "https://habr.com/ru/rss/hub/space/", lang: ru, filter: true}
   - {id: nplus1, name: "N+1", url: "https://nplus1.ru/rss", lang: ru, filter: true}
 

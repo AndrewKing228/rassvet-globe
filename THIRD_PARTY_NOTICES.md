@@ -132,6 +132,14 @@ Sources the page can use but which are not shipped in this repository:
   запущен с секцией `clouds` в `updater/sources.yml`.
   The daily cloud map is downloaded into `clouds/` only when the update script runs with the `clouds`
   section in `updater/sources.yml`.
+- Превью к новостям — только из ленты NASA (`images: true` в `updater/sources.yml`): скрипт обновления
+  скачивает уменьшенную копию (480 px) в `news/`, на карточке подпись «Фото: NASA» и ссылка на материал.
+  Работы NASA не охраняются авторским правом в США ([NASA Images and Media Usage Guidelines](https://www.nasa.gov/nasa-brand-center/images-and-media/));
+  без превью остаются APOD (снимки разных авторов) и эмблемы NASA. NASA не одобряет и не поддерживает
+  этот проект. У новостей других лент — только обложка по теме, без чужих снимков.
+  News previews come only from the NASA feed: the update script stores a 480 px copy in `news/`, shown
+  with “Photo: NASA” and a link; APOD items (images by various authors) and NASA insignia are skipped.
+  Items from other feeds get a topic cover, never third-party photos.
 
 ## Инструменты разработки / Development tools
 
