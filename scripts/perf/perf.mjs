@@ -123,7 +123,12 @@ const NEAR_STATE = `(()=>{ const L=__rassvet.deck().layerManager.getLayers().fil
   holes:d?d.state.tileset.selectedTiles.filter(t=>t.isLoaded&&!t.content).length:0,
   holeIds:d?d.state.tileset.selectedTiles.filter(t=>t.isLoaded&&!t.content).map(t=>t.index.z+'/'+t.index.x+'/'+t.index.y):[] }; })()`;
 async function waitNear(T, ms = 30000) { const t0 = Date.now(); await sleep(400); while (Date.now() - t0 < ms) { const s = await T.ev(NEAR_STATE); if (s && s.loaded) return { ...s, ms: Date.now() - t0 }; await sleep(150); } return { ...(await T.ev(NEAR_STATE)), ms: null }; }
-const FPS = ms => `new Promise(r=>{ let n=0, t0=performance.now(); function f(t){ n++; if(t-t0<${ms}) requestAnimationFrame(f); else r(+(n/((t-t0)/1000)).toFixed(1)); } requestAnimationFrame(f); })`;
+// частота кадров при движении камеры (долгота +0,002° за кадр): в покое страница пересобирает слои редко,
+// и счёт кадров тогда меряет пустой requestAnimationFrame, а не отрисовку
+const FPS = ms => `new Promise(r=>{ let n=0, t0=performance.now(), lon0=__rassvet.state.vs.longitude;
+  function f(t){ n++; __rassvet.view({longitude:lon0+n*0.002}); if(t-t0<${ms}) requestAnimationFrame(f); else r(+(n/((t-t0)/1000)).toFixed(1)); } requestAnimationFrame(f); })`;
+// сбросить таймер автоповорота (глобус начинает крутиться через 25 с без действий — это не «покой»)
+const POKE = `window.dispatchEvent(new KeyboardEvent('keydown',{key:'Shift'})); 1`;
 
 // ---------- сценарии ----------
 const DEVICES = {
@@ -161,12 +166,12 @@ async function startup(port, url) {
     result[`start.${dk}.longTasks`] = [lt.length, Math.round(lt.reduce((a, d) => a + d, 0)), Math.round(Math.max(0, ...lt))];
     result[`start.${dk}.KB`] = [Math.round(bytes / 1024), reqs];
     await T.ev(`(()=>{ const b=[...document.querySelectorAll('button')].find(b=>/Пропустить|Skip/.test(b.textContent)); b&&b.click(); return 1 })()`);
-    const idle = await busy(T); result[`start.${dk}.busy%`] = idle.busy;
+    await T.ev(POKE); await sleep(1000); const idle = await busy(T); result[`start.${dk}.busy%`] = idle.busy;
     // все системы: кнопка «все» в панели и Starlink
     await T.ev(`(()=>{ document.querySelectorAll('button[data-act="all"]').forEach(b=>b.click()); const r=[...document.querySelectorAll('.sysrow')].find(r=>/Starlink/.test(r.textContent)); const i=r&&r.querySelector('input.switch'); if(i&&!i.checked) i.click(); return 1 })()`);
     await sleep(8000);
     result[`all.${dk}.sats`] = await T.ev(`+(__rassvet.dbg().layers.find(x=>x.startsWith('sats:'))||':0').split(':')[1]`);
-    result[`all.${dk}.fps3d`] = await T.ev(FPS(3000)); Object.assign(idle, await busy(T, 3000)); result[`all.${dk}.busy%`] = idle.busy; result[`all.${dk}.heapMB`] = idle.heapMB;
+    result[`all.${dk}.fps3d`] = await T.ev(FPS(3000)); await T.ev(POKE); await sleep(1000); Object.assign(idle, await busy(T, 3000)); result[`all.${dk}.busy%`] = idle.busy; result[`all.${dk}.heapMB`] = idle.heapMB;
     await T.ev(`__rassvet.setView('map'); 1`); await sleep(4000);
     result[`all.${dk}.fps2d`] = await T.ev(FPS(3000));
     await T.close();

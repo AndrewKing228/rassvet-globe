@@ -84,7 +84,8 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
   grouped by country and each shows whose it is: GPS — USA, Galileo — European Union, BeiDou — China.
   Options wrap onto new lines so all are visible; a summary on top lists the active filters, each removable
   with a cross.
-- Filters on top of systems: orbit type (low, medium, geosynchronous, highly elliptical), owner per the
+- Filters on top of systems: orbit type (low, medium, geosynchronous, highly elliptical), status (working,
+  raising orbit, decaying, failed — verified data for Rassvet, the SATCAT code for the rest), owner per the
   SATCAT catalogue and launch year; each option shows how many satellites remain.
 - Satellite card: status (marked "unconfirmed" when sources disagree), generation, launch, NORAD and
   COSPAR IDs, altitude, speed, sub-satellite point, sunlit or in shadow, perigee and apogee.

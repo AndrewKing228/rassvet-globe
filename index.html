@@ -1004,7 +1004,8 @@ ru:{
   'bus.leo-flat':'плоский спутник широкополосной низкоорбитальной группировки', 'bus.gnss':'навигационный спутник', 'bus.geo-comm':'геостационарный спутник связи',
   'bus.leo-small':'спутник низкой орбиты', 'bus.station':'орбитальная станция',
   'h.filters':'Фильтры', 'tip.filters':'Сужают показ внутри включённых систем: по типу орбиты, владельцу по каталогу SATCAT и году запуска. Число рядом — сколько аппаратов останется.',
-  'f.reset':'сбросить', 'f.noSystems':'Не включено ни одной системы — фильтровать нечего. Включите системы на вкладке «Системы» или верните набор по умолчанию.', 'f.noSats':'У включённых систем нет аппаратов для показа: возможно, у них не отмечено ни одного поколения.', 'f.nothingLeft':'Фильтры не оставили ни одного аппарата.', 'f.enableDefaults':'Включить системы по умолчанию', 'f.active':'Сейчас', 'f.remove':x=>`Снять фильтр «${x}»`, 'f.resetAll':'сбросить всё', 'f.ownerShort':'Владелец', 'f.yearShort':'Годы', 'f.count':(a,b)=>`Показано ${a} из ${b}`, 'f.of':'из', 'f.orbit':'Тип орбиты', 'f.owner':'Владелец (по SATCAT)', 'f.ownerAll':'Все владельцы',
+  'f.reset':'сбросить', 'f.noSystems':'Не включено ни одной системы — фильтровать нечего. Включите системы на вкладке «Системы» или верните набор по умолчанию.', 'f.noSats':'У включённых систем нет аппаратов для показа: возможно, у них не отмечено ни одного поколения.', 'f.nothingLeft':'Фильтры не оставили ни одного аппарата.', 'f.enableDefaults':'Включить системы по умолчанию', 'f.active':'Сейчас', 'f.remove':x=>`Снять фильтр «${x}»`, 'f.resetAll':'сбросить всё', 'f.ownerShort':'Владелец', 'f.yearShort':'Годы', 'f.count':(a,b)=>`Показано ${a} из ${b}`, 'f.of':'из', 'f.orbit':'Тип орбиты', 'f.state':'Состояние', 'stf.ok':'Работает', 'stf.raising':'Поднимает орбиту', 'stf.decaying':'Снижается', 'stf.failed':'Отказ', 'stf.unknown':'Нет данных',
+  'tip.state':'У «Рассвета» — статус из проверенных данных с источниками (карточка спутника). У остальных — код состояния каталога SATCAT (CelesTrak): «работает» — действующий, частично действующий, резервный, запасной или с продлённой миссией; «отказ» — не действующий.', 'f.owner':'Владелец (по SATCAT)', 'f.ownerAll':'Все владельцы',
   'f.year':'Год запуска', 'f.from':'с', 'f.to':'по',
   'orb.LEO':'Низкая', 'orb.MEO':'Средняя', 'orb.GEO':'Геосинхронная', 'orb.HEO':'Высокоэллиптическая',
   'tip.orb.LEO':'Апогей ниже 2000 км: МКС, «Рассвет», Starlink, большинство спутников наблюдения Земли.',
@@ -1144,7 +1145,8 @@ en:{
   'bus.leo-flat':'flat satellite of a low-orbit broadband constellation', 'bus.gnss':'navigation satellite', 'bus.geo-comm':'geostationary communications satellite',
   'bus.leo-small':'low-orbit satellite', 'bus.station':'orbital station',
   'h.filters':'Filters', 'tip.filters':'Narrow the view inside the enabled systems by orbit type, owner in the SATCAT catalogue and launch year. The number shows how many satellites remain.',
-  'f.reset':'reset', 'f.noSystems':'No systems are turned on, so there is nothing to filter. Turn systems on in the Systems tab or restore the defaults.', 'f.noSats':'The systems turned on have nothing to show — perhaps none of their generations is ticked.', 'f.nothingLeft':'The filters left no satellites.', 'f.enableDefaults':'Turn on default systems', 'f.active':'Now', 'f.remove':x=>`Remove filter “${x}”`, 'f.resetAll':'reset all', 'f.ownerShort':'Owner', 'f.yearShort':'Years', 'f.count':(a,b)=>`Showing ${a} of ${b}`, 'f.of':'of', 'f.orbit':'Orbit type', 'f.owner':'Owner (per SATCAT)', 'f.ownerAll':'All owners',
+  'f.reset':'reset', 'f.noSystems':'No systems are turned on, so there is nothing to filter. Turn systems on in the Systems tab or restore the defaults.', 'f.noSats':'The systems turned on have nothing to show — perhaps none of their generations is ticked.', 'f.nothingLeft':'The filters left no satellites.', 'f.enableDefaults':'Turn on default systems', 'f.active':'Now', 'f.remove':x=>`Remove filter “${x}”`, 'f.resetAll':'reset all', 'f.ownerShort':'Owner', 'f.yearShort':'Years', 'f.count':(a,b)=>`Showing ${a} of ${b}`, 'f.of':'of', 'f.orbit':'Orbit type', 'f.state':'Status', 'stf.ok':'Working', 'stf.raising':'Raising orbit', 'stf.decaying':'Decaying', 'stf.failed':'Failed', 'stf.unknown':'No data',
+  'tip.state':'Rassvet: status from verified data with sources (see the satellite card). Others: the SATCAT status code (CelesTrak): “working” means operational, partially operational, backup, spare or extended mission; “failed” means non-operational.', 'f.owner':'Owner (per SATCAT)', 'f.ownerAll':'All owners',
   'f.year':'Launch year', 'f.from':'from', 'f.to':'to',
   'orb.LEO':'Low', 'orb.MEO':'Medium', 'orb.GEO':'Geosynchronous', 'orb.HEO':'Highly elliptical',
   'tip.orb.LEO':'Apogee below 2,000 km: the ISS, Rassvet, Starlink, most Earth-observation satellites.',
@@ -1200,7 +1202,7 @@ const S = {
   time: { sim: Date.now(), live: true, playing: true, rateIdx: 0 },
   colorMode: 'system', tracks: true, labels: true, zones: true, elev: 25, night: true, tails: true, clouds: true,
   selected: -1, focusLaunch: null,
-  filter: { orbit: new Set(['LEO','MEO','GEO','HEO']), owner: '', y0: null, y1: null, region: '', type: '' },   // фильтры поверх включённых систем; region и type — навигация по системам
+  filter: { orbit: new Set(['LEO','MEO','GEO','HEO']), state: new Set(['ok','raising','decaying','failed','unknown']), owner: '', y0: null, y1: null, region: '', type: '' },   // фильтры поверх включённых систем; region и type — навигация по системам
   tab: 'sys', collapsed: new Set()
 };
 const systems = [];      // {cfg, meta, sats[], enabled, srcById}
@@ -1943,13 +1945,35 @@ function computeSatLabels(){
 /* ================= Рендер-цикл ================= */
 let lastFrame=performance.now(), lastCard=0, lastTable=0;
 let tickErrors=0;
-/* Телефон с ближним видом: слои обновляются 30 раз в секунду, а не 60. Спутникам этого хватает, а каждый кадр
-   перерисовывает все 40–50 тайлов рельефа — на телефоне это 10–16 кадров/с. Движение камеры deck.gl рисует сам, без пропусков. */
-let lastBody=0;
+/* Как часто пересобирать слои (tickBody). Каждая пересборка — SGP4 для всех аппаратов, подписи, setProps и перерисовка
+   всей сцены; на телефоне это занимало главный поток целиком. На общем виде при скорости ×1 спутник за секунду сдвигается
+   на экране меньше чем на пиксель, поэтому шаг подбирается так, чтобы самый быстрый (низкая орбита, 7,8 км/с) сдвигался
+   не больше чем на полпикселя, и не реже 4 раз в секунду (часы, карточка). Каждый кадр — пока есть касание, движется
+   камера (в том числе автоповорот и полёт к спутнику) и 0,6 с после этого; точка наблюдателя пульсирует — не реже 30 раз
+   в секунду. Телефон с ближним видом — не чаще 30 раз в секунду: каждый кадр там перерисовывает 40–50 тайлов рельефа.
+   Движение камеры deck.gl рисует сам, без пропусков. */
+let lastBody=0, lastRaf=performance.now(), viewMovedAt=0;
+function pxPerKm(){
+  const vp=currentViewport(); if(!vp) return 0;
+  const lat=Math.max(-70,Math.min(70,S.vs.latitude)), a=vp.project([S.vs.longitude,lat]), b=vp.project([S.vs.longitude+0.5,lat]);
+  const v=Math.hypot(b[0]-a[0],b[1]-a[1])/(0.5*111.32*Math.cos(lat*Math.PI/180));
+  return Number.isFinite(v) ? v : 0;
+}
+function bodyGap(now){
+  let g=0;
+  if(!(POINTERS.size || now-lastInteract<600 || now-viewMovedAt<600 || pendingFly>=0 || SKY.picking || autoRotateOn(now))){
+    const T=S.time, R=T.live ? 1 : T.playing ? Math.abs(RATES[T.rateIdx]) : 0, ppk=R ? pxPerKm() : 0;
+    g = !R ? 250 : ppk>0 ? Math.min(250, 0.5/(R*7.8*ppk)*1000) : 0;   // ppk 0 — масштаб не посчитать: каждый кадр
+    if(SKY.obs) g=Math.min(g,33);
+  }
+  if(isMobileGPU() && nearFade()>0) g=Math.max(g,31);
+  return g;
+}
 function tick(){
   if(window.__rassvetFatal) return;
-  const now=performance.now();
-  if(now-lastBody<31 && isMobileGPU() && nearFade()>0){ requestAnimationFrame(tick); return; }
+  const now=performance.now(), rdt=now-lastRaf; lastRaf=now;
+  perfWatch(now, rdt);   // по настоящим кадрам: редкая пересборка слоёв — не просадка
+  if(now-lastBody<bodyGap(now)-2){ requestAnimationFrame(tick); return; }
   lastBody=now;
   try{ tickBody(); tickErrors=0; }
   catch(e){
@@ -1967,7 +1991,7 @@ function tickBody(){
     const off=T.sim-Date.now();
     if(off>DAY){ T.sim=Date.now()+DAY; setPlaying(false); } else if(off<-DAY){ T.sim=Date.now()-DAY; setPlaying(false); }
   }
-  autoRotate(now, dt); perfWatch(now, dt);
+  autoRotate(now, dt);
   const p0=performance.now(); propagateAll(T.sim); const p1=performance.now();
   if(pendingFly>=0 && valid[pendingFly]){ flyTo(pendingFly); pendingFly=-1; }
   computeSatLabels(); const p2=performance.now();
@@ -2597,7 +2621,7 @@ function flyTo(i){
   let lon=pos[i*3]; while(lon-S.vs.longitude>180) lon-=360; while(lon-S.vs.longitude<-180) lon+=360;
   const zoom = G ? Math.min(Math.max(z,1.6),2.6) : Math.min(Math.max(z,2.0),3.4);
   S.vs={...S.vs, longitude:lon, latitude:pos[i*3+1], zoom, transitionDuration:1100, transitionEasing:EASE, transitionInterpolator:new deck.LinearInterpolator(['longitude','latitude','zoom'])};
-  deckgl.setProps({viewState:clampVS(S.vs)});
+  viewMovedAt=performance.now(); deckgl.setProps({viewState:clampVS(S.vs)});
 }
 function select(i, fly){
   if(i>=0 && i!==S.selected) cardPeek = mqMobile.matches;
@@ -2674,7 +2698,15 @@ function orbitClass(s){
 }
 const satOwner = s => (s.cat && s.cat.satcat && s.cat.satcat[5]) || s.sys.cfg.owner || (s.sys.cfg.select && s.sys.cfg.select.owner) || (s.sys.cfg.group==='ru' ? 'CIS' : null);
 function launchYear(s){ const y=parseInt(String(s.launchDate || s.cospar || s.launchId || '').slice(0,4)); return y>1950 && y<2100 ? y : null; }
-const satFilterActive = () => S.filter.orbit.size<ORBITS.length || !!S.filter.owner || !!S.filter.y0 || !!S.filter.y1;   // вкладка «Фильтры»
+/* состояние: у курируемых систем — проверенный статус (meta.status), у остальных — код SATCAT (cat.satcat[4]) */
+const STATES=['ok','raising','decaying','failed','unknown'];
+const ST_CURATED={ 'operational-orbit':'ok', 'raising':'raising', 'decaying':'decaying', 'failed':'failed' };
+const ST_OPS={ '+':'ok', 'P':'ok', 'B':'ok', 'S':'ok', 'X':'ok', '-':'failed' };
+function satState(s){
+  const st=s.meta && s.meta.status; if(st) return ST_CURATED[st.value] || 'unknown';
+  const c=s.cat && s.cat.satcat && s.cat.satcat[4]; return (c && ST_OPS[c]) || 'unknown';
+}
+const satFilterActive = () => S.filter.orbit.size<ORBITS.length || S.filter.state.size<STATES.length || !!S.filter.owner || !!S.filter.y0 || !!S.filter.y1;   // вкладка «Фильтры»
 const filterActive = () => satFilterActive() || !!S.filter.region || !!S.filter.type;
 /* навигация по системам: регион страны оператора и тип системы (поля region и type в реестре) */
 const REGIONS=['ru','us','eu','cn','jp','in','int'], STYPES=['internet','navigation','comms','eo','meteo','science','stations','military','other'];
@@ -2683,6 +2715,7 @@ function filterOk(s, skip){
   const F=S.filter;
   if((F.region || F.type) && !sysMatch(s.sys)) return false;
   if(skip!=='orbit' && F.orbit.size<ORBITS.length){ const o=orbitClass(s); if(!o || !F.orbit.has(o)) return false; }
+  if(skip!=='state' && F.state.size<STATES.length && !F.state.has(satState(s))) return false;
   if(skip!=='owner' && F.owner && satOwner(s)!==F.owner) return false;
   if(skip!=='year' && (F.y0 || F.y1)){ const y=launchYear(s); if(y==null || (F.y0 && y<F.y0) || (F.y1 && y>F.y1)) return false; }
   return true;
@@ -2692,29 +2725,33 @@ const OWNER_NAMES={ CIS:['Россия / СССР (CIS)','Russia / USSR (CIS)'],
   IM:['Inmarsat','Inmarsat'], CA:['Канада','Canada'], GER:['Германия','Germany'], POL:['Польша','Poland'], SING:['Сингапур','Singapore'], SKOR:['Южная Корея','South Korea'],
   ASRA:['Австрия','Austria'], MALA:['Малайзия','Malaysia'], MEX:['Мексика','Mexico'], THAI:['Таиланд','Thailand'] };
 const ownerName = w => w==='?' ? t('nodata') : (OWNER_NAMES[w] ? OWNER_NAMES[w][LANG==='en'?1:0] : w);
-function resetFilters(apply){ S.filter={ orbit:new Set(ORBITS), owner:'', y0:null, y1:null, region:'', type:'' }; if(apply!==false) filtersChanged(); }
-function resetSatFilters(){ const F=S.filter; S.filter={ orbit:new Set(ORBITS), owner:'', y0:null, y1:null, region:F.region, type:F.type }; filtersChanged(); }
+function resetFilters(apply){ S.filter={ orbit:new Set(ORBITS), state:new Set(STATES), owner:'', y0:null, y1:null, region:'', type:'' }; if(apply!==false) filtersChanged(); }
+function resetSatFilters(){ const F=S.filter; S.filter={ orbit:new Set(ORBITS), state:new Set(STATES), owner:'', y0:null, y1:null, region:F.region, type:F.type }; filtersChanged(); }
 function renderFilters(){
   const box=$('#filters'); if(!box) return;
   const base=sats.filter(s=>!s.decayed && s.sys.enabled && (!s.sys.subtypes || !s.cat || s.sys.subtypeOn.has(s.cat.subtype)));
-  const oc={}, ow=new Map(); let shown=0, ymin=Infinity, ymax=-Infinity;
+  const oc={}, sc={}, ow=new Map(); let shown=0, ymin=Infinity, ymax=-Infinity;
   for(const s of base){
     if(filterOk(s,'orbit')){ const o=orbitClass(s); if(o) oc[o]=(oc[o]||0)+1; }
+    if(filterOk(s,'state')){ const v=satState(s); sc[v]=(sc[v]||0)+1; }
     if(filterOk(s,'owner')){ const w=satOwner(s)||'?'; ow.set(w,(ow.get(w)||0)+1); }
     const y=launchYear(s); if(y){ if(y<ymin) ymin=y; if(y>ymax) ymax=y; }
     if(filterOk(s)) shown++;
   }
   const F=S.filter; if(F.owner && !ow.has(F.owner)) ow.set(F.owner,0);
   if(!isFinite(ymin)){ ymin=1957; ymax=new Date().getUTCFullYear(); }
-  const fb=$('#fltBadge'); if(fb){ const n=(F.orbit.size<ORBITS.length)+(!!F.owner)+(!!(F.y0||F.y1)); fb.hidden=!n; fb.textContent=n; }
+  const fb=$('#fltBadge'); if(fb){ const n=(F.orbit.size<ORBITS.length)+(F.state.size<STATES.length)+(!!F.owner)+(!!(F.y0||F.y1)); fb.hidden=!n; fb.textContent=n; }
   box.innerHTML=filterSummary()+`<div class="fhead"><span class="fcount" data-tip="${esc(t('tip.filters'))}">${esc(t('f.count', nf(shown), nf(base.length)))}</span>${satFilterActive()?`<button type="button" class="link" id="fReset">${esc(t('f.reset'))}</button>`:''}</div>
     <div class="lgh">${esc(t('f.orbit'))}</div>
     <div class="chips" role="group" aria-label="${esc(t('f.orbit'))}">${ORBITS.map(o=>`<button type="button" class="chip" data-orb="${o}" aria-pressed="${F.orbit.has(o)}" data-tip="${esc(t('tip.orb.'+o))}">${esc(t('orb.'+o))} <span class="num">${nf(oc[o]||0)}</span></button>`).join('')}</div>
+    <div class="lgh" data-tip="${esc(t('tip.state'))}">${esc(t('f.state'))}</div>
+    <div class="chips" role="group" aria-label="${esc(t('f.state'))}">${STATES.filter(v=>sc[v]||F.state.size<STATES.length).map(v=>`<button type="button" class="chip" data-st="${v}" aria-pressed="${F.state.has(v)}">${esc(t('stf.'+v))} <span class="num">${nf(sc[v]||0)}</span></button>`).join('')}</div>
     <div class="lgh">${esc(t('f.owner'))}</div>
     <select id="fOwner" aria-label="${esc(t('f.owner'))}"><option value="">${esc(t('f.ownerAll'))}</option>${[...ow].sort((a,b)=>b[1]-a[1]).map(([w,n])=>`<option value="${esc(w)}"${F.owner===w?' selected':''}>${esc(ownerName(w))} — ${nf(n)}</option>`).join('')}</select>
     <div class="lgh">${esc(t('f.year'))}</div>
     <div class="yrs"><label>${esc(t('f.from'))}<input type="number" id="fY0" min="${ymin}" max="${ymax}" placeholder="${ymin}" value="${F.y0||''}"></label><label>${esc(t('f.to'))}<input type="number" id="fY1" min="${ymin}" max="${ymax}" placeholder="${ymax}" value="${F.y1||''}"></label></div>`;
   box.querySelectorAll('[data-orb]').forEach(b=>b.onclick=()=>{ const o=b.dataset.orb; if(F.orbit.has(o)) F.orbit.delete(o); else F.orbit.add(o); if(!F.orbit.size) F.orbit=new Set(ORBITS); filtersChanged(); });
+  box.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{ const v=b.dataset.st; if(F.state.has(v)) F.state.delete(v); else F.state.add(v); if(!F.state.size) F.state=new Set(STATES); filtersChanged(); });
   $('#fOwner').onchange=e=>{ F.owner=e.target.value; filtersChanged(); };
   const yr=v=>{ const y=parseInt(v,10); return y>1950 && y<2100 ? y : null; };
   $('#fY0').onchange=e=>{ F.y0=yr(e.target.value); filtersChanged(); };
@@ -2807,6 +2844,7 @@ function filterSummary(){
   if(F.region) it.push(['region', t('nav.country')+': '+t('reg.'+F.region)]);
   if(F.type) it.push(['type', t('nav.type')+': '+t('typ.'+F.type)]);
   if(F.orbit.size<ORBITS.length) it.push(['orbit', t('f.orbit')+': '+[...F.orbit].map(o=>t('orb.'+o)).join(', ')]);
+  if(F.state.size<STATES.length) it.push(['state', t('f.state')+': '+[...F.state].map(v=>t('stf.'+v)).join(', ')]);
   if(F.owner) it.push(['owner', t('f.ownerShort')+': '+ownerName(F.owner)]);
   if(F.y0||F.y1) it.push(['year', t('f.yearShort')+': '+(F.y0||'…')+'–'+(F.y1||'…')]);
   if(!it.length) return '';
@@ -2815,7 +2853,7 @@ function filterSummary(){
 function bindSummary(box){
   box.querySelectorAll('[data-unf]').forEach(b=>b.onclick=()=>{ const F=S.filter, k=b.dataset.unf;
     if(k==='all') return resetFilters();
-    if(k==='region') F.region=''; else if(k==='type') F.type=''; else if(k==='orbit') F.orbit=new Set(ORBITS); else if(k==='owner') F.owner=''; else if(k==='year'){ F.y0=null; F.y1=null; }
+    if(k==='region') F.region=''; else if(k==='type') F.type=''; else if(k==='orbit') F.orbit=new Set(ORBITS); else if(k==='state') F.state=new Set(STATES); else if(k==='owner') F.owner=''; else if(k==='year'){ F.y0=null; F.y1=null; }
     filtersChanged(); });
 }
 /* страна в строке системы — только если она уточняет заголовок группы (Евросоюз, «Франция, Великобритания», разные страны) */
@@ -3748,9 +3786,12 @@ function updateAtmo(){
 let lastInteract=performance.now();
 const POINTERS=new Set();   // пальцы и кнопки, которые сейчас нажаты: пока они есть, тяжёлое не запускаем (whenIdle)
 const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+function autoRotateOn(now){
+  return S.view==='globe' && S.selected<0 && !SKY.picking && !SKY.open && !reduceMotion.matches && !document.hidden && !!deckgl
+    && now-lastInteract>=25000 && S.vs.zoom<NEAR_ZOOM[0];   // на ближнем виде не крутим: тайлы рельефа не успевают
+}
 function autoRotate(now, dt){
-  if(S.view!=='globe' || S.selected>=0 || SKY.picking || SKY.open || reduceMotion.matches || document.hidden || !deckgl) return;
-  if(now-lastInteract<25000 || dt>200 || S.vs.zoom>=NEAR_ZOOM[0]) return;   // на ближнем виде не крутим: тайлы рельефа не успевают
+  if(!autoRotateOn(now) || dt>200) return;
   let lon=S.vs.longitude+dt*0.0012; lon=((lon+540)%360)-180;
   S.vs={...S.vs, longitude:lon}; deckgl.setProps({viewState:clampVS(S.vs)}); labelsDirty=true;
 }
@@ -4051,7 +4092,7 @@ function applyViewHash(h){
   const c=(q.get('c')||'').split(',').map(Number);
   if(c.length===3 && c.every(Number.isFinite)){
     S.vs=clampVS({longitude:c[0], latitude:c[1], zoom:c[2], pitch:+q.get('p')||0, bearing:+q.get('b')||0});
-    deckgl.setProps({viewState:S.vs}); labelsDirty=true; geoCache=null; updateAtmo(); updateNav();
+    viewMovedAt=performance.now(); deckgl.setProps({viewState:S.vs}); labelsDirty=true; geoCache=null; updateAtmo(); updateNav();
   }
   lastInteract=performance.now();
   try{ history.replaceState(null,'',orig); }catch(e){}   // select() заменил адрес на #NORAD — возвращаем ссылку на вид
@@ -4153,7 +4194,7 @@ function init(){
   deckgl=new deck.Deck({
     parent:$('#map'), views:makeView(), viewState:clampVS(S.vs), controller:ctrlFor(S.view), layers:[], pickingRadius:8, useDevicePixels:Math.min(window.devicePixelRatio||1, mqCoarse.matches?1.5:2),   // телефон: 1,5 вместо 2 — на ~44 % меньше пикселей, разница на глаз не видна
    
-    onViewStateChange:({viewState, interactionState})=>{ S.vs=clampVS(viewState); deckgl.setProps({viewState:S.vs}); labelsDirty=true; geoCache=null; updateAtmo(); updateNav(); maybeTiltHint();
+    onViewStateChange:({viewState, interactionState})=>{ S.vs=clampVS(viewState); deckgl.setProps({viewState:S.vs}); labelsDirty=true; geoCache=null; viewMovedAt=performance.now(); updateAtmo(); updateNav(); maybeTiltHint();
       if(interactionState && (interactionState.isDragging || interactionState.isZooming || interactionState.isPanning)) lastInteract=performance.now(); },
     getCursor:({isHovering,isDragging})=>isHovering?'pointer':(isDragging?'grabbing':'grab'),
     onClick:(info)=>{
@@ -4267,7 +4308,7 @@ window.__rassvet = {
   dbg:()=>({country:placed.country.length, region:placed.region.length, city:placed.city.length, satl:satLabelData.length, charset:charset&&charset.length, vp:!!currentViewport(), layers:deckgl.props.layers.map(l=>l.id+':'+(l.props.data&&(l.props.data.length)))}),
   perf:()=>PERF,
   deck:()=>deckgl,   // для scripts/perf: слои, тайлы, состояние загрузки
-  view(vs){ S.vs=clampVS({...S.vs, ...vs}); deckgl.setProps({viewState:S.vs}); labelsDirty=true; geoCache=null; updateAtmo(); updateNav(); return S.vs; },
+  view(vs){ S.vs=clampVS({...S.vs, ...vs}); viewMovedAt=performance.now(); deckgl.setProps({viewState:S.vs}); labelsDirty=true; geoCache=null; updateAtmo(); updateNav(); return S.vs; },
   globe:()=>({tier:GL3.tex?GL3.tex.id:-1, failed:GL3.failed, cloudsLive:GL3.cloudsLive, photo:photoGlobe(), near:nearFade(), drape:drapeOn()}),
   state:S, sats:()=>sats.map(s=>({norad:s.norad, valid:!!valid[s.idx], name:s.name, sys:s.sys.cfg.id})), setView, select, setLang, sky:SKY, setObserver, openSky
 };
