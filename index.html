@@ -3406,6 +3406,75 @@ async function tileBitmap(u, signal, opts){
     await waitAbortable(TILE_RETRY[k]*(0.8+0.4*Math.random()), signal);
   }
 }
+/* Пул фоновых потоков для рельефа: сетка тайла (128×128 с нормалями) — ~10 мс работы, и в главном потоке при быстром
+   приближении это секунды, когда браузер не рисует и не принимает следующие тайлы. Поток сам скачивает DEM (с теми же
+   повторами), декодирует и строит сетку; массивы возвращаются без копирования. Нет Worker или OffscreenCanvas — всё
+   по-старому, в главном потоке. */
+const TW={ pool:[], seq:0, pend:new Map(), ok:false };
+function terrainWorkers(){
+  if(TW.ok || TW.failed) return TW.ok;
+  try{
+    if(typeof Worker==='undefined' || typeof OffscreenCanvas==='undefined') throw new Error('нет Worker/OffscreenCanvas');
+    const src=`const RELIEF_EXAG=${RELIEF_EXAG}, EARTH_RM=${EARTH_RM}, D2R=Math.PI/180, R2D=180/Math.PI, TILE_RETRY=${JSON.stringify(TILE_RETRY)};
+${unitFromLngLat.toString()}
+${terrainMesh.toString()}
+const ctl=new Map();
+const wait=(ms,sig)=>new Promise((res,rej)=>{ const t=setTimeout(res,ms); sig.addEventListener('abort',()=>{ clearTimeout(t); rej(new DOMException('Aborted','AbortError')); },{once:true}); });
+async function fetchDem(u,sig){
+  for(let k=0;;k++){
+    let r=null; try{ r=await fetch(u,{signal:sig}); }catch(e){ if(sig.aborted) throw e; }
+    if(r && r.ok) return r.blob();
+    if(r && r.status===404) return null;
+    if(k>=TILE_RETRY.length) return null;
+    await wait(TILE_RETRY[k]*(0.8+0.4*Math.random()), sig);
+  }
+}
+onmessage=async e=>{
+  const d=e.data;
+  if(d.cancel){ const c=ctl.get(d.id); if(c) c.abort(); return; }
+  const ac=new AbortController(); ctl.set(d.id,ac);
+  try{
+    const blob=await fetchDem(d.url, ac.signal);
+    if(!blob){ postMessage({id:d.id, mesh:null}); return; }
+    const b=await createImageBitmap(blob,{colorSpaceConversion:'none', premultiplyAlpha:'none'});
+    const c=new OffscreenCanvas(b.width,b.height), g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(b,0,0);
+    const m=terrainMesh(g.getImageData(0,0,b.width,b.height).data, b.width, d.idx, d.grid); b.close();
+    const A=m.attributes;
+    postMessage({id:d.id, mesh:m}, [m.indices.value.buffer, A.POSITION.value.buffer, A.TEXCOORD_0.value.buffer, A.COLOR_0.value.buffer]);
+  }catch(err){ postMessage(ac.signal.aborted ? {id:d.id, aborted:true} : {id:d.id, mesh:null, err:String(err&&err.message||err)}); }
+  finally{ ctl.delete(d.id); }
+};`;
+    const url=URL.createObjectURL(new Blob([src],{type:'text/javascript'}));
+    const n=Math.max(1, Math.min(isMobileGPU() ? 2 : 3, (navigator.hardwareConcurrency||2)-1));
+    for(let i=0;i<n;i++){
+      const w=new Worker(url);
+      w.onmessage=e=>{ const d=e.data, q=TW.pend.get(d.id); if(!q) return; TW.pend.delete(d.id); q.done();
+        if(d.aborted) q.rej(new DOMException('Aborted','AbortError')); else q.res(d.mesh); };
+      w.onerror=e=>{ console.warn('[rassvet] поток рельефа недоступен, рельеф строится в основном потоке', e.message||e);
+        TW.ok=false; TW.failed=true; for(const [id,q] of TW.pend){ TW.pend.delete(id); q.done(); demMeshMain(q.args).then(q.res,q.rej); } };
+      TW.pool.push(w);
+    }
+    URL.revokeObjectURL(url);
+    TW.ok=true;
+  }catch(e){ TW.failed=true; console.info('[rassvet] рельеф в основном потоке:', e.message||e); }
+  return TW.ok;
+}
+function demMeshMain(a){
+  return tileBitmap(a.url, a.signal, {colorSpaceConversion:'none', premultiplyAlpha:'none'})
+    .then(b=>{ if(!b) return null; const m=terrainMesh(demPixels(b), b.width, a.idx, a.grid); b.close(); return m; });
+}
+function demMesh(url, idx, grid, signal){
+  const args={url, idx, grid, signal};
+  if(!terrainWorkers()) return demMeshMain(args);
+  return new Promise((res,rej)=>{
+    const id=++TW.seq, w=TW.pool[id%TW.pool.length];
+    const onAbort=()=>{ if(!TW.pend.has(id)) return; TW.pend.delete(id); w.postMessage({cancel:true, id}); rej(new DOMException('Aborted','AbortError')); };
+    if(signal && signal.aborted) return rej(new DOMException('Aborted','AbortError'));
+    if(signal) signal.addEventListener('abort', onAbort, {once:true});
+    TW.pend.set(id, {res, rej, args, done:()=>{ if(signal) signal.removeEventListener('abort', onAbort); }});
+    w.postMessage({id, url:new URL(url, location.href).href, idx:{x:idx.x, y:idx.y, z:idx.z}, grid});
+  });
+}
 const NIGHT_TILES=new Map();
 function nightBitmap(u){
   let p=NIGHT_TILES.get(u);
@@ -3418,8 +3487,7 @@ class NearTerrainLayer extends deck.TerrainLayer {
     const {elevationData, texture, grid}=this.props, idx=tile.index, signal=tile.signal;
     const url=t=>t.replace('{z}',idx.z).replace('{x}',idx.x).replace('{y}',idx.y);
     await waitAbortable(TILE_WAIT, signal);
-    const dem=tileBitmap(url(elevationData), signal, {colorSpaceConversion:'none', premultiplyAlpha:'none'})
-      .then(b=>{ if(!b) return null; const m=terrainMesh(demPixels(b), b.width, idx, grid); b.close(); return m; });
+    const dem=demMesh(url(elevationData), idx, grid, signal);
     // без снимка тайл не рисуется (под ним остаётся сфера), иначе в цвет попала бы нормаль из COLOR_0
     const img=tileBitmap(url(texture), signal);
     // огни городов ~500 м: тайл Black Marble уровня не выше 8 и прямоугольник этого тайла в нём

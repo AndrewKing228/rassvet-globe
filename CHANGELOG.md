@@ -3,6 +3,16 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.6.2 — 2026-10-07
+
+### Русский
+- **Ближний вид быстрее на ПК:** рельеф тайлов строится в фоновых потоках, браузер не замирает при приближении.
+  Вид собирается за 1,6–3,2 с вместо 2,4–4,7 с (в зависимости от скорости сервера тайлов).
+
+### English
+- **Faster close-up view on desktop:** tile terrain is built in background threads, so the browser no longer stalls
+  while zooming in. A view assembles in 1.6–3.2 s instead of 2.4–4.7 s (depending on the tile server speed).
+
 ## v1.6.1 — 2026-10-06
 
 ### Русский
