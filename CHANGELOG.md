@@ -3,6 +3,21 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.10.0 — 2026-10-07
+
+### Русский
+- **Контекстный поиск:** находит по привычным названиям — МКС, Хаббл, Тяньгун, Чандра, Ферми; понимает русский ввод
+  латинских имён каталога (Метеор, Космос, Экспресс); ищет системы — выбранная включается и показывается в панели.
+  На «Уэбб» отвечает, почему его нет на карте: телескоп обращается вокруг Солнца у точки L2, в 1,5 млн км от Земли
+  (источник — NASA).
+- **Фильтр «3D-модель»:** только аппараты с официальной 3D-моделью NASA; одна кнопка включает системы, где они есть.
+
+### English
+- **Contextual search:** finds common names — ISS, Hubble, Tiangong, Chandra, Fermi; understands Russian spelling of
+  catalogue names (Meteor, Kosmos, Ekspress); finds systems — a picked one is turned on and shown in the panel. For
+  “Webb” it explains why the telescope is not on the map: it orbits the Sun at L2, 1.5 million km from Earth (source: NASA).
+- **“3D model” filter:** only satellites with an official NASA 3D model; one button turns on the systems that have them.
+
 ## v1.9.0 — 2026-10-07
 
 ### Русский

@@ -85,7 +85,8 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
   Options wrap onto new lines so all are visible; a summary on top lists the active filters, each removable
   with a cross.
 - Filters on top of systems: orbit type (low, medium, geosynchronous, highly elliptical), status (working,
-  raising orbit, decaying, failed — verified data for Rassvet, the SATCAT code for the rest), owner per the
+  raising orbit, decaying, failed — verified data for Rassvet, the SATCAT code for the rest), having a NASA
+  3D model (one button turns on the systems that have such satellites), owner per the
   SATCAT catalogue and launch year; each option shows how many satellites remain.
 - Satellite card: status (marked "unconfirmed" when sources disagree), generation, launch, NORAD and
   COSPAR IDs, altitude, speed, sub-satellite point, sunlit or in shadow, perigee and apogee.
@@ -116,7 +117,10 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
   to the naked eye. Geolocation stays in the browser and is never sent anywhere.
 
 **Convenience**
-- Sortable table of all satellites, search by name, NORAD or COSPAR.
+- Sortable table of all satellites.
+- Search by name, NORAD or COSPAR, by common names (ISS, Hubble, Tiangong, Chandra…), by Russian spelling of
+  catalogue names (Meteor, Kosmos, Ekspress) and by system — a picked system is turned on and shown in the panel.
+  Well-known spacecraft that are not in Earth orbit get a note with a source (the James Webb telescope at L2).
 - Load your own TLE manually with the "Update TLE" button.
 - Russian and English UI, an "i" hint next to every setting, a short tour on first visit.
 - Installs on a phone as an app (PWA) and opens offline with the latest data.

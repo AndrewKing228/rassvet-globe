@@ -576,6 +576,8 @@ dialog .acts .grow{flex:1}
 .sres .nm{display:flex;flex-direction:column;min-width:0;color:var(--text)}
 .sres small{color:var(--muted);font-size:11.5px}
 .sres li.none{color:var(--muted);cursor:default}
+.sres li.note{display:block;color:var(--muted);cursor:default;font-size:12.5px;line-height:1.45;border-bottom:1px solid var(--line);border-radius:0;margin-bottom:2px}
+.sres li.note a{color:var(--accent)}
 .iconbtn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 .tools{display:flex;gap:8px}
 .lbl-menu{display:none}
@@ -919,7 +921,7 @@ ru:{
   'btn.tle.long':'Обновить ', 'tip.tle':'Вставить свои TLE или OMM JSON либо загрузить файл: положения пересчитаются сразу. Загруженное хранится только в этой вкладке.',
   'btn.lang':'EN', 'aria.lang':'English version', 'tip.lang':'Switch the site to English.',
   'btn.sky':'Надо мной', 'btn.news':'Новости', 'aria.news':'Космические новости', 'tip.news':'Космические новости: запуски, разработки, события. Обновляются раз в сутки.', 'news.h':'Космические новости', 'news.close':'Закрыть', 'news.empty':'Новостей пока нет — зайдите позже.', 'news.open':'Читать на источнике', 'news.foot':'Коротко из открытых источников, обновляется раз в сутки. Полный текст — по ссылке.', 'tip.sky':'Какие спутники сейчас над вами и когда пролетят «Рассветы». Местоположение остаётся в вашем браузере.',
-  'aria.more':'Ещё', 'aria.search':'Поиск спутника', 'search.ph':'Найти спутник…', 'search.none':'Ничего не найдено',
+  'aria.more':'Ещё', 'aria.search':'Поиск спутника', 'search.ph':'МКС, Хаббл, ГЛОНАСС, NORAD…', 'search.none':'Ничего не найдено', 'search.sys':(n,on)=>`Система · ${n} ${ruPl(n,'аппарат','аппарата','аппаратов')}${on?'':' · включить'}`, 'search.sysOn':n=>`Система «${n}» включена`, 'search.src':'Источник',
   'search.hidden':'система скрыта — включится', 'search.hint':'Название, NORAD или COSPAR',
   'banner.tip':'Орбитальные данные по каждому спутнику публикуются отдельно и с разной частотой. Сайт обновляет их ежедневно, но для некоторых спутников свежих данных в открытом доступе нет: такие спутники рисуются по последним известным данным, и чем они старше, тем больше ошибка положения.',
   'banner.btn':'Загрузить TLE', 'banner.btnTip':'Загрузить свои элементы орбит: TLE или OMM JSON.', 'banner.close':'Скрыть сообщение',
@@ -1004,7 +1006,8 @@ ru:{
   'bus.leo-flat':'плоский спутник широкополосной низкоорбитальной группировки', 'bus.gnss':'навигационный спутник', 'bus.geo-comm':'геостационарный спутник связи',
   'bus.leo-small':'спутник низкой орбиты', 'bus.station':'орбитальная станция',
   'h.filters':'Фильтры', 'tip.filters':'Сужают показ внутри включённых систем: по типу орбиты, владельцу по каталогу SATCAT и году запуска. Число рядом — сколько аппаратов останется.',
-  'f.reset':'сбросить', 'f.noSystems':'Не включено ни одной системы — фильтровать нечего. Включите системы на вкладке «Системы» или верните набор по умолчанию.', 'f.noSats':'У включённых систем нет аппаратов для показа: возможно, у них не отмечено ни одного поколения.', 'f.nothingLeft':'Фильтры не оставили ни одного аппарата.', 'f.enableDefaults':'Включить системы по умолчанию', 'f.active':'Сейчас', 'f.remove':x=>`Снять фильтр «${x}»`, 'f.resetAll':'сбросить всё', 'f.ownerShort':'Владелец', 'f.yearShort':'Годы', 'f.count':(a,b)=>`Показано ${a} из ${b}`, 'f.of':'из', 'f.orbit':'Тип орбиты', 'f.state':'Состояние', 'stf.ok':'Работает', 'stf.raising':'Поднимает орбиту', 'stf.decaying':'Снижается', 'stf.failed':'Отказ', 'stf.unknown':'Нет данных',
+  'f.reset':'сбросить', 'f.noSystems':'Не включено ни одной системы — фильтровать нечего. Включите системы на вкладке «Системы» или верните набор по умолчанию.', 'f.noSats':'У включённых систем нет аппаратов для показа: возможно, у них не отмечено ни одного поколения.', 'f.nothingLeft':'Фильтры не оставили ни одного аппарата.', 'f.enableDefaults':'Включить системы по умолчанию', 'f.active':'Сейчас', 'f.remove':x=>`Снять фильтр «${x}»`, 'f.resetAll':'сбросить всё', 'f.ownerShort':'Владелец', 'f.yearShort':'Годы', 'f.count':(a,b)=>`Показано ${a} из ${b}`, 'f.of':'из', 'f.orbit':'Тип орбиты', 'f.model':'3D-модель', 'f.modelChip':'Есть модель NASA', 'f.modelOn':n=>`Включить системы с моделями — ещё ${n}`,
+  'tip.model':'Официальные 3D-модели NASA: открываются кнопкой 3D в карточке спутника, крутятся и разбираются на части с описаниями.', 'f.state':'Состояние', 'stf.ok':'Работает', 'stf.raising':'Поднимает орбиту', 'stf.decaying':'Снижается', 'stf.failed':'Отказ', 'stf.unknown':'Нет данных',
   'tip.state':'У «Рассвета» — статус из проверенных данных с источниками (карточка спутника). У остальных — код состояния каталога SATCAT (CelesTrak): «работает» — действующий, частично действующий, резервный, запасной или с продлённой миссией; «отказ» — не действующий.', 'f.owner':'Владелец (по SATCAT)', 'f.ownerAll':'Все владельцы',
   'f.year':'Год запуска', 'f.from':'с', 'f.to':'по',
   'orb.LEO':'Низкая', 'orb.MEO':'Средняя', 'orb.GEO':'Геосинхронная', 'orb.HEO':'Высокоэллиптическая',
@@ -1060,7 +1063,7 @@ en:{
   'btn.tle.long':'Update ', 'tip.tle':'Paste your own TLE or OMM JSON or load a file: positions are recomputed immediately. Loaded data stays only in this tab.',
   'btn.lang':'RU', 'aria.lang':'Русская версия', 'tip.lang':'Переключить сайт на русский.',
   'btn.sky':'Overhead', 'btn.news':'News', 'aria.news':'Space news', 'tip.news':'Space news: launches, developments, events. Updated once a day.', 'news.h':'Space news', 'news.close':'Close', 'news.empty':'No news yet — check back later.', 'news.open':'Read at source', 'news.foot':'Short items from public sources, updated once a day. Full text at the link.', 'tip.sky':'Which satellites are above you now and when the Rassvets will pass over. Your location stays in your browser.',
-  'aria.more':'More', 'aria.search':'Find a satellite', 'search.ph':'Find a satellite…', 'search.none':'Nothing found',
+  'aria.more':'More', 'aria.search':'Find a satellite', 'search.ph':'ISS, Hubble, GLONASS, NORAD…', 'search.none':'Nothing found', 'search.sys':(n,on)=>`System · ${n} ${enPl(n,'satellite','satellites')}${on?'':' · turn on'}`, 'search.sysOn':n=>`System “${n}” turned on`, 'search.src':'Source',
   'search.hidden':'system hidden — will be shown', 'search.hint':'Name, NORAD or COSPAR ID',
   'banner.tip':'Orbital data is published separately for each satellite and at different rates. The site updates it daily, but for some satellites no fresh public data exists: they are drawn from the last known data, and the older it is, the larger the position error.',
   'banner.btn':'Load TLE', 'banner.btnTip':'Load your own orbital elements: TLE or OMM JSON.', 'banner.close':'Dismiss',
@@ -1145,7 +1148,8 @@ en:{
   'bus.leo-flat':'flat satellite of a low-orbit broadband constellation', 'bus.gnss':'navigation satellite', 'bus.geo-comm':'geostationary communications satellite',
   'bus.leo-small':'low-orbit satellite', 'bus.station':'orbital station',
   'h.filters':'Filters', 'tip.filters':'Narrow the view inside the enabled systems by orbit type, owner in the SATCAT catalogue and launch year. The number shows how many satellites remain.',
-  'f.reset':'reset', 'f.noSystems':'No systems are turned on, so there is nothing to filter. Turn systems on in the Systems tab or restore the defaults.', 'f.noSats':'The systems turned on have nothing to show — perhaps none of their generations is ticked.', 'f.nothingLeft':'The filters left no satellites.', 'f.enableDefaults':'Turn on default systems', 'f.active':'Now', 'f.remove':x=>`Remove filter “${x}”`, 'f.resetAll':'reset all', 'f.ownerShort':'Owner', 'f.yearShort':'Years', 'f.count':(a,b)=>`Showing ${a} of ${b}`, 'f.of':'of', 'f.orbit':'Orbit type', 'f.state':'Status', 'stf.ok':'Working', 'stf.raising':'Raising orbit', 'stf.decaying':'Decaying', 'stf.failed':'Failed', 'stf.unknown':'No data',
+  'f.reset':'reset', 'f.noSystems':'No systems are turned on, so there is nothing to filter. Turn systems on in the Systems tab or restore the defaults.', 'f.noSats':'The systems turned on have nothing to show — perhaps none of their generations is ticked.', 'f.nothingLeft':'The filters left no satellites.', 'f.enableDefaults':'Turn on default systems', 'f.active':'Now', 'f.remove':x=>`Remove filter “${x}”`, 'f.resetAll':'reset all', 'f.ownerShort':'Owner', 'f.yearShort':'Years', 'f.count':(a,b)=>`Showing ${a} of ${b}`, 'f.of':'of', 'f.orbit':'Orbit type', 'f.model':'3D model', 'f.modelChip':'Has a NASA model', 'f.modelOn':n=>`Turn on systems with models — ${n} more`,
+  'tip.model':'Official NASA 3D models: open with the 3D button on the satellite card, rotate and take apart into described parts.', 'f.state':'Status', 'stf.ok':'Working', 'stf.raising':'Raising orbit', 'stf.decaying':'Decaying', 'stf.failed':'Failed', 'stf.unknown':'No data',
   'tip.state':'Rassvet: status from verified data with sources (see the satellite card). Others: the SATCAT status code (CelesTrak): “working” means operational, partially operational, backup, spare or extended mission; “failed” means non-operational.', 'f.owner':'Owner (per SATCAT)', 'f.ownerAll':'All owners',
   'f.year':'Launch year', 'f.from':'from', 'f.to':'to',
   'orb.LEO':'Low', 'orb.MEO':'Medium', 'orb.GEO':'Geosynchronous', 'orb.HEO':'Highly elliptical',
@@ -1202,7 +1206,7 @@ const S = {
   time: { sim: Date.now(), live: true, playing: true, rateIdx: 0 },
   colorMode: 'system', tracks: true, labels: true, zones: true, elev: 25, night: true, tails: true, clouds: true,
   selected: -1, focusLaunch: null,
-  filter: { orbit: new Set(['LEO','MEO','GEO','HEO']), state: new Set(['ok','raising','decaying','failed','unknown']), owner: '', y0: null, y1: null, region: '', type: '' },   // фильтры поверх включённых систем; region и type — навигация по системам
+  filter: { orbit: new Set(['LEO','MEO','GEO','HEO']), state: new Set(['ok','raising','decaying','failed','unknown']), model: false, owner: '', y0: null, y1: null, region: '', type: '' },   // фильтры поверх включённых систем; region и type — навигация по системам
   tab: 'sys', collapsed: new Set()
 };
 const systems = [];      // {cfg, meta, sats[], enabled, srcById}
@@ -2706,7 +2710,10 @@ function satState(s){
   const st=s.meta && s.meta.status; if(st) return ST_CURATED[st.value] || 'unknown';
   const c=s.cat && s.cat.satcat && s.cat.satcat[4]; return (c && ST_OPS[c]) || 'unknown';
 }
-const satFilterActive = () => S.filter.orbit.size<ORBITS.length || S.filter.state.size<STATES.length || !!S.filter.owner || !!S.filter.y0 || !!S.filter.y1;   // вкладка «Фильтры»
+// аппараты с официальной 3D-моделью (registry.models: norad и norads — одна модель на несколько одинаковых)
+let MODEL_NORADS=null;
+const hasModel = s => (MODEL_NORADS || (MODEL_NORADS=new Set((REG.models||[]).flatMap(m=>[m.norad, ...(m.norads||[])])))).has(s.norad);
+const satFilterActive = () => S.filter.orbit.size<ORBITS.length || S.filter.state.size<STATES.length || S.filter.model || !!S.filter.owner || !!S.filter.y0 || !!S.filter.y1;   // вкладка «Фильтры»
 const filterActive = () => satFilterActive() || !!S.filter.region || !!S.filter.type;
 /* навигация по системам: регион страны оператора и тип системы (поля region и type в реестре) */
 const REGIONS=['ru','us','eu','cn','jp','in','int'], STYPES=['internet','navigation','comms','eo','meteo','science','stations','military','other'];
@@ -2716,6 +2723,7 @@ function filterOk(s, skip){
   if((F.region || F.type) && !sysMatch(s.sys)) return false;
   if(skip!=='orbit' && F.orbit.size<ORBITS.length){ const o=orbitClass(s); if(!o || !F.orbit.has(o)) return false; }
   if(skip!=='state' && F.state.size<STATES.length && !F.state.has(satState(s))) return false;
+  if(skip!=='model' && F.model && !hasModel(s)) return false;
   if(skip!=='owner' && F.owner && satOwner(s)!==F.owner) return false;
   if(skip!=='year' && (F.y0 || F.y1)){ const y=launchYear(s); if(y==null || (F.y0 && y<F.y0) || (F.y1 && y>F.y1)) return false; }
   return true;
@@ -2725,32 +2733,39 @@ const OWNER_NAMES={ CIS:['Россия / СССР (CIS)','Russia / USSR (CIS)'],
   IM:['Inmarsat','Inmarsat'], CA:['Канада','Canada'], GER:['Германия','Germany'], POL:['Польша','Poland'], SING:['Сингапур','Singapore'], SKOR:['Южная Корея','South Korea'],
   ASRA:['Австрия','Austria'], MALA:['Малайзия','Malaysia'], MEX:['Мексика','Mexico'], THAI:['Таиланд','Thailand'] };
 const ownerName = w => w==='?' ? t('nodata') : (OWNER_NAMES[w] ? OWNER_NAMES[w][LANG==='en'?1:0] : w);
-function resetFilters(apply){ S.filter={ orbit:new Set(ORBITS), state:new Set(STATES), owner:'', y0:null, y1:null, region:'', type:'' }; if(apply!==false) filtersChanged(); }
-function resetSatFilters(){ const F=S.filter; S.filter={ orbit:new Set(ORBITS), state:new Set(STATES), owner:'', y0:null, y1:null, region:F.region, type:F.type }; filtersChanged(); }
+function resetFilters(apply){ S.filter={ orbit:new Set(ORBITS), state:new Set(STATES), model:false, owner:'', y0:null, y1:null, region:'', type:'' }; if(apply!==false) filtersChanged(); }
+function resetSatFilters(){ const F=S.filter; S.filter={ orbit:new Set(ORBITS), state:new Set(STATES), model:false, owner:'', y0:null, y1:null, region:F.region, type:F.type }; filtersChanged(); }
 function renderFilters(){
   const box=$('#filters'); if(!box) return;
   const base=sats.filter(s=>!s.decayed && s.sys.enabled && (!s.sys.subtypes || !s.cat || s.sys.subtypeOn.has(s.cat.subtype)));
-  const oc={}, sc={}, ow=new Map(); let shown=0, ymin=Infinity, ymax=-Infinity;
+  const oc={}, sc={}, ow=new Map(); let shown=0, mc=0, ymin=Infinity, ymax=-Infinity;
   for(const s of base){
     if(filterOk(s,'orbit')){ const o=orbitClass(s); if(o) oc[o]=(oc[o]||0)+1; }
     if(filterOk(s,'state')){ const v=satState(s); sc[v]=(sc[v]||0)+1; }
+    if(filterOk(s,'model') && hasModel(s)) mc++;
     if(filterOk(s,'owner')){ const w=satOwner(s)||'?'; ow.set(w,(ow.get(w)||0)+1); }
     const y=launchYear(s); if(y){ if(y<ymin) ymin=y; if(y>ymax) ymax=y; }
     if(filterOk(s)) shown++;
   }
   const F=S.filter; if(F.owner && !ow.has(F.owner)) ow.set(F.owner,0);
+  // аппараты с моделями в выключенных системах: сколько их и одна кнопка, которая включает эти системы
+  const modelOff=sats.filter(s=>!s.decayed && hasModel(s) && !s.sys.enabled).length;
   if(!isFinite(ymin)){ ymin=1957; ymax=new Date().getUTCFullYear(); }
-  const fb=$('#fltBadge'); if(fb){ const n=(F.orbit.size<ORBITS.length)+(F.state.size<STATES.length)+(!!F.owner)+(!!(F.y0||F.y1)); fb.hidden=!n; fb.textContent=n; }
+  const fb=$('#fltBadge'); if(fb){ const n=(F.orbit.size<ORBITS.length)+(F.state.size<STATES.length)+(!!F.model)+(!!F.owner)+(!!(F.y0||F.y1)); fb.hidden=!n; fb.textContent=n; }
   box.innerHTML=filterSummary()+`<div class="fhead"><span class="fcount" data-tip="${esc(t('tip.filters'))}">${esc(t('f.count', nf(shown), nf(base.length)))}</span>${satFilterActive()?`<button type="button" class="link" id="fReset">${esc(t('f.reset'))}</button>`:''}</div>
     <div class="lgh">${esc(t('f.orbit'))}</div>
     <div class="chips" role="group" aria-label="${esc(t('f.orbit'))}">${ORBITS.map(o=>`<button type="button" class="chip" data-orb="${o}" aria-pressed="${F.orbit.has(o)}" data-tip="${esc(t('tip.orb.'+o))}">${esc(t('orb.'+o))} <span class="num">${nf(oc[o]||0)}</span></button>`).join('')}</div>
     <div class="lgh" data-tip="${esc(t('tip.state'))}">${esc(t('f.state'))}</div>
     <div class="chips" role="group" aria-label="${esc(t('f.state'))}">${STATES.filter(v=>sc[v]||F.state.size<STATES.length).map(v=>`<button type="button" class="chip" data-st="${v}" aria-pressed="${F.state.has(v)}">${esc(t('stf.'+v))} <span class="num">${nf(sc[v]||0)}</span></button>`).join('')}</div>
+    <div class="lgh" data-tip="${esc(t('tip.model'))}">${esc(t('f.model'))}</div>
+    <div class="chips" role="group" aria-label="${esc(t('f.model'))}"><button type="button" class="chip" id="fModel" aria-pressed="${F.model}">${esc(t('f.modelChip'))} <span class="num">${nf(mc)}</span></button>${modelOff?`<button type="button" class="link" id="fModelOn">${esc(t('f.modelOn',modelOff))}</button>`:''}</div>
     <div class="lgh">${esc(t('f.owner'))}</div>
     <select id="fOwner" aria-label="${esc(t('f.owner'))}"><option value="">${esc(t('f.ownerAll'))}</option>${[...ow].sort((a,b)=>b[1]-a[1]).map(([w,n])=>`<option value="${esc(w)}"${F.owner===w?' selected':''}>${esc(ownerName(w))} — ${nf(n)}</option>`).join('')}</select>
     <div class="lgh">${esc(t('f.year'))}</div>
     <div class="yrs"><label>${esc(t('f.from'))}<input type="number" id="fY0" min="${ymin}" max="${ymax}" placeholder="${ymin}" value="${F.y0||''}"></label><label>${esc(t('f.to'))}<input type="number" id="fY1" min="${ymin}" max="${ymax}" placeholder="${ymax}" value="${F.y1||''}"></label></div>`;
   box.querySelectorAll('[data-orb]').forEach(b=>b.onclick=()=>{ const o=b.dataset.orb; if(F.orbit.has(o)) F.orbit.delete(o); else F.orbit.add(o); if(!F.orbit.size) F.orbit=new Set(ORBITS); filtersChanged(); });
+  $('#fModel').onclick=()=>{ F.model=!F.model; filtersChanged(); };
+  const mo=$('#fModelOn'); if(mo) mo.onclick=()=>{ for(const s of sats) if(!s.decayed && hasModel(s)) s.sys.enabled=true; F.model=true; filtersChanged(); };
   box.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>{ const v=b.dataset.st; if(F.state.has(v)) F.state.delete(v); else F.state.add(v); if(!F.state.size) F.state=new Set(STATES); filtersChanged(); });
   $('#fOwner').onchange=e=>{ F.owner=e.target.value; filtersChanged(); };
   const yr=v=>{ const y=parseInt(v,10); return y>1950 && y<2100 ? y : null; };
@@ -2844,6 +2859,7 @@ function filterSummary(){
   if(F.region) it.push(['region', t('nav.country')+': '+t('reg.'+F.region)]);
   if(F.type) it.push(['type', t('nav.type')+': '+t('typ.'+F.type)]);
   if(F.orbit.size<ORBITS.length) it.push(['orbit', t('f.orbit')+': '+[...F.orbit].map(o=>t('orb.'+o)).join(', ')]);
+  if(F.model) it.push(['model', t('f.modelChip')]);
   if(F.state.size<STATES.length) it.push(['state', t('f.state')+': '+[...F.state].map(v=>t('stf.'+v)).join(', ')]);
   if(F.owner) it.push(['owner', t('f.ownerShort')+': '+ownerName(F.owner)]);
   if(F.y0||F.y1) it.push(['year', t('f.yearShort')+': '+(F.y0||'…')+'–'+(F.y1||'…')]);
@@ -2853,7 +2869,7 @@ function filterSummary(){
 function bindSummary(box){
   box.querySelectorAll('[data-unf]').forEach(b=>b.onclick=()=>{ const F=S.filter, k=b.dataset.unf;
     if(k==='all') return resetFilters();
-    if(k==='region') F.region=''; else if(k==='type') F.type=''; else if(k==='orbit') F.orbit=new Set(ORBITS); else if(k==='state') F.state=new Set(STATES); else if(k==='owner') F.owner=''; else if(k==='year'){ F.y0=null; F.y1=null; }
+    if(k==='region') F.region=''; else if(k==='type') F.type=''; else if(k==='orbit') F.orbit=new Set(ORBITS); else if(k==='state') F.state=new Set(STATES); else if(k==='model') F.model=false; else if(k==='owner') F.owner=''; else if(k==='year'){ F.y0=null; F.y1=null; }
     filtersChanged(); });
 }
 /* страна в строке системы — только если она уточняет заголовок группы (Евросоюз, «Франция, Великобритания», разные страны) */
@@ -3074,31 +3090,69 @@ async function shareSat(){
 
 /* ================= Поиск на карте ================= */
 const norm = s => String(s||'').toLowerCase().replace(/ё/g,'е').replace(/[№#\s\-–—_.,()«»"'\[\]]/g,'');
-let searchRes=[], searchSel=-1;
+let searchRes=[], searchSel=-1, searchNote=null;
+/* Контекстный поиск: привычные названия (МКС, Хаббл, Тяньгун…) → NORAD; русский ввод для латинских имён каталога
+   (Метеор → METEOR, Космос → COSMOS); системы по названию; объекты не на орбите Земли — пояснение с источником. */
+const SEARCH_ALIASES=[
+  [[25544,49044], ['мкс','iss','международнаякосмическаястанция','internationalspacestation','заря','zarya','наука','nauka']],
+  [[48274], ['тяньгун','tiangong','китайскаястанция','chinesespacestation','css','тяньхэ','tianhe']],
+  [[20580], ['хаббл','hubble','hst','телескопхаббл','hubblespacetelescope']],
+  [[25867], ['чандра','chandra','cxo']], [[25989], ['xmm','ньютон','newton']], [[33053], ['ферми','fermi','glast']],
+  [[36395], ['sdo','solardynamicsobservatory']], [[38358], ['nustar']], [[49954], ['ixpe']], [[28485], ['свифт','swift']],
+  [[25994], ['терра','terra']], [[40059], ['oco2']], [[29479], ['хиноде','hinode','solarb']],
+  [[40482,40483,40484,40485], ['mms','magnetosphericmultiscale']], [[39451,39452,39453], ['сворм','swarm']], [[36508], ['криосат','cryosat']],
+];
+const SEARCH_ELSEWHERE=[   // известные аппараты, которых нет на орбите Земли
+  { k:['уэбб','вебб','webb','jwst','джеймсуэбб','jameswebb','телескопуэбб'],
+    ru:'Телескоп «Джеймс Уэбб» обращается вокруг Солнца у точки Лагранжа L2, в 1,5 млн км от Земли, — не по орбите Земли, поэтому на карте его нет.',
+    en:'The James Webb Space Telescope orbits the Sun at the second Lagrange point (L2), 1.5 million km from Earth — not an Earth orbit, so it is not on the map.',
+    src:'https://science.nasa.gov/mission/webb/orbit/' },
+];
+// русские написания, которые в каталоге пишутся не по транслитерации
+const RU_WORDS={ 'космос':'cosmos', 'экспресс':'express', 'старлинк':'starlink', 'уанвеб':'oneweb', 'ванвеб':'oneweb', 'иридиум':'iridium',
+  'галилео':'galileo', 'бэйдоу':'beidou', 'бейдоу':'beidou', 'джипиэс':'gps', 'жпс':'gps', 'навик':'navic', 'электрол':'elektrol' };
+const RU_LAT={ а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',
+  х:'kh',ц:'ts',ч:'ch',ш:'sh',щ:'shch',ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya' };
+const toLat = q => { let x=norm(q); for(const [r,l] of Object.entries(RU_WORDS)) x=x.split(r).join(l); return /[а-я]/.test(x) ? x.replace(/[а-я]/g,c=>RU_LAT[c]??c) : x; };
+const aliasHit = (keys, nq) => keys.some(k=>k===nq) ? 2 : nq.length>=2 && keys.some(k=>k.startsWith(nq)) ? 1 : 0;
 function searchSats(q){
-  const nq=norm(q); if(!nq) return [];
-  const num=/^\d+$/.test(q.trim()) ? +q.trim() : null, out=[];
+  const nq=norm(q); searchNote=null; if(!nq) return [];
+  const lq=toLat(q), num=/^\d+$/.test(q.trim()) ? +q.trim() : null, out=[], alias=new Map();
+  for(const [ns,keys] of SEARCH_ALIASES){ const h=aliasHit(keys,nq); if(h) ns.forEach((n,j)=>alias.set(n, Math.max(alias.get(n)||0, (h===2?96:76)-j))); }
+  for(const e of SEARCH_ELSEWHERE) if(aliasHit(e.k,nq)) searchNote=e;
   for(const s of sats){
     if(s.decayed) continue;
-    let sc=0;
+    let sc=alias.get(s.norad)||0;
     if(num!==null && s.norad===num) sc=100;
     else{
       const ks=s._sk||(s._sk=[norm(s.nameRu),norm(s.nameEnD),norm(s.catalogName),norm(s.cospar),String(s.norad)]);
-      for(const k of ks){ if(!k) continue; if(k===nq) sc=Math.max(sc,90); else if(k.startsWith(nq)) sc=Math.max(sc,70); else if(k.includes(nq)) sc=Math.max(sc,40); }
+      for(const k of ks){ if(!k) continue; if(k===nq) sc=Math.max(sc,90); else if(k.startsWith(nq)) sc=Math.max(sc,70); else if(k.includes(nq)) sc=Math.max(sc,40);
+        if(lq!==nq && lq.length>=3){ if(k.startsWith(lq)) sc=Math.max(sc,65); else if(k.includes(lq)) sc=Math.max(sc,35); } }   // русский ввод латинского имени
     }
-    if(sc){ const h=s.sys.cfg.renderHint; out.push([sc+(h==='detailed'?8:h==='bulk'?0:4)+(s.sys.enabled?2:0), s]); }
+    if(sc){ const h=s.sys.cfg.renderHint; out.push([sc+(h==='detailed'?8:h==='bulk'?0:4)+(s.sys.enabled?2:0), {kind:'sat', s}]); }
   }
-  out.sort((a,b)=>b[0]-a[0] || a[1].name.localeCompare(b[1].name,LANG,{numeric:true}));
+  // системы: название и категория на обоих языках
+  if(nq.length>=2) for(const sys of systems){
+    const ks=sys._sk||(sys._sk=[norm(L(sys.cfg.name)), norm(sys.cfg.name&&sys.cfg.name.ru), norm(sys.cfg.name&&sys.cfg.name.en), norm(sys.cfg.category), norm(sys.cfg.category_en)].filter(Boolean));
+    let sc=0; for(const k of ks){ if(k===nq) sc=Math.max(sc,94); else if(k.startsWith(nq)) sc=Math.max(sc,72); else if(lq.length>=3 && k.startsWith(lq)) sc=Math.max(sc,66); }
+    if(sc) out.push([sc, {kind:'sys', sys}]);
+  }
+  out.sort((a,b)=>b[0]-a[0] || (a[1].s?a[1].s.name:L(a[1].sys.cfg.name)).localeCompare(b[1].s?b[1].s.name:L(b[1].sys.cfg.name),LANG,{numeric:true}));
   return out.slice(0,8).map(x=>x[1]);
 }
 function runSearch(){
   const inp=$('#sq'), list=$('#sres'), q=inp.value;
   if(!q.trim()){ list.hidden=true; inp.setAttribute('aria-expanded','false'); return; }
   searchRes=searchSats(q); searchSel=searchRes.length?0:-1;
-  list.innerHTML = searchRes.length ? searchRes.map((s,k)=>`<li role="option" id="sr${k}" data-k="${k}" aria-selected="${k===searchSel}"><i style="background:${rgbCss(colorOf(s))}"></i><span class="nm">${esc(s.name)}<small>${esc(L(s.sys.cfg.name))} · NORAD ${s.norad}${satVisible(s)?'':' · '+esc(t('search.hidden'))}</small></span></li>`).join('')
-    : `<li class="none">${esc(t('search.none'))}</li>`;
+  const note = searchNote ? `<li class="note" role="note">${esc(LANG==='en'?searchNote.en:searchNote.ru)} <a href="${esc(searchNote.src)}" target="_blank" rel="noopener">${esc(t('search.src'))} ↗</a></li>` : '';
+  const satLi = (s,k)=>`<li role="option" id="sr${k}" data-k="${k}" aria-selected="${k===searchSel}"><i style="background:${rgbCss(colorOf(s))}"></i><span class="nm">${esc(s.name)}<small>${esc(L(s.sys.cfg.name))} · NORAD ${s.norad}${satVisible(s)?'':' · '+esc(t('search.hidden'))}</small></span></li>`;
+  const sysLi = (it,k)=>{ const sy=it.sys, n=sy.sats.filter(x=>!x.decayed).length;
+    return `<li role="option" id="sr${k}" data-k="${k}" aria-selected="${k===searchSel}"><i style="background:${esc(sy.cfg.color||'#999')};border-radius:3px"></i><span class="nm">${esc(L(sy.cfg.name))}<small>${esc(t('search.sys',n,sy.enabled))}</small></span></li>`; };
+  list.innerHTML = note + (searchRes.length ? searchRes.map((it,k)=>it.kind==='sys' ? sysLi(it,k) : satLi(it.s,k)).join('')
+    : (note ? '' : `<li class="none">${esc(t('search.none'))}</li>`));
   list.hidden=false; inp.setAttribute('aria-expanded','true'); inp.setAttribute('aria-activedescendant', searchSel>=0?'sr'+searchSel:'');
   list.querySelectorAll('li[data-k]').forEach(li=>li.onmousedown=e=>{ e.preventDefault(); pickSearch(+li.dataset.k); });
+  const nl=list.querySelector('li.note'); if(nl) nl.onmousedown=e=>{ if(!e.target.closest('a')) e.preventDefault(); };   // поле не теряет фокус, ссылка открывается
 }
 function moveSearch(d){
   if(!searchRes.length) return; searchSel=(searchSel+d+searchRes.length)%searchRes.length;
@@ -3106,9 +3160,19 @@ function moveSearch(d){
   $('#sq').setAttribute('aria-activedescendant','sr'+searchSel);
 }
 function pickSearch(k){
-  const s=searchRes[k]; if(!s) return;
+  const it=searchRes[k]; if(!it) return;
   $('#sres').hidden=true; $('#sq').value=''; $('#sq').setAttribute('aria-expanded','false'); $('#sq').blur(); $('#searchBox').classList.remove('open');
-  goToSat(s);
+  if(it.kind==='sys') showSystem(it.sys); else goToSat(it.s);
+}
+/* система из поиска: включить, снять фильтры страны и типа, если они её прячут, и показать её строку в панели */
+function showSystem(sys){
+  const F=S.filter; if(!sysMatch(sys)){ F.region=''; F.type=''; }
+  if(sys.cfg.region) S.collapsed.delete(sys.cfg.region);
+  if(!sys.enabled){ sys.enabled=true; toast(t('search.sysOn', L(sys.cfg.name))); }
+  filtersChanged(); setTab('sys');
+  const sd=$('#side'); if(sd.classList.contains('closed-m')){ sd.classList.remove('closed-m'); $('#btnLayers').setAttribute('aria-expanded','true'); }
+  const inp=document.getElementById('sys'+systems.indexOf(sys)), row=inp && inp.closest('.sysrow');
+  if(row){ row.scrollIntoView({block:'center', behavior:reduceMotion.matches?'auto':'smooth'}); row.classList.add('tour-hl'); setTimeout(()=>row.classList.remove('tour-hl'),1600); }
 }
 
 /* ================= День и ночь: тень, сумерки и огни городов =================
