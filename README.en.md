@@ -722,10 +722,12 @@ npx gltf-transform optimize hubble.raw.glb ../../models/hubble.glb --compress qu
 
 **`scripts/perf/perf.mjs`** measures the map (Node 22+, Chrome or Edge, no dependencies). It starts its own
 HTTP/2 server with the same tile rate limit as the site's server (60 per second, burst 400) and a headless
-browser; it measures the frame rate in four views on desktop and in phone emulation (CPU slowed fourfold,
-the GPU is still the desktop one), holes in the close-up view during fast zooming, and load time for new
-places. Close-up tiles come from `scripts/perf/.tilecache/`, missing ones from the site in `TILE_ORIGIN`.
-`PAGE=file.html` serves another version of the page for before/after comparisons.
+browser; it measures the first load (when satellites and the photo globe appear, long tasks, transfer size,
+main-thread load, all systems at once in 3D and 2D), the frame rate in four views on desktop and in phone
+emulation (CPU slowed fourfold, the GPU is still the desktop one), holes in the close-up view during fast
+zooming, and load time for new places. Close-up tiles come from `scripts/perf/.tilecache/`, missing ones from the site in `TILE_ORIGIN`.
+`PAGE=file.html` serves another version of the page for before/after comparisons, `SITE=dir` serves a built
+site (as the updater publishes it), and text is gzip-compressed as on the server.
 
 ```bash
 TILE_ORIGIN=https://your-site node scripts/perf/perf.mjs --save base.json   # all scenarios

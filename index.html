@@ -12,7 +12,7 @@
 :root{
   --space:#080f20; --ocean:#10203d; --land:#1c2c4a; --coast:#3a5480; --border:#4b6694; --admin:#2c4166;
   --bg-panel:rgba(14,24,45,.88); --bg-raise:rgba(255,255,255,.05); --line:rgba(160,185,230,.16);
-  --text:#e7ecf5; --muted:#8e9bb5; --faint:#5f6d89;
+  --text:#e7ecf5; --muted:#8e9bb5; --faint:#7d8ba7;   /* 5,2:1 на панели — AA для мелкого текста (было 3,4:1) */
   --l-country:#dfe6f3; --l-region:#8fa0c0; --l-city:#c9d3e6; --halo:#10203d; --city-dot:#c9d3e6;
   --accent:#ffb45e; --accent-2:#ff7a85; --warn:#f2c14e; --bad:#ff7a6b; --ok:#69d39b;
   --unconf:#f2c14e; --conflict:#ff8a7a;
@@ -925,6 +925,8 @@ ru:{
   'banner.btn':'Загрузить TLE', 'banner.btnTip':'Загрузить свои элементы орбит: TLE или OMM JSON.', 'banner.close':'Скрыть сообщение',
   'banner.staleLong':(n,tot)=>`Положение ${n} ${ruPl(n,'спутника','спутников','спутников')} из ${tot} приблизительное: ${ruOne(n)?'его':'их'} орбитальные данные старше 7 дней.`,
   'banner.staleShort':n=>`Положение ${n} ${ruPl(n,'спутника','спутников','спутников')} приблизительное`,
+  'banner.snapLong':d=>`Данные обновлялись ${d} — больше двух суток назад: ежедневное обновление задерживается, положения спутников могут быть неточными.`,
+  'banner.snapShort':'Данные старше двух суток',
   'banner.noElLong':n=>`${n} ${ruPl(n,'спутник','спутника','спутников')} не ${ruOne(n)?'показан':'показаны'} на карте: для ${ruOne(n)?'него':'них'} нет орбитальных данных.`,
   'banner.noElShort':n=>`${n} ${ruPl(n,'спутник','спутника','спутников')} не на карте`,
   'aria.side':'Слои и системы', 'h.color':'Раскраска', 'color.system':'По системе', 'color.launch':'По пуску', 'color.sat':'По аппарату',
@@ -1063,6 +1065,8 @@ en:{
   'banner.btn':'Load TLE', 'banner.btnTip':'Load your own orbital elements: TLE or OMM JSON.', 'banner.close':'Dismiss',
   'banner.staleLong':(n,tot)=>`The position of ${n} of ${tot} satellites is approximate: ${n===1?'its':'their'} orbital data is more than 7 days old.`,
   'banner.staleShort':n=>`Position of ${n} ${enPl(n,'satellite','satellites')} is approximate`,
+  'banner.snapLong':d=>`The data was last updated ${d}, more than two days ago: the daily update is delayed and satellite positions may be inaccurate.`,
+  'banner.snapShort':'Data older than two days',
   'banner.noElLong':n=>`${n} ${enPl(n,'satellite is','satellites are')} not shown on the map: no orbital data.`,
   'banner.noElShort':n=>`${n} ${enPl(n,'satellite','satellites')} not on the map`,
   'aria.side':'Layers and systems', 'h.color':'Colour by', 'color.system':'System', 'color.launch':'Launch', 'color.sat':'Satellite',
@@ -1888,6 +1892,7 @@ function computeGeoLabels(){
     if(x<-50||y<-20||x>W+50||y>H+20) return;
     const w=textW(l.t,size,l.kind==='country'), h=size+4; let b;
     if(anchor==='start') b=[x-4,y-h/2,x+7+w,y+h/2]; else b=[x-w/2,y-h/2,x+w/2,y+h/2];
+    if(b[0]<0||b[1]<0||b[2]>W||b[3]>H) return;   // обрезанная краем экрана подпись не ставится (как у спутников)
     if(pad) b=[b[0]-pad,b[1]-pad,b[2]+pad,b[3]+pad];
     if(!grid.fits(b)) return; grid.add(b); list.push(Object.assign({},l,extra||{}));
   };
@@ -1927,6 +1932,8 @@ function computeSatLabels(){
     if(G && (S.vs.pitch||0)>0.5 && hiddenByEarth(vp,p[0],p[1],p[2])) continue;
     const q=vp.project(p); if(q[0]<-40||q[1]<-20||q[0]>W+40||q[1]>H+20) continue;
     const w=textW(s.name,11.5,true), b=[q[0]-6,q[1]-8,q[0]+10+w,q[1]+8];
+    // подпись целиком в экране: обрезанные у края («assvet-3 No. 15») только мешают; выбранный подписывается всегда
+    if(i!==S.selected && (b[0]<0||b[1]<0||b[2]>W||b[3]>H)) continue;
     if(!grid.fits(b) && i!==S.selected) continue; grid.add(b);
     satLabelData.push({i, p, t:s.name, c:colorOf(s), box:b});
     if(satLabelData.length>250) break;
@@ -2851,13 +2858,17 @@ function renderLegend(){
   el.innerHTML=top.map(([id,o])=>`<div><i style="background:${rgbCss(o.c)}"></i><span><span class="num">${esc(id)}</span> ${esc(lname(o.sys,id))}</span><em class="num">${o.n}</em></div>`).join('')
     + (all.length>top.length?`<div style="color:var(--muted)">${esc(t('legend.more',all.length-top.length))}</div>`:'');
 }
+// снимок данных старше двух суток: ежедневное обновление пропустило запуск (одна задержка — ещё не повод для тревоги)
+const SNAP_MS=Date.parse(META.generatedAt||'');
+function snapshotLate(){ return Number.isFinite(SNAP_MS) && Date.now()-SNAP_MS>2*DAY; }
 function updateBanner(){
   const act=visList.map(i=>sats[i]).filter(s=>!s.decayed);
-  const noEl=act.filter(s=>!s.elem).length, stale=act.filter(s=>s.elem && s.epochMs && ageDays(s.epochMs)>STALE_DAYS).length;
-  const b=$('#banner'), key=`${noEl}/${stale}/${act.length}`;
+  const noEl=act.filter(s=>!s.elem).length, stale=act.filter(s=>s.elem && s.epochMs && ageDays(s.epochMs)>STALE_DAYS).length, late=snapshotLate();
+  const b=$('#banner'), key=`${noEl}/${stale}/${act.length}${late?'/'+META.generatedAt:''}`;
   let hiddenKey=null; try{ hiddenKey=localStorage.getItem('rassvet.bannerHidden'); }catch(e){}
-  if((!noEl && !stale) || hiddenKey===key){ b.hidden=true; return; }
+  if((!noEl && !stale && !late) || hiddenKey===key){ b.hidden=true; return; }
   const long=[], short=[];
+  if(late){ long.push(t('banner.snapLong', new Date(SNAP_MS).toLocaleString(LOC(),{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}))); short.push(t('banner.snapShort')); }
   if(stale){ long.push(t('banner.staleLong',stale,act.length)); short.push(t('banner.staleShort',stale)); }
   if(noEl){ long.push(t('banner.noElLong',noEl)); short.push(t('banner.noElShort',noEl)); }
   $('#bannerText').textContent=long.join(' '); $('#bannerShort').textContent=short.join(' · ');
@@ -3144,14 +3155,25 @@ function drapeOn(){ return photoGlobe() && S.vs.zoom>=DRAPE_ZOOM; }
 const mqCoarse=window.matchMedia('(pointer:coarse)');
 function isMobileGPU(){ return mqCoarse.matches || (navigator.deviceMemory>0 && navigator.deviceMemory<=4); }
 
-/* уровни детализации: сначала лёгкие (первый кадр), затем детальные; не больше gl.MAX_TEXTURE_SIZE, на телефоне меньше */
+/* уровни детализации: сначала лёгкие (первый кадр), затем детальные; не больше gl.MAX_TEXTURE_SIZE, на телефоне меньше.
+   На ПК рельеф, облака и ночь в 4096 (вместе ~4,7 МБ) — последний уровень с lazy: он грузится, только когда глобус на экране
+   крупный (needTex4096), иначе 2048 не отличить. Цвет 4096 (1 МБ) — сразу: его видно первым. */
 function globeTiers(){
   let max=4096;
   try{ const g=document.createElement('canvas').getContext('webgl2'); max=Math.min(4096, g.getParameter(g.MAX_TEXTURE_SIZE)); const x=g.getExtension('WEBGL_lose_context'); if(x) x.loseContext(); }catch(e){}
   const cap=w=>Math.max(1024,Math.min(w,max)), t0={color:cap(2048), relief:1024, night:1024, clouds:1024};
   if(navigator.connection && navigator.connection.saveData) return [t0];
-  return [t0, isMobileGPU() ? {color:cap(4096), relief:cap(2048), night:cap(2048), clouds:cap(2048)}
-                            : {color:cap(4096), relief:cap(4096), night:cap(4096), clouds:cap(4096)}];
+  if(isMobileGPU()) return [t0, {color:cap(4096), relief:cap(2048), night:cap(2048), clouds:cap(2048)}];
+  return [t0, {color:cap(4096), relief:cap(2048), night:cap(2048), clouds:cap(2048)},
+              {color:cap(4096), relief:cap(4096), night:cap(4096), clouds:cap(4096), lazy:true}];
+}
+// тексель 2048 растянут на экране больше чем вдвое (экватор глобуса длиннее 4096 физических пикселей): до этого 2048 и 4096
+// на снимках не отличить (сравнение при масштабе 2,2 на 1440×900); на экране с плотностью 2× это уже стартовый вид
+function needTex4096(){
+  const vp=currentViewport(); if(!vp || S.view!=='globe') return false;
+  const lat=Math.max(-60,Math.min(60,S.vs.latitude)), a=vp.project([S.vs.longitude,lat]), b=vp.project([S.vs.longitude+0.5,lat]);
+  const perDeg=Math.hypot(b[0]-a[0],b[1]-a[1])/0.5/Math.cos(lat*Math.PI/180);
+  return Number.isFinite(perDeg) && perDeg*360*(window.devicePixelRatio||1) > 4096;
 }
 function fetchBitmap(url){
   return fetch(url).then(r=>{ if(!r.ok) throw new Error(r.status+' '+url); return r.blob(); })
@@ -3167,10 +3189,14 @@ async function loadGlobeAssets(){
     const url=(kind,w)=> kind==='clouds' && GL3.cloudsLive && live.files[w] ? 'clouds/'+live.files[w] : 'globe/'+man.textures[kind][w];
     const tiers=globeTiers();
     for(let k=0;k<tiers.length;k++){
-      const t=tiers[k], kinds=['color','relief','night','clouds'];
-      const bm=await Promise.all(kinds.map(kind=>fetchBitmap(url(kind,t[kind]))));
+      const t=tiers[k], kinds=['color','relief','night','clouds'], prev=GL3.tex;
+      if(t.lazy) while(!needTex4096()) await new Promise(r=>setTimeout(r,500));
+      // текстура того же размера не качается заново: если прежний уровень уже на видеокарте, она там и остаётся (null),
+      // если ещё нет — переходит её ImageBitmap
+      const onGpu=prev && GL3.gpu && GL3.gpu.id===prev.id;
+      const bm=await Promise.all(kinds.map(kind=> prev && prev.w[kind]===t[kind] ? (onGpu ? null : prev[kind]) : fetchBitmap(url(kind,t[kind]))));
       // новый объект: EarthLayer заменит все текстуры в одном кадре, прежние живут до замены — без мигания
-      GL3.tex={id:k, color:bm[0], relief:bm[1], night:bm[2], clouds:bm[3]};
+      GL3.tex={id:k, w:t, color:bm[0], relief:bm[1], night:bm[2], clouds:bm[3]};
       if(k===0){ geoCache=null; updateSpace(); renderFoot(); await new Promise(r=>setTimeout(r,1200)); }
     }
   }catch(e){
@@ -3189,9 +3215,10 @@ function ensureGpu(device){
       sampler:{ minFilter:'linear', magFilter:'linear', mipmapFilter:'linear', addressModeU:'repeat', addressModeV:'clamp-to-edge', maxAnisotropy:16 } });
     t.generateMipmapsWebGL(); if(bmp.close) bmp.close(); return t;
   };
-  const old=GL3.gpu;
-  GL3.gpu={ id:src.id, color:mk(src.color,true), relief:mk(src.relief,false), night:mk(src.night,false), clouds:mk(src.clouds,false) };
-  if(old) for(const k of ['color','relief','night','clouds']) old[k].destroy();
+  const old=GL3.gpu, nu={id:src.id};
+  for(const k of ['color','relief','night','clouds']) nu[k]=src[k] ? mk(src[k],k==='color') : old[k];   // null — та же текстура, что уже на видеокарте
+  if(old) for(const k of ['color','relief','night','clouds']) if(nu[k]!==old[k]) old[k].destroy();
+  GL3.gpu=nu;
   return GL3.gpu;
 }
 

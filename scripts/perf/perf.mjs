@@ -1,23 +1,27 @@
 #!/usr/bin/env node
-// Замеры карты: частота кадров в разных видах, дыры в ближнем виде при быстром приближении, время загрузки новых мест.
+// Замеры карты: загрузка страницы, частота кадров в разных видах, дыры в ближнем виде при быстром приближении,
+// время загрузки новых мест.
 // Поднимает свой HTTP/2-сервер (тот же лимит частоты запросов к тайлам, что на сервере: 60/с, запас 400) и браузер без окна.
 //
 // Запуск из корня репозитория (Node 22+, Chrome или Edge):
 //   node scripts/perf/perf.mjs                      — все сценарии
-//   node scripts/perf/perf.mjs fps holes            — выбранные: fps, holes, load
+//   node scripts/perf/perf.mjs fps holes            — выбранные: startup, fps, holes, load
 //   node scripts/perf/perf.mjs --save base.json     — сохранить результат
 //   node scripts/perf/perf.mjs --compare base.json  — сравнить с сохранённым
 // Тайлы ближнего вида: берутся из scripts/perf/.tilecache; недостающие — с сайта TILE_ORIGIN (например
 // TILE_ORIGIN=https://ваш-сайт), иначе сценарии ближнего вида пропускаются. Браузер — BROWSER=путь или стандартные места.
 // PAGE=файл.html — отдать вместо index.html другую версию страницы (сравнить до и после правки).
+// SITE=папка — сначала искать файлы там: собранная страница, как её выкладывает updater (с вынесенными
+// data-starlink.<hash>.json и geo-detail.<hash>.json). Без SITE в приватном репо отдаётся шаблон, где эти блоки
+// встроены, — первая загрузка тогда тяжелее, чем на сайте. Текст (html, js, json, css) сжимается gzip, как на сайте.
 // Код выхода 1, если в сценарии holes остались дыры.
 import http2 from 'node:http2'; import https from 'node:https'; import fs from 'node:fs'; import path from 'node:path';
-import { execFileSync, spawn } from 'node:child_process'; import os from 'node:os'; import { fileURLToPath } from 'node:url';
+import { execFileSync, spawn } from 'node:child_process'; import os from 'node:os'; import { fileURLToPath } from 'node:url'; import zlib from 'node:zlib';
 
 const args = process.argv.slice(2), opt = n => { const i = args.indexOf(n); return i >= 0 ? args.splice(i, 2)[1] : null; };
 const SAVE = opt('--save'), COMPARE = opt('--compare');
 if (process.env.PAGE && !fs.existsSync(process.env.PAGE)) { console.error(`PAGE: нет файла ${path.resolve(process.env.PAGE)}`); process.exit(2); }
-const ONLY = args.length ? args : ['fps', 'holes', 'load'];
+const ONLY = args.length ? args : ['startup', 'fps', 'holes', 'load'];
 const ROOT = process.cwd(), HERE = path.dirname(fileURLToPath(import.meta.url));
 const CACHE = path.join(HERE, '.tilecache'), ORIGIN = process.env.TILE_ORIGIN || '';
 const PRIVATE = fs.existsSync(path.join(ROOT, 'web/template/rassvet-tracker.html'));
@@ -27,6 +31,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 // раскладка путей: открытый репозиторий — как есть, приватный — шаблон, web/static, vendor, vendor/globe, models
 function fileFor(p) {
   if (p === '/') p = '/index.html';
+  if (process.env.SITE && !(p === '/index.html' && process.env.PAGE)) { const f = path.join(process.env.SITE, p); if (fs.existsSync(f) && fs.statSync(f).isFile()) return f; }
   if (p === '/index.html' && process.env.PAGE) return path.resolve(process.env.PAGE);   // сравнение с другой версией страницы
   if (!PRIVATE) return path.join(ROOT, p);
   if (p === '/index.html') return process.env.PAGE ? path.resolve(process.env.PAGE) : path.join(ROOT, 'web/template/rassvet-tracker.html');
@@ -36,6 +41,7 @@ function fileFor(p) {
 }
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg',
   '.webp': 'image/webp', '.glb': 'model/gltf-binary', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json' };
+const TEXT = new Set(['.html', '.js', '.json', '.css']);
 const TILE = /^\/tiles\/(img|dem|night)\/\d+\/\d+\/\d+\.(jpg|png)$/;
 const srvState = { limit: false, delay: 0, budget: 400, last: Date.now(), r429: 0 };
 const take = () => { const n = Date.now(); srvState.budget = Math.min(400, srvState.budget + (n - srvState.last) * 0.06); srvState.last = n; if (srvState.budget < 1) return false; srvState.budget--; return true; };
@@ -54,8 +60,11 @@ function startServer(port) {
   const srv = http2.createSecureServer({ ...cert(), allowHTTP1: true });
   srv.on('request', (req, res) => {
     const p = decodeURIComponent(req.url.split('?')[0]);
+    const gz = /gzip/.test(req.headers['accept-encoding'] || '');
     const send = (f, delay = 0) => fs.readFile(f, (e, d) => { if (e) { res.writeHead(404); res.end(); return; }
-      setTimeout(() => { res.writeHead(200, { 'content-type': TYPES[path.extname(f)] || 'application/octet-stream' }); res.end(d); }, delay); });
+      const ext = path.extname(f), h = { 'content-type': TYPES[ext] || 'application/octet-stream' };
+      if (gz && TEXT.has(ext)) { d = zlib.gzipSync(d, { level: 5 }); h['content-encoding'] = 'gzip'; }   // как gzip_comp_level 5 на сайте
+      setTimeout(() => { res.writeHead(200, h); res.end(d); }, delay); });
     if (TILE.test(p)) {
       if (srvState.limit && !take()) { srvState.r429++; res.writeHead(429); res.end(); return; }
       const f = path.join(CACHE, p);
@@ -125,6 +134,44 @@ const VIEWS = { globe: { longitude: 30, latitude: 40, zoom: 1.8 }, z5: { longitu
   mountains: { longitude: 42.5, latitude: 43.2, zoom: 9.5, pitch: 55, bearing: 30 } };
 const near = !!ORIGIN || fs.existsSync(CACHE);
 const result = {};
+// первая загрузка без кэша: когда видны спутники и фотоглобус, долгие задачи, объём, занятость главного потока,
+// затем все системы разом (3D и 2D): частота кадров и память
+const MARKS = `window.__lt=[]; try{ new PerformanceObserver(l=>{ for(const e of l.getEntries()) __lt.push(e.duration); }).observe({type:'longtask', buffered:true}); }catch(e){}
+  window.__mk={}; const iv=setInterval(()=>{ try{ const R=window.__rassvet; if(!R) return;
+    if(!__mk.sats){ const s=R.dbg().layers.find(x=>x.startsWith('sats:')); if(s && +s.split(':')[1]>0) __mk.sats=performance.now(); }
+    if(!__mk.photo && R.globe().photo) __mk.photo=performance.now();
+    if(__mk.sats && __mk.photo) clearInterval(iv); }catch(e){} }, 25);`;
+async function busy(T, ms = 5000) {   // доля времени, когда главный поток занят задачами (метрика TaskDuration)
+  const m = async () => Object.fromEntries((await T.send('Performance.getMetrics')).result.metrics.map(x => [x.name, x.value]));
+  const a = await m(); await sleep(ms); const b = await m();
+  return { busy: Math.round((b.TaskDuration - a.TaskDuration) / (b.Timestamp - a.Timestamp) * 100), heapMB: Math.round(b.JSHeapUsedSize / 1048576) };
+}
+async function startup(port, url) {
+  for (const [dk, dev] of Object.entries(DEVICES)) {
+    const T = await tab(port, dev); let bytes = 0, reqs = 0;
+    T.on(m => { if (m.method === 'Network.loadingFinished') { bytes += m.params.encodedDataLength; reqs++; } });
+    await T.send('Performance.enable');
+    await T.send('Page.addScriptToEvaluateOnNewDocument', { source: MARKS });
+    await T.send('Page.navigate', { url });
+    const t0 = Date.now(); let mk = {};
+    while (Date.now() - t0 < 90000) { mk = await T.ev('JSON.parse(JSON.stringify(window.__mk||{}))') || {}; if (mk.sats && mk.photo) break; await sleep(250); }
+    await sleep(10000);   // догрузка Starlink, регионов, текстур
+    const lt = (await T.ev('window.__lt||[]')).filter(d => d >= 50);
+    result[`start.${dk}.satsMs`] = Math.round(mk.sats); result[`start.${dk}.photoMs`] = Math.round(mk.photo);
+    result[`start.${dk}.longTasks`] = [lt.length, Math.round(lt.reduce((a, d) => a + d, 0)), Math.round(Math.max(0, ...lt))];
+    result[`start.${dk}.KB`] = [Math.round(bytes / 1024), reqs];
+    await T.ev(`(()=>{ const b=[...document.querySelectorAll('button')].find(b=>/Пропустить|Skip/.test(b.textContent)); b&&b.click(); return 1 })()`);
+    const idle = await busy(T); result[`start.${dk}.busy%`] = idle.busy;
+    // все системы: кнопка «все» в панели и Starlink
+    await T.ev(`(()=>{ document.querySelectorAll('button[data-act="all"]').forEach(b=>b.click()); const r=[...document.querySelectorAll('.sysrow')].find(r=>/Starlink/.test(r.textContent)); const i=r&&r.querySelector('input.switch'); if(i&&!i.checked) i.click(); return 1 })()`);
+    await sleep(8000);
+    result[`all.${dk}.sats`] = await T.ev(`+(__rassvet.dbg().layers.find(x=>x.startsWith('sats:'))||':0').split(':')[1]`);
+    result[`all.${dk}.fps3d`] = await T.ev(FPS(3000)); Object.assign(idle, await busy(T, 3000)); result[`all.${dk}.busy%`] = idle.busy; result[`all.${dk}.heapMB`] = idle.heapMB;
+    await T.ev(`__rassvet.setView('map'); 1`); await sleep(4000);
+    result[`all.${dk}.fps2d`] = await T.ev(FPS(3000));
+    await T.close();
+  }
+}
 async function fps(port, url) {
   for (const [dk, dev] of Object.entries(DEVICES)) {
     const T = await tab(port, dev); await openPage(T, url);
@@ -167,7 +214,7 @@ async function load(port, url) {
 const SPORT = 8790, BPORT = 9350, url = `https://127.0.0.1:${SPORT}/?lang=ru`;
 const srv = await startServer(SPORT), br = await startBrowser(BPORT);
 try {
-  for (const s of ONLY) await ({ fps, holes, load })[s](BPORT, url);
+  for (const s of ONLY) await ({ startup, fps, holes, load })[s](BPORT, url);
 } finally { srv.close(); br.proc.kill(); try { fs.rmSync(br.prof, { recursive: true, force: true }); } catch {} }
 
 const prev = COMPARE ? JSON.parse(fs.readFileSync(COMPARE, 'utf8')) : null;
