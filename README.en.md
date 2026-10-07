@@ -55,6 +55,8 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 | | |
 |---|---|
 | 🛰 Systems on the map | **22** from 7 countries and regions, 9 types: internet, navigation, communications, Earth observation and more |
+| 📚 System descriptions | all 22 have sources: operators' sites, WMO OSCAR, the GCAT and SATCAT catalogues |
+| 🧩 3D models | 7 official NASA models; the ISS comes apart into 53 parts with descriptions and links |
 | 📡 Satellites in the snapshot | **≈ 12,360**, of which Starlink ≈ 11,070, OneWeb 651 and Rassvet 38 |
 | 🌍 Map | 242 countries, 4,583 regions, 7,342 cities in Russian and English |
 | 🖼 Earth textures | 3 levels of detail, up to 4096 × 2048, ≈ 8 MB |
