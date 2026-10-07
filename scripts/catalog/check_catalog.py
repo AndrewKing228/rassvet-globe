@@ -6,7 +6,7 @@
 Код выхода 0 — ошибок нет (предупреждения допускаются), 1 — есть ошибки.
 
 Правила (см. README, «Источники данных»):
-- система с verifiedAt: у описания есть первичный источник или два вторичных с разных доменов, у каждого источника
+- система: verifiedAt обязателен, у описания есть первичный источник или два вторичных с разных доменов, у каждого источника
   kind (primary|secondary), http(s)-ссылка и дата обращения;
 - военная система (категория «Военные» или classification) помечена classification: "gcat" — назначение по GCAT,
   официально не подтверждено;
@@ -164,7 +164,7 @@ def check(page, root="."):
     except (KeyError, ValueError) as e:
         return [f"registry: нет или не JSON ({e})"], warn
     groups = {g["id"] for g in reg.get("groups", [])}
-    seen, legacy = {}, 0
+    seen = {}
     for s in reg.get("systems", []):
         sid = s.get("id", "?")
         E = lambda m: err.append(f"{sid}: {m}")
@@ -203,7 +203,7 @@ def check(page, root="."):
                 if not s.get(k):
                     E(f"нет поля {k}")
         else:
-            legacy += 1
+            E("нет verifiedAt: у описания системы должны быть проверенные источники (descriptionSources)")
         body = B.get(s.get("dataKey", ""))
         if body is None:
             E(f"нет блока данных {s.get('dataKey')}")
@@ -248,8 +248,6 @@ def check(page, root="."):
                 elif n is not None:
                     seen[n] = sid
     err += check_models(reg, seen, root)
-    if legacy:
-        warn.append(f"систем без verifiedAt (описания до введения правил источников): {legacy}")
     return err, warn
 
 

@@ -583,6 +583,7 @@ rassvet-globe/
 ├── scripts/globe/            ← сборка текстур глобуса из исходников
 ├── scripts/catalog/          ← проверка каталога и моделей
 ├── scripts/models/           ← подготовка 3D-моделей (gltf-transform)
+├── scripts/perf/             ← замеры скорости карты в браузере без окна
 └── docs/                     ← баннер и скриншоты для этого README
 ```
 
@@ -690,8 +691,8 @@ rassvet-globe/
 в OMM JSON), по желанию Space-Track, четыре RSS-ленты новостей и карта облаков. Комментарии в файле
 объясняют каждое поле.
 
-**`scripts/catalog/check_catalog.py`** — проверка каталога прямо в странице: у систем с отметкой
-`verifiedAt` есть первичный источник (или два независимых вторичных), военные системы помечены
+**`scripts/catalog/check_catalog.py`** — проверка каталога прямо в странице: у каждой системы есть отметка
+`verifiedAt` и первичный источник описания (или два независимых вторичных), военные системы помечены
 как классифицированные по GCAT, NORAD не повторяются между системами, у каждого аппарата правильные
 COSPAR, даты и элементы орбиты, у системы есть страна, регион и тип. Модели из `models/` — не больше
 1,5 МБ и 50 000 треугольников, вместе не больше 25 МБ, только расширения glTF, которым не нужен
@@ -719,6 +720,18 @@ node parts-by-material.mjs MMS_A.glb ../../models/mms.glb ""
 npx gltf-transform copy Hubble_A.glb hubble.raw.glb
 npx gltf-transform optimize hubble.raw.glb ../../models/hubble.glb --compress quantize \
     --texture-compress webp --texture-size 1024 --simplify false --join true
+```
+
+**`scripts/perf/perf.mjs`** — замеры карты (Node 22+, Chrome или Edge, без зависимостей). Поднимает свой
+HTTP/2-сервер с тем же лимитом запросов к тайлам, что на сервере сайта (60 в секунду, запас 400), и
+браузер без окна; меряет частоту кадров в четырёх видах на ПК и в эмуляции телефона (процессор
+замедлен вчетверо, видеокарта остаётся от ПК), дыры в ближнем виде при быстром приближении и время
+загрузки новых мест. Тайлы ближнего вида берутся из `scripts/perf/.tilecache/`, недостающие — с
+сайта из `TILE_ORIGIN`. `PAGE=файл.html` подставляет другую версию страницы для сравнения до и после.
+
+```bash
+TILE_ORIGIN=https://адрес-сайта node scripts/perf/perf.mjs --save base.json   # все сценарии
+TILE_ORIGIN=https://адрес-сайта node scripts/perf/perf.mjs fps holes --compare base.json
 ```
 
 **`scripts/globe/build_globe.py`** — сборка `globe/` из исходников NASA, GEBCO и Natural Earth:

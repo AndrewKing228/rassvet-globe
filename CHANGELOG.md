@@ -3,6 +3,27 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.8.0 — 2026-10-07
+
+### Русский
+- **У всех систем — проверенные описания с источниками:** официальные сайты операторов, WMO OSCAR, каталог GCAT.
+  По источникам поправлены операторы «Луча» и «Гонца», описание «Меридиана» и других групп; «Луч-5Х (Олимп-К 2)»
+  перенесён из «Луча» в «Разведку и предупреждение» — так его классифицирует GCAT.
+- **Проверка каталога** теперь требует источники у каждой системы.
+- **Скрипт замеров карты** `scripts/perf/perf.mjs`: частота кадров на ПК и в эмуляции телефона, дыры при быстром
+  приближении, время загрузки новых мест; сравнение с сохранённой базой.
+- **На телефоне ближний вид легче:** переход от глобуса короче, а под готовым ближним видом не рисуется сфера глобуса.
+
+### English
+- **Every system now has a verified description with sources:** operators' official sites, WMO OSCAR, the GCAT
+  catalogue. Operators of Luch and Gonets, and the descriptions of Meridian and other groups, were corrected against
+  the sources; Luch-5X (Olymp-K 2) moved from Luch to "SIGINT, early warning", as GCAT classifies it.
+- **The catalogue check** now requires sources for every system.
+- **Map measurement script** `scripts/perf/perf.mjs`: frame rate on desktop and in phone emulation, holes during fast
+  zooming, load time for new places; comparison against a saved baseline.
+- **Lighter close-up view on phones:** a shorter transition from the globe, and the globe sphere is not drawn under a
+  finished close-up view.
+
 ## v1.7.0 — 2026-10-07
 
 ### Русский

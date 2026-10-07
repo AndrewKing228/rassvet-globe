@@ -578,6 +578,7 @@ rassvet-globe/
 ├── scripts/globe/            ← builds globe textures from the sources
 ├── scripts/catalog/          ← catalogue and model checks
 ├── scripts/models/           ← 3D model preparation (gltf-transform)
+├── scripts/perf/             ← map performance measurements in a headless browser
 └── docs/                     ← banner and screenshots for this README
 ```
 
@@ -685,8 +686,8 @@ upgrading a library means a new folder rather than editing the old one.
 `GROUP=active` as OMM JSON), optionally Space-Track, four RSS news feeds and the cloud map. Comments in
 the file explain every field.
 
-**`scripts/catalog/check_catalog.py`** checks the catalogue inside the page: systems marked `verifiedAt`
-have a primary source (or two independent secondary ones), military systems are flagged as classified by
+**`scripts/catalog/check_catalog.py`** checks the catalogue inside the page: every system is marked `verifiedAt`
+and its description has a primary source (or two independent secondary ones), military systems are flagged as classified by
 GCAT, NORAD IDs are not repeated across systems, and every satellite has valid COSPAR, dates and orbital
 elements, and every system has a country, region and type. Models in `models/` must stay within 1.5 MB and
 50,000 triangles each and 25 MB in total, use only glTF extensions that need no WebAssembly, official ones
@@ -715,6 +716,18 @@ node parts-by-material.mjs MMS_A.glb ../../models/mms.glb ""
 npx gltf-transform copy Hubble_A.glb hubble.raw.glb
 npx gltf-transform optimize hubble.raw.glb ../../models/hubble.glb --compress quantize \
     --texture-compress webp --texture-size 1024 --simplify false --join true
+```
+
+**`scripts/perf/perf.mjs`** measures the map (Node 22+, Chrome or Edge, no dependencies). It starts its own
+HTTP/2 server with the same tile rate limit as the site's server (60 per second, burst 400) and a headless
+browser; it measures the frame rate in four views on desktop and in phone emulation (CPU slowed fourfold,
+the GPU is still the desktop one), holes in the close-up view during fast zooming, and load time for new
+places. Close-up tiles come from `scripts/perf/.tilecache/`, missing ones from the site in `TILE_ORIGIN`.
+`PAGE=file.html` serves another version of the page for before/after comparisons.
+
+```bash
+TILE_ORIGIN=https://your-site node scripts/perf/perf.mjs --save base.json   # all scenarios
+TILE_ORIGIN=https://your-site node scripts/perf/perf.mjs fps holes --compare base.json
 ```
 
 **`scripts/globe/build_globe.py`** builds `globe/` from NASA, GEBCO and Natural Earth sources:
