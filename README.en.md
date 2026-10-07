@@ -65,7 +65,10 @@ no CDN. An orbit snapshot is embedded in the page, so the site works right after
 
 **Globe and map**
 - 3D globe with NASA Blue Marble imagery, GEBCO relief, atmosphere, clouds and the night side for the
-  current moment; city lights switch on as the Sun sets below the horizon.
+  current moment; city lights switch on as the Sun sets below the horizon. Clouds fade out as you zoom in
+  and can be turned off in the layers.
+- Close-up view: Sentinel-2 imagery on relief; while detailed tiles load, a layer of coarser tiles covers
+  the area, and relief is built in background threads.
 - 2D equirectangular map, one-click switch; the current view is kept in a shareable link.
 
 **Satellites**
@@ -605,8 +608,9 @@ in the file is bumped and old caches are removed automatically.
 **`manifest.webmanifest`** and the icons describe the app for the home screen: name, colours, 192 and
 512 px icons, including a "maskable" one for Android.
 
-**`earth-day.jpg`, `earth-night.jpg`** are flat NASA textures for the 2D map: daytime Earth as the base
-and city lights that show through on the night side.
+**`earth-day.jpg`, `earth-night.jpg`** are flat NASA textures for the 2D map: city lights that show through
+on the night side and a fallback daytime base (a winter image). By day the 2D map uses the globe's summer
+texture `globe/color-*.webp` when it is available.
 
 ### 🌍 Globe textures — `globe/`
 

@@ -53,7 +53,8 @@ from those packages' CSS (only the weights in use, woff2 only).
 
 | Файлы / Files | Источник / Source | Лицензия / License | Атрибуция / Attribution |
 |---|---|---|---|
-| `globe/color-*.webp`, `earth-day.jpg` | [NASA Blue Marble: Next Generation](https://science.nasa.gov/earth/earth-observatory/) (топография и батиметрия, июль 2004) | NASA imagery, public domain | NASA Earth Observatory |
+| `globe/color-*.webp` (глобус и 2D-карта) | [NASA Blue Marble: Next Generation](https://science.nasa.gov/earth/earth-observatory/) (топография и батиметрия, июль 2004) | NASA imagery, public domain | NASA Earth Observatory |
+| `earth-day.jpg` (запасная подложка 2D-карты, если нет текстур `globe/`) | NASA Blue Marble, зимний снимок (со снегом) | NASA imagery, public domain | NASA Earth Observatory |
 | `globe/night-*.webp`, `earth-night.jpg` | [NASA Black Marble 2016](https://science.nasa.gov/earth/earth-observatory/earth-at-night/maps/) | NASA imagery, public domain | NASA Earth Observatory |
 | `globe/clouds-*.jpg` | NASA Blue Marble clouds (`cloud_combined_8192.tif`) | NASA imagery, public domain | NASA Earth Observatory |
 | `globe/relief-*.webp` (каналы R, G — наклоны рельефа) | [GEBCO_2026 Grid](https://doi.org/10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa) | public domain, attribution requested | GEBCO Bathymetric Compilation Group 2026 (2026). The GEBCO_2026 Grid. doi:10.5285/4f68d5c7-45eb-f999-e063-7086abc036fa |

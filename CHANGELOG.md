@@ -3,6 +3,22 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.7.0 — 2026-10-07
+
+### Русский
+- **Горы под наклоном целиком в рельефе:** раньше слою не хватало места в кэше, и половина вида была размытой.
+- **Пока грузится ближний вид,** место закрывает подложка из крупных тайлов, а не размытая текстура всей Земли.
+- **Облака** мягче, без ступенек, при приближении растворяются раньше; переключатель «Облака» в «Слоях».
+- **2D-карта днём летняя:** раньше на ней был зимний снимок, и Россия и Канада были под снегом.
+- **Подписи регионов** реже и с отступом; на телефоне ближний вид легче.
+
+### English
+- **Tilted mountain views are fully in relief:** the layer used to run out of cache space and half of the view was blurry.
+- **While the close-up view loads,** a layer of coarser tiles covers the area instead of the blurry whole-Earth texture.
+- **Clouds** are softer, without steps, and fade out earlier when zooming in; a “Clouds” switch in the layers.
+- **The 2D map is summer by day:** it used to show a winter image with Russia and Canada under snow.
+- **Region labels** are sparser with spacing; the close-up view is lighter on phones.
+
 ## v1.6.3 — 2026-10-07
 
 ### Русский

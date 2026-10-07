@@ -750,6 +750,7 @@ dialog .acts .grow{flex:1}
     <h3 data-i18n="h.layers">Слои</h3>
     <div class="lgh" data-i18n="lg.earth">Земля</div>
     <div class="row" data-i18n-tip="tip.night"><label for="tNight" data-i18n="layer.night">День и ночь</label><button type="button" class="ibtn" data-i18n-aria="aria.info">i</button><input type="checkbox" class="switch" id="tNight" checked></div>
+    <div class="row" data-i18n-tip="tip.clouds"><label for="tClouds" data-i18n="layer.clouds">Облака</label><button type="button" class="ibtn" data-i18n-aria="aria.info">i</button><input type="checkbox" class="switch" id="tClouds" checked></div>
     <div class="lgh" data-i18n="lg.sats">Спутники</div>
     <div class="row" data-i18n-tip="tip.tails"><label for="tTails" data-i18n="layer.tails">Хвосты спутников</label><button type="button" class="ibtn" data-i18n-aria="aria.info">i</button><input type="checkbox" class="switch" id="tTails" checked></div>
     <div class="row" data-i18n-tip="tip.tracks"><label for="tTracks" data-i18n="layer.tracks">Трассы ±½ витка</label><button type="button" class="ibtn" data-i18n-aria="aria.info">i</button><input type="checkbox" class="switch" id="tTracks" checked></div>
@@ -932,6 +933,7 @@ ru:{
   'layer.labels':'Подписи спутников', 'tip.labels':'Названия рядом со спутниками; перекрывающиеся скрываются. «Рассвет» и выбранный аппарат подписаны всегда, остальные российские системы — при приближении.',
   'layer.zones':'Зона покрытия', 'tip.zones':'Круг на Земле под спутником: откуда он виден выше минимальной высоты над горизонтом, то есть площадь, которую он может обслуживать.',
   'layer.night':'День и ночь', 'tip.night':'Ночная сторона Земли, сумерки и огни городов для текущего момента времени.',
+  'layer.clouds':'Облака', 'tip.clouds':'Облачность на глобусе: ежедневная карта облаков (если её нет — общая NASA). При приближении облака сами растворяются.',
   'layer.tails':'Хвосты спутников', 'tip.tails':'Короткий тающий след за спутником: видно, куда и как быстро он летит.',
   'layer.elev':'Мин. высота над горизонтом', 'tip.elev':'Ниже этой высоты над горизонтом спутником не пользуются: сигнал закрывают дома, деревья и рельеф. Выше порог — меньше зона покрытия. Влияет только на круги зон.',
   'tab.sys':'Системы', 'tab.flt':'Фильтры', 'tab.view':'Вид', 'nav.country':'Страна', 'nav.type':'Тип системы', 'nav.all':'Все',
@@ -1069,6 +1071,7 @@ en:{
   'layer.labels':'Satellite labels', 'tip.labels':'Names next to satellites; overlapping ones are hidden. Rassvet and the selected satellite are always labelled, other Russian systems when zoomed in.',
   'layer.zones':'Coverage zones', 'tip.zones':'A circle on Earth under each satellite: where it is seen above the minimum elevation, i.e. the area it can serve.',
   'layer.night':'Day and night', 'tip.night':'The night side of the Earth, twilight and city lights for the current moment.',
+  'layer.clouds':'Clouds', 'tip.clouds':'Cloud cover on the globe: the daily cloud map (or NASA\'s general one if it is missing). Clouds fade out as you zoom in.',
   'layer.tails':'Satellite trails', 'tip.tails':'A short fading trail behind each satellite shows where and how fast it is moving.',
   'layer.elev':'Min. elevation above horizon', 'tip.elev':'Below this elevation above the horizon a satellite is not usable: buildings, trees and terrain block the signal. Higher threshold — smaller coverage zone. Affects only the zone circles.',
   'tab.sys':'Systems', 'tab.flt':'Filters', 'tab.view':'View', 'nav.country':'Country', 'nav.type':'System type', 'nav.all':'All',
@@ -1191,7 +1194,7 @@ const S = {
   view: 'globe',
   vs: { longitude: 75, latitude: 52, zoom: 1.6, pitch: 0, bearing: 0 },
   time: { sim: Date.now(), live: true, playing: true, rateIdx: 0 },
-  colorMode: 'system', tracks: true, labels: true, zones: true, elev: 25, night: true, tails: true,
+  colorMode: 'system', tracks: true, labels: true, zones: true, elev: 25, night: true, tails: true, clouds: true,
   selected: -1, focusLaunch: null,
   filter: { orbit: new Set(['LEO','MEO','GEO','HEO']), owner: '', y0: null, y1: null, region: '', type: '' },   // фильтры поверх включённых систем; region и type — навигация по системам
   tab: 'sys', collapsed: new Set()
@@ -1707,7 +1710,15 @@ function loadEarthTextures(){
     im.onload=()=>{ set(im); drawBase(); nightCache.key=''; geoCache=null; };
     im.onerror=()=>{};
     im.src=src; };
-  load('earth-day.jpg', im=>imgDay=im);
+  // день — та же летняя текстура NASA Blue Marble (июль 2004), что у 3D-глобуса; earth-day.jpg (зимний снимок со снегом) — запасная
+  fetch('globe/globe.json').then(r=>r.ok?r.json():null).catch(()=>null).then(man=>{
+    const f=man && man.textures && man.textures.color && man.textures.color[isMobileGPU()?'2048':'4096'];
+    if(!f) return load('earth-day.jpg', im=>imgDay=im);
+    const im=new Image(); im.decoding='async';
+    im.onload=()=>{ imgDay=im; drawBase(); nightCache.key=''; geoCache=null; };
+    im.onerror=()=>load('earth-day.jpg', x=>imgDay=x);
+    im.src='globe/'+f;
+  });
   load('earth-night.jpg', im=>imgNight=im);
 }
 function drawBase(){
@@ -1870,19 +1881,21 @@ function computeGeoLabels(){
   const grid=makeGrid(); placed={country:[],region:[],city:[]};
   // зарезервировать места подписей спутников
   for(const l of satLabelData) if(l.box) grid.add(l.box);
-  const tryPlace=(l,size,anchor,list,extra)=>{
+  const tryPlace=(l,size,anchor,list,extra,pad=0)=>{
     if(G && angDist(l.lon,l.lat,cLon,cLat)>maxAng) return;
     if(tilt && hiddenByEarth(vp,l.lon,l.lat,0)) return;
     const p=vp.project([l.lon,l.lat,0]); const x=p[0], y=p[1];
     if(x<-50||y<-20||x>W+50||y>H+20) return;
     const w=textW(l.t,size,l.kind==='country'), h=size+4; let b;
     if(anchor==='start') b=[x-4,y-h/2,x+7+w,y+h/2]; else b=[x-w/2,y-h/2,x+w/2,y+h/2];
+    if(pad) b=[b[0]-pad,b[1]-pad,b[2]+pad,b[3]+pad];
     if(!grid.fits(b)) return; grid.add(b); list.push(Object.assign({},l,extra||{}));
   };
   const zc=z+1.0;
   for(const l of geo.countryLabels){ if(l.min>zc-0.2) continue; const size = l.pop>5e7 ? 13 : 12; tryPlace(l,size,'middle',placed.country,{size}); }
   for(const l of geo.cityLabels){ if(!(l.cap||l.pop>=2e6)) continue; if(l.min>zc+0.6) continue; tryPlace(l,l.cap?12.5:11.5,'start',placed.city); }
-  if(z>=2.3) for(const l of geo.regionLabels){ if(l.min>zc+1.6) continue; tryPlace(l,11,'middle',placed.region); }
+  // регионы — на полшага позже и с запасом 6 px вокруг: на масштабе 4 подписи шли сплошным ковром
+  if(z>=2.8) for(const l of geo.regionLabels){ if(l.min>zc+1.1) continue; tryPlace(l,11,'middle',placed.region,null,6); }
   for(const l of geo.cityLabels){ if(l.cap||l.pop>=2e6) continue; if(l.min>zc+0.6) continue; tryPlace(l,11.5,'start',placed.city); if(placed.city.length>420) break; }
   return true;
 }
@@ -1923,8 +1936,14 @@ function computeSatLabels(){
 /* ================= Рендер-цикл ================= */
 let lastFrame=performance.now(), lastCard=0, lastTable=0;
 let tickErrors=0;
+/* Телефон с ближним видом: слои обновляются 30 раз в секунду, а не 60. Спутникам этого хватает, а каждый кадр
+   перерисовывает все 40–50 тайлов рельефа — на телефоне это 10–16 кадров/с. Движение камеры deck.gl рисует сам, без пропусков. */
+let lastBody=0;
 function tick(){
   if(window.__rassvetFatal) return;
+  const now=performance.now();
+  if(now-lastBody<31 && isMobileGPU() && nearFade()>0){ requestAnimationFrame(tick); return; }
+  lastBody=now;
   try{ tickBody(); tickErrors=0; }
   catch(e){
     console.error(e); tickErrors++;
@@ -3185,6 +3204,7 @@ const EARTH_UBO=`layout(std140) uniform earthUniforms {
   float cloudHi;
   vec3 nightRect;
   float hasNight;
+  float meshSink;
 } earth;
 `;
 const EARTH_FS_LIB=`
@@ -3204,6 +3224,14 @@ vec3 earth_tonemap(vec3 x){ x*=earth.exposure; return clamp((x*(2.51*x+0.03))/(x
 vec2 earth_uv(vec3 up){ return vec2(atan(up.x,-up.y)/(2.0*EARTH_PI)+0.5, 0.5-asin(clamp(up.z,-1.0,1.0))/EARTH_PI); }
 void earth_frame(vec3 up, out vec3 east, out vec3 north){ vec3 e=vec3(-up.y,up.x,0.0); float l=length(e); east=l>1e-5?e/l:vec3(1.0,0.0,0.0); north=cross(up,east); }
 float earth_cloud(float c){ return smoothstep(earth.cloudLo,earth.cloudHi,c)*earth.cloudAmt; }   // пороги — свои у каждого источника облаков
+// облачность с размытием на ~1 пиксель карты: порог по одной выборке JPEG давал ступеньки и блоки 8×8
+float earth_cloudAt(vec2 uv, float lod){
+  vec2 px=1.0/vec2(textureSize(earthClouds,0));
+  float c=textureLod(earthClouds,uv,lod).r*0.4;
+  c+=(textureLod(earthClouds,uv+vec2(px.x,0.0),lod).r+textureLod(earthClouds,uv-vec2(px.x,0.0),lod).r
+    +textureLod(earthClouds,uv+vec2(0.0,px.y),lod).r+textureLod(earthClouds,uv-vec2(0.0,px.y),lod).r)*0.15;
+  return earth_cloud(c);
+}
 vec3 earth_grade(vec3 c, float water){ float l=dot(c,vec3(0.2126,0.7152,0.0722)); return max(mix(vec3(l),c,mix(1.22,1.28,water)),0.0); }
 /* освещение в линейном пространстве: albedo — цвет поверхности, N — нормаль с рельефом, shadow — облака между точкой и Солнцем */
 vec3 earth_shade(vec3 albedo, vec3 P, vec3 N, float water, float lights, float cloud, float shadow){
@@ -3242,7 +3270,7 @@ vec4 earth_far(sampler2D day, vec2 uv){
   vec3 S=normalize(earth.sunDir);
   vec2 d=vec2(dot(S,east),dot(S,north))/max(dot(up,S),0.2)*(EARTH_CLOUD_H/EARTH_RM);
   vec2 duv=vec2(d.x/(2.0*EARTH_PI*max(length(up.xy),0.05)),-d.y/EARTH_PI);
-  float cloud=earth_cloud(texture(earthClouds,uv).r), shadow=earth_cloud(texture(earthClouds,uv+duv).r);
+  float cloud=earth.cloudAmt>0.0 ? earth_cloudAt(uv,0.0) : 0.0, shadow=earth.cloudAmt>0.0 ? earth_cloudAt(uv+duv,0.0) : 0.0;
   vec3 col=earth_shade(albedo,P,N,water,texture(earthNight,uv).r,cloud,shadow);
   return vec4(earth_toSrgb(earth_tonemap(col)),1.0);
 }
@@ -3250,12 +3278,12 @@ vec4 earth_near(vec4 c, vec2 tuv){
   vec3 P=earth_vPos, up=normalize(P);
   vec3 N=dot(earth_vNormal,earth_vNormal)>0.25 ? normalize(earth_vNormal) : normalize(cross(dFdx(P),dFdy(P)));
   if(dot(N,up)<0.0) N=-N;
-  float h=(length(P)-EARTH_GR)*EARTH_RM/EARTH_GR;
+  float h=(length(P)-EARTH_GR)*EARTH_RM/EARTH_GR+earth.meshSink;   // подложка опущена на meshSink — высота для воды прежняя
   vec2 uv=earth_uv(up);
   float water=(1.0-smoothstep(0.5,4.0,h))*smoothstep(0.3,0.7,textureLod(earthRelief,uv,0.0).b);
   N=normalize(mix(N,up,water));
   vec3 albedo=earth_grade(earth_toLinear(clamp(c.rgb*earth.nearGain+earth.nearBias,0.0,1.0)),water);
-  float cloud=earth_cloud(textureLod(earthClouds,uv,0.0).r);
+  float cloud=earth.cloudAmt>0.0 ? earth_cloudAt(uv,0.0) : 0.0;
   float lights=pow(textureLod(earthNight,uv,0.0).r,1.8)*(1.0-0.6*smoothstep(6.0,9.0,earth.zoom));   // огни ~10 км/пиксель: вблизи приглушены
   if(earth.hasNight>0.5){   // чёткие огни из тайла: суша в Black Marble голубоватая, огни тёплые — вычитаем 0,68·B
     vec3 n=texture(earthNightTile, earth.nightRect.xy+tuv*earth.nightRect.z).rgb;
@@ -3271,11 +3299,11 @@ const earthModule={
   vs: EARTH_UBO+'out vec3 earth_vPos;\nout vec3 earth_vNormal;\n',
   fs: EARTH_UBO+EARTH_FS_LIB,
   uniformTypes:{ sunDir:'vec3<f32>', lit:'f32', camPos:'vec3<f32>', reliefK:'f32', nearGain:'vec3<f32>', slopeMax:'f32',
-    nearBias:'vec3<f32>', cloudAmt:'f32', sink:'f32', nightGain:'f32', zoom:'f32', exposure:'f32', cloudLo:'f32', cloudHi:'f32', nightRect:'vec3<f32>', hasNight:'f32' }
+    nearBias:'vec3<f32>', cloudAmt:'f32', sink:'f32', nightGain:'f32', zoom:'f32', exposure:'f32', cloudLo:'f32', cloudHi:'f32', nightRect:'vec3<f32>', hasNight:'f32', meshSink:'f32' }
 };
 function earthProps(device){
   const g=ensureGpu(device); if(!g) return null;
-  return { ...EARTH_U, earthRelief:g.relief, earthNight:g.night, earthClouds:g.clouds, nightRect:[0,0,1], hasNight:0 };
+  return { ...EARTH_U, earthRelief:g.relief, earthNight:g.night, earthClouds:g.clouds, nightRect:[0,0,1], hasNight:0, meshSink:0 };
 }
 
 /* дальний вид: та же сетка, что у прежней подложки (BitmapLayer), но свой шейдер и четыре текстуры */
@@ -3339,7 +3367,7 @@ class EarthShading extends deck.LayerExtension {
       this.state.earthNightTex.generateMipmapsWebGL(); this.state.earthNightSrc=bm;
     }
     const tx=bm ? this.state.earthNightTex : null;
-    m.shaderInputs.setProps({earth:{...ep, earthNightTile:tx || ep.earthNight, nightRect:this.props.earthNightRect || [0,0,1], hasNight:tx?1:0}});
+    m.shaderInputs.setProps({earth:{...ep, earthNightTile:tx || ep.earthNight, nightRect:this.props.earthNightRect || [0,0,1], hasNight:tx?1:0, meshSink:this.props.earthSink||0}});
   }
   finalizeState(){ if(this.state.earthNightTex) this.state.earthNightTex.destroy(); }
 }
@@ -3353,7 +3381,7 @@ function demPixels(bmp){
   const c = typeof OffscreenCanvas!=='undefined' ? new OffscreenCanvas(bmp.width,bmp.height) : Object.assign(document.createElement('canvas'),{width:bmp.width,height:bmp.height});
   const g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(bmp,0,0); return g.getImageData(0,0,bmp.width,bmp.height).data;
 }
-function terrainMesh(px, size, idx, G){
+function terrainMesh(px, size, idx, G, sink=0){
   const n=1<<idx.z, k=RELIEF_EXAG, step=size/G, V=G+1;
   const el=(x,y)=>{ x=Math.max(0,Math.min(size-1,x)); y=Math.max(0,Math.min(size-1,y)); const o=(y*size+x)*4; return Math.max(0, px[o]*256+px[o+1]+px[o+2]/256-32768); };
   const latOf=fy=>Math.atan(Math.sinh(Math.PI*(1-2*(idx.y+fy)/n)))*R2D, lngOf=fx=>(idx.x+fx)/n*360-180;
@@ -3370,7 +3398,7 @@ function terrainMesh(px, size, idx, G){
     return [v[0]/L, v[1]/L, v[2]/L];
   };
   for(let j=0;j<V;j++) for(let i=0;i<V;i++){
-    const x=Math.min(size-1,Math.round(i*step)), y=Math.min(size-1,Math.round(j*step)), fx=i/G, fy=j/G, z=el(x,y)*k;
+    const x=Math.min(size-1,Math.round(i*step)), y=Math.min(size-1,Math.round(j*step)), fx=i/G, fy=j/G, z=el(x,y)*k-sink;
     zmin=Math.min(zmin,z); zmax=Math.max(zmax,z); put(j*V+i, fx, fy, z, normalAt(x,y,latOf(fy),lngOf(fx)));
   }
   // юбки: копии краевых вершин, опущенные вниз, закрывают щели между соседними тайлами разной детальности
@@ -3411,6 +3439,9 @@ async function tileBitmap(u, signal, opts){
    повторами), декодирует и строит сетку; массивы возвращаются без копирования. Нет Worker или OffscreenCanvas — всё
    по-старому, в главном потоке. */
 const TW={ pool:[], seq:0, pend:new Map(), ok:false };
+// уровни по глубине: детальные тайлы на своей высоте, подложка на COARSE_SINK ниже, сфера глобуса ещё ниже (EARTH_U.sink) —
+// грубая сетка подложки в горах не протыкает детальную, а сдвига глубины для этого не хватало (треугольные «осколки»)
+const COARSE_SINK=1500;
 function terrainWorkers(){
   if(TW.ok || TW.failed) return TW.ok;
   try{
@@ -3438,7 +3469,7 @@ onmessage=async e=>{
     if(!blob){ postMessage({id:d.id, mesh:null}); return; }
     const b=await createImageBitmap(blob,{colorSpaceConversion:'none', premultiplyAlpha:'none'});
     const c=new OffscreenCanvas(b.width,b.height), g=c.getContext('2d',{willReadFrequently:true}); g.drawImage(b,0,0);
-    const m=terrainMesh(g.getImageData(0,0,b.width,b.height).data, b.width, d.idx, d.grid); b.close();
+    const m=terrainMesh(g.getImageData(0,0,b.width,b.height).data, b.width, d.idx, d.grid, d.sink); b.close();
     const A=m.attributes;
     postMessage({id:d.id, mesh:m}, [m.indices.value.buffer, A.POSITION.value.buffer, A.TEXCOORD_0.value.buffer, A.COLOR_0.value.buffer]);
   }catch(err){ postMessage(ac.signal.aborted ? {id:d.id, aborted:true} : {id:d.id, mesh:null, err:String(err&&err.message||err)}); }
@@ -3461,10 +3492,10 @@ onmessage=async e=>{
 }
 function demMeshMain(a){
   return tileBitmap(a.url, a.signal, {colorSpaceConversion:'none', premultiplyAlpha:'none'})
-    .then(b=>{ if(!b) return null; const m=terrainMesh(demPixels(b), b.width, a.idx, a.grid); b.close(); return m; });
+    .then(b=>{ if(!b) return null; const m=terrainMesh(demPixels(b), b.width, a.idx, a.grid, a.sink); b.close(); return m; });
 }
-function demMesh(url, idx, grid, signal){
-  const args={url, idx, grid, signal};
+function demMesh(url, idx, grid, signal, sink=0){
+  const args={url, idx, grid, signal, sink};
   if(!terrainWorkers()) return demMeshMain(args);
   return new Promise((res,rej)=>{
     const id=++TW.seq, w=TW.pool[id%TW.pool.length];
@@ -3472,7 +3503,7 @@ function demMesh(url, idx, grid, signal){
     if(signal && signal.aborted) return rej(new DOMException('Aborted','AbortError'));
     if(signal) signal.addEventListener('abort', onAbort, {once:true});
     TW.pend.set(id, {res, rej, args, done:()=>{ if(signal) signal.removeEventListener('abort', onAbort); }});
-    w.postMessage({id, url:new URL(url, location.href).href, idx:{x:idx.x, y:idx.y, z:idx.z}, grid});
+    w.postMessage({id, url:new URL(url, location.href).href, idx:{x:idx.x, y:idx.y, z:idx.z}, grid, sink});
   });
 }
 const NIGHT_TILES=new Map();
@@ -3487,7 +3518,7 @@ class NearTerrainLayer extends deck.TerrainLayer {
     const {elevationData, texture, grid}=this.props, idx=tile.index, signal=tile.signal;
     const url=t=>t.replace('{z}',idx.z).replace('{x}',idx.x).replace('{y}',idx.y);
     await waitAbortable(TILE_WAIT, signal);
-    const dem=demMesh(url(elevationData), idx, grid, signal);
+    const dem=demMesh(url(elevationData), idx, grid, signal, this.props.coarse ? COARSE_SINK : 0);
     // без снимка тайл не рисуется (под ним остаётся сфера), иначе в цвет попала бы нормаль из COLOR_0
     const img=tileBitmap(url(texture), signal);
     // огни городов ~500 м: тайл Black Marble уровня не выше 8 и прямоугольник этого тайла в нём
@@ -3501,11 +3532,36 @@ class NearTerrainLayer extends deck.TerrainLayer {
   renderSubLayers(props){
     const l=super.renderSubLayers(props);
     return l && l.clone({ extensions:[EARTH_SHADING], textureParameters:{ minFilter:'linear', mipmapFilter:'linear', magFilter:'linear', maxAnisotropy:8 },
-      operation: this.props.drape ? 'terrain+draw' : 'draw', earthNightTile:props.data[2]||null, earthNightRect:props.data[3]||null });
+      operation: this.props.drape ? 'terrain+draw' : 'draw', earthNightTile:props.data[2]||null, earthNightRect:props.data[3]||null,
+      ...(this.props.coarse ? { earthSink:COARSE_SINK, parameters:{ ...(l.props.parameters||{}), depthBias:16, depthBiasSlopeScale:4 } } : {}) });
   }
 }
 NearTerrainLayer.layerName='NearTerrainLayer';
-NearTerrainLayer.defaultProps={ drape:false, grid:64 };
+/* Выбор тайлов с порогом экранного размера: каждый тайл — отдельный вызов отрисовки (~0,3 мс процессора на ПК),
+   а при наклоне камеры у горизонта набирается до 140 мелких тайлов — 20 кадров/с. Тайл, который на экране меньше
+   порога, заменяется родительским (вчетверо меньше вызовов, разницы у горизонта не видно); на телефоне порог выше. */
+class NearTileset extends deck._Tileset2D {
+  getTileIndices(opts){
+    const idx=super.getTileIndices(opts), vp=opts.viewport, minZ=Math.max(this.opts.minZoom||0, 3);
+    if(idx.length<12 || !vp) return idx;
+    const min=isMobileGPU() ? 360 : 150;
+    const lng=(x,n)=>x/n*360-180, lat=(y,n)=>Math.atan(Math.sinh(Math.PI*(1-2*y/n)))*R2D;
+    const size=t=>{ const n=2**t.z; let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+      for(const [cx,cy] of [[t.x,t.y],[t.x+1,t.y],[t.x,t.y+1],[t.x+1,t.y+1]]){ const q=vp.project([lng(cx,n),lat(cy,n),0]);
+        if(!Number.isFinite(q[0])||!Number.isFinite(q[1])) return Infinity; x0=Math.min(x0,q[0]); y0=Math.min(y0,q[1]); x1=Math.max(x1,q[0]); y1=Math.max(y1,q[1]); }
+      return Math.max(x1-x0, y1-y0); };
+    let cur=idx;
+    for(let pass=0; pass<3; pass++){
+      const out=new Map(); let changed=false;
+      for(const t of cur){ let u=t; if(u.z>minZ && size(u)<min){ u={x:u.x>>1, y:u.y>>1, z:u.z-1}; changed=true; } out.set(u.z+'/'+u.x+'/'+u.y, u); }
+      cur=[...out.values()]; if(!changed) break;
+    }
+    const keys=new Set(cur.map(t=>t.z+'/'+t.x+'/'+t.y));   // тайл, у которого в списке есть предок, не нужен
+    return cur.filter(t=>{ for(let z=t.z-1,x=t.x>>1,y=t.y>>1; z>=0; z--,x>>=1,y>>=1) if(keys.has(z+'/'+x+'/'+y)) return false; return true; });
+  }
+}
+const NEAR_SUB={ tiles:{ TilesetClass:NearTileset } };   // постоянный объект: новый в каждом кадре пересобирал бы слой
+NearTerrainLayer.defaultProps={ drape:false, grid:64, coarse:false };
 
 // постоянные объекты: новый объект в каждом кадре TerrainLayer считает сменой декодера и перезагружает все тайлы
 const TERRARIUM={ rScaler:256, gScaler:1, bScaler:1/256, offset:-32768 }, EARTH_BOUNDS=[-180,-90,180,90];
@@ -3513,17 +3569,28 @@ function unitFromLngLat(lon,lat){ const l=lon*D2R, p=lat*D2R; return [Math.sin(l
 function earthLayers(tm){
   const vp=currentViewport(), ss=subsolar(new Date(tm)), fade=nearFade(), m=GL3.man, nc=(m && m.nearColor) || {gain:[1,1,1], bias:[0,0,0]};
   Object.assign(EARTH_U, { sunDir:unitFromLngLat(ss.lon,ss.lat), lit:S.night?1:0, camPos:vp?vp.cameraPosition.slice(0,3):[0,0,4096],
-    reliefK:RELIEF_FAR, nearGain:nc.gain, slopeMax:(m && m.slopeMax) || 1, nearBias:nc.bias, cloudAmt:1-fade,   // вблизи облака ~10 км/пиксель не нужны
-    sink: fade>0 ? 400 : 0, nightGain:2.2, zoom:S.vs.zoom, exposure:1.12, cloudLo:GL3.cloudLevels[0], cloudHi:GL3.cloudLevels[1] });
+    reliefK:RELIEF_FAR, nearGain:nc.gain, slopeMax:(m && m.slopeMax) || 1, nearBias:nc.bias,
+    // облака ~10 км/пиксель: с масштаба 3,6 тают и к 4,8 исчезают — дальше они только размытые пятна; можно выключить в «Слоях»
+    cloudAmt: S.clouds ? 1-Math.max(0,Math.min(1,(S.vs.zoom-3.6)/1.2)) : 0,
+    sink: fade>0 ? 3200 : 0, nightGain:2.2, zoom:S.vs.zoom, exposure:1.12, cloudLo:GL3.cloudLevels[0], cloudHi:GL3.cloudLevels[1] });
   const out=[ new EarthLayer({ id:'earth', bounds:EARTH_BOUNDS, _imageCoordinateSystem:deck.COORDINATE_SYSTEM.LNGLAT }) ];
   if(fade>0){
     const mobile=isMobileGPU();
     const zo=(!mobile && (window.devicePixelRatio||1)>1.5) ? 1 : 0;
     const lite=PERFQ.level>=2;
-    out.push(new NearTerrainLayer({ id:'near-terrain', elevationData:'tiles/dem/{z}/{x}/{y}.png', texture:'tiles/img/{z}/{x}/{y}.jpg',
+    // подложка: те же источники на 2 уровня крупнее (в 16 раз меньше тайлов) — грузится за доли секунды и закрывает
+    // место, пока не пришли детальные тайлы, вместо размытой текстуры глобуса (~10 км на пиксель). Рисуется под
+    // детальным слоем со сдвигом глубины и только пока он догружается: когда он готов, лишние вызовы отрисовки не нужны.
+    const det=deckgl && deckgl.layerManager ? deckgl.layerManager.getLayers().find(l=>l.id==='near-terrain-tiles') : null;
+    out.push(new NearTerrainLayer({ id:'near-coarse', coarse:true, visible:!det || !det.isLoaded, elevationData:'tiles/dem/{z}/{x}/{y}.png', texture:'tiles/img/{z}/{x}/{y}.jpg',
+      elevationDecoder:TERRARIUM, tileSize:256, minZoom:3, maxZoom:11, material:false, opacity:fade, pickable:false,
+      zoomOffset:(lite?0:zo)-2, maxCacheSize:48, maxRequests:4, grid:(mobile||lite)?16:32, drape:false }));
+    out.push(new NearTerrainLayer({ id:'near-terrain', _subLayerProps:NEAR_SUB, elevationData:'tiles/dem/{z}/{x}/{y}.png', texture:'tiles/img/{z}/{x}/{y}.jpg',
       elevationDecoder:TERRARIUM,
       tileSize:256, minZoom:3, maxZoom:13, material:false, opacity:fade, pickable:false,
-      zoomOffset: lite?0:zo, maxCacheSize: (mobile||lite)?96:128,   // ≈0,5 / 1,3 МБ видеопамяти на тайл
+      // кэш больше, чем тайлов на экране: при наклоне камеры виду нужно 105–140 тайлов, и при лимите 128 слой
+      // выбрасывал только что загруженные — вместо гор были размытые облака глобуса
+      zoomOffset: lite?0:zo, maxCacheSize: (mobile||lite)?160:256,   // ≈0,3 / 1,3 МБ видеопамяти на тайл
       // одновременно грузящихся тайлов (по 2 запроса на тайл): по умолчанию в deck.gl 6 — вид собирался волнами;
       // 20 — быстро и без ответов 429 даже при быстром приближении (проверено с тем же лимитом частоты, что на сервере)
       // запросов, ~12 волн на экран. Тайлы отдаются по HTTP/2, так что больше одновременных запросов не тормозят
@@ -4075,6 +4142,7 @@ function init(){
   document.querySelectorAll('[data-color]').forEach(b=>b.onclick=()=>{ S.colorMode=b.dataset.color; document.querySelectorAll('[data-color]').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); renderLegend(); if(S.selected>=0) renderCard(); if(!$('#sheet').hidden) renderTable(); });
   $('#tTracks').onchange=e=>{ S.tracks=e.target.checked; };
   $('#tNight').onchange=e=>{ S.night=e.target.checked; };
+  $('#tClouds').onchange=e=>{ S.clouds=e.target.checked; };
   $('#tTails').onchange=e=>{ S.tails=e.target.checked; };
   // язык, «Надо мной», меню «ещё» на телефоне
   $('#btnLang').onclick=()=>{ setLang(LANG==='ru'?'en':'ru'); $('#tools').classList.remove('open'); };
