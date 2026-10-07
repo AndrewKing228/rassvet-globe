@@ -3,6 +3,28 @@
 Здесь — что меняется на странице и в репозитории. Даты по UTC.
 What changes on the page and in the repository. Dates are UTC.
 
+## v1.9.0 — 2026-10-07
+
+### Русский
+- **Первая загрузка на ПК легче на 40 %** (8,6 → 5,2 МБ): подробные текстуры рельефа, облаков и ночи грузятся, когда
+  глобус на экране крупный — на стартовом виде их не отличить от лёгких.
+- **Телефон не греется впустую:** когда камера стоит, слои пересобираются по скорости спутников на экране, а не 60 раз
+  в секунду. Главный поток в покое занят 38 % времени вместо 99 % (эмуляция, процессор ×4).
+- **Фильтр «Состояние»:** работает, поднимает орбиту, снижается, отказ, нет данных.
+- **Предупреждение, если данным больше двух суток** — ежедневное обновление задержалось.
+- **Читаемость:** мелкий серый текст контрастнее (5,2:1 вместо 3,4:1); подписи у края экрана не обрезаются.
+- **Замеры:** `scripts/perf/perf.mjs startup` — первая загрузка, занятость потока, все системы разом.
+
+### English
+- **First load on desktop is 40% lighter** (8.6 → 5.2 MB): detailed relief, cloud and night textures load once the globe
+  is large on screen — at the starting view they look the same as the light ones.
+- **Phones no longer work for nothing:** with the camera still, layers are rebuilt at the pace satellites move on screen
+  instead of 60 times a second. The main thread is busy 38% of the time instead of 99% (emulation, CPU ×4).
+- **Status filter:** working, raising orbit, decaying, failed, no data.
+- **A warning when the data is more than two days old** — the daily update is late.
+- **Readability:** small grey text has more contrast (5.2:1 instead of 3.4:1); labels at the screen edge are no longer cut off.
+- **Measurements:** `scripts/perf/perf.mjs startup` — first load, main-thread load, all systems at once.
+
 ## v1.8.0 — 2026-10-07
 
 ### Русский
